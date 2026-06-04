@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考公日报 - 每日积累</title>
+<style>
+  :root {
+    --bg: #faf9f6;
+    --card: #fff;
+    --text: #2c2c2c;
+    --muted: #888;
+    --accent: #b84c3b;
+    --tag-bg: #fdf0ed;
+    --tag-text: #b84c3b;
+    --border: #e8e5df;
+    --shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+  }
+  header {
+    text-align: center;
+    padding: 32px 0 20px;
+  }
+  header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: .02em; }
+  header .sub { color: var(--muted); font-size: .85rem; margin-top: 4px; }
+  nav {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-bottom: 28px;
+  }
+  nav button {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 14px; font-size: .85rem;
+    cursor: pointer; color: var(--text);
+  }
+  nav button:hover { border-color: var(--accent); color: var(--accent); }
+  nav select {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: .85rem;
+    color: var(--text); cursor: pointer; max-width: 180px;
+  }
+  nav .today-btn { font-weight: 600; }
+
+  section { margin-bottom: 28px; }
+  .section-title {
+    font-size: 1.15rem; font-weight: 700;
+    padding-bottom: 8px; border-bottom: 2px solid var(--accent);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .icon { font-size: 1.25rem; }
+
+  /* Idiom cards */
+  .idiom-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .idiom-card {
+    background: var(--card); border-radius: 10px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .idiom-card .word {
+    font-size: 1.05rem; font-weight: 700; color: var(--accent);
+  }
+  .idiom-card .explain {
+    font-size: .82rem; color: var(--muted); margin-top: 4px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .idiom-card .focus {
+    display: inline-block; font-size: .72rem;
+    background: var(--tag-bg); color: var(--tag-text);
+    border-radius: 4px; padding: 1px 8px; margin-top: 6px;
+  }
+
+  /* Knowledge items */
+  .knowledge-item {
+    background: var(--card); border-radius: 10px;
+    padding: 16px 18px; margin-bottom: 10px;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .knowledge-item .k-tag {
+    display: inline-block; font-size: .7rem; font-weight: 600;
+    background: var(--accent); color: #fff;
+    border-radius: 4px; padding: 2px 8px; margin-bottom: 6px;
+  }
+  .knowledge-item .k-title {
+    font-size: .95rem; font-weight: 700; margin-bottom: 4px;
+  }
+  .knowledge-item .k-body {
+    font-size: .82rem; color: #555; line-height: 1.65;
+  }
+  .knowledge-item .k-point {
+    margin-top: 8px; padding: 8px 12px;
+    background: #fff9f0; border-left: 3px solid #e6a817;
+    font-size: .78rem; color: #8b6914; border-radius: 0 6px 6px 0;
+  }
+
+  footer {
+    text-align: center; color: var(--muted);
+    font-size: .72rem; margin-top: 40px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 520px) {
+    .idiom-grid { grid-template-columns: 1fr; }
+    body { padding: 16px 12px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📰 考公日报</h1>
+  <div class="sub" id="dateDisplay">—</div>
+</header>
+
+<nav>
+  <button onclick="prevDay()">◀ 前一天</button>
+  <select id="dateSelect" onchange="jumpTo(this.value)"></select>
+  <button onclick="nextDay()">后一天 ▶</button>
+  <button class="today-btn" onclick="goToday()">今天</button>
+</nav>
+
+<main id="content"><div style="text-align:center;color:var(--muted);padding:60px 0;">加载中...</div></main>
+
+<footer>
+  考公日报 · 每日自动生成 · 仅供学习参考
+</footer>
+
+<script>
+let allDates = [];
+let currentDate = '';
+
+async function load() {
+  const resp = await fetch('data.json');
+  const data = await resp.json();
+  allDates = Object.keys(data.reports).sort().reverse();
+  if (allDates.length === 0) return;
+  currentDate = allDates[0];
+  populateSelect();
+  render(data.reports[currentDate]);
+}
+
+function populateSelect() {
+  const sel = document.getElementById('dateSelect');
+  sel.innerHTML = allDates.map(d => {
+    const label = d.slice(5); // MM-DD
+    const selected = d === currentDate ? ' selected' : '';
+    return `<option value="${d}"${selected}>${label}</option>`;
+  }).join('');
+}
+
+function render(report) {
+  document.getElementById('dateDisplay').textContent = report.date;
+  document.getElementById('dateSelect').value = report.date;
+  currentDate = report.date;
+
+  let html = '';
+
+  // Idioms
+  if (report.idioms && report.idioms.length > 0) {
+    html += '<section><div class="section-title"><span class="icon">📚</span> 每日成语（' + report.idioms.length + '个）</div>';
+    html += '<div class="idiom-grid">';
+    report.idioms.forEach(i => {
+      html += `<div class="idiom-card">
+        <div class="word">${esc(i.idiom)}</div>
+        <div class="explain">${esc(i.explanation)}</div>
+        ${i.focus ? `<span class="focus">🎯 ${esc(i.focus)}</span>` : ''}
+      </div>`;
+    });
+    html += '</div></section>';
+  }
+
+  // Knowledge
+  if (report.knowledge && report.knowledge.length > 0) {
+    html += '<section><div class="section-title"><span class="icon">🧠</span> 公考常识</div>';
+    report.knowledge.forEach(k => {
+      html += `<div class="knowledge-item">
+        <span class="k-tag">${esc(k.category)}</span>
+        <div class="k-title">${esc(k.title)}</div>
+        <div class="k-body">${esc(k.body)}</div>
+        ${k.exam_point ? `<div class="k-point">📝 考点：${esc(k.exam_point)}</div>` : ''}
+      </div>`;
+    });
+    html += '</section>';
+  }
+
+  if (!html) {
+    html = '<div style="text-align:center;color:var(--muted);padding:60px 0;">暂无数据</div>';
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function prevDay() {
+  const idx = allDates.indexOf(currentDate);
+  if (idx < allDates.length - 1) {
+    currentDate = allDates[idx + 1];
+    populateSelect();
+    fetch('data.json').then(r => r.json()).then(data => render(data.reports[currentDate]));
+  }
+}
+
+function nextDay() {
+  const idx = allDates.indexOf(currentDate);
+  if (idx > 0) {
+    currentDate = allDates[idx - 1];
+    populateSelect();
+    fetch('data.json').then(r => r.json()).then(data => render(data.reports[currentDate]));
+  }
+}
+
+function jumpTo(date) {
+  currentDate = date;
+  fetch('data.json').then(r => r.json()).then(data => render(data.reports[date]));
+}
+
+function goToday() {
+  if (allDates.length > 0) {
+    currentDate = allDates[0];
+    populateSelect();
+    fetch('data.json').then(r => r.json()).then(data => render(data.reports[currentDate]));
+  }
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+load();
+</script>
+</body>
+</html>
