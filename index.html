@@ -6,189 +6,236 @@
 <title>考公补给站</title>
 <style>
 /* ===========================================
-   考公补给站 — Warm Academic · Two-Page
+   考公补给站 — Glass Edition
    =========================================== */
 
 :root {
-  --color-bg:         #FAF7F2;
-  --color-card:       #FFFFFF;
-  --color-text:       #3C3C3C;
-  --color-text-muted: #8C8C8C;
-  --color-primary:    #4A7C59;
-  --color-primary-dark:#3D6A4B;
-  --color-primary-bg: #EDF4EF;
-  --color-gold:       #D4A853;
-  --color-gold-bg:    #FFF8EC;
-  --color-gold-border:#E6B844;
-  --color-gold-text:  #8B6914;
-  --color-border:     #EBE7E0;
+  --glass-bg:    rgba(255,255,255,0.55);
+  --glass-border:rgba(255,255,255,0.45);
+  --glass-shadow:0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --glass-blur:  16px;
+  --glass-light: rgba(255,255,255,0.85);
 
-  --color-tech:       #5B8BA0;
-  --color-politics:   #D4A853;
-  --color-history:    #B0785A;
+  --text:       #2C2416;
+  --text-muted: #8C7E6B;
+  --accent:     #B8860B;
+  --accent-light:#E8C96A;
+  --accent-glow:rgba(184,134,11,0.15);
+  --card-glass: rgba(255,255,255,0.5);
 
-  --font-body:    "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-  --font-heading: "Noto Serif SC", "Source Han Serif SC", "PingFang SC", serif;
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
 
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --shadow-card: 0 1px 3px rgba(60,60,60,0.06);
-  --ease: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-body:   "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-display:"Noto Serif SC", "Source Han Serif SC", serif;
+
+  --ease: cubic-bezier(0.4,0,0.2,1);
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-html {
-  font-size: 15px;
-  -webkit-text-size-adjust: 100%;
-  height: 100%;
-}
+html { font-size: 15px; height: 100%; -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: var(--font-body);
-  background: var(--color-bg);
-  color: var(--color-text);
+  color: var(--text);
   line-height: 1.75;
   height: 100%;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+
+  /* Warm gradient base */
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%,   #FDF6E8 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 90% 30%,  #F5EDE0 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 10% 60%,  #FAF2E5 0%, transparent 60%),
+    radial-gradient(ellipse 70% 40% at 60% 100%, #F8EFDD 0%, transparent 60%),
+    #FAF7F2;
 }
 
 /* ===========================================
-   View Container
+   Ambient orbs (fixed, behind everything)
+   =========================================== */
+
+.ambient {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient-1 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(232,201,106,0.5) 0%, transparent 70%);
+  top: -5%; left: -10%;
+}
+.ambient-2 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(180,160,140,0.4) 0%, transparent 70%);
+  top: 50%; right: -8%;
+}
+.ambient-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(160,180,155,0.35) 0%, transparent 70%);
+  bottom: -5%; left: 20%;
+}
+
+/* ===========================================
+   View System
    =========================================== */
 
 .view {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  transition: opacity var(--ease), transform var(--ease);
+  overflow-y: auto; overflow-x: hidden;
+  z-index: 1;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Landing view — default visible */
+/* Landing — default visible */
 .view-landing {
-  opacity: 1;
-  transform: translateY(0);
-  z-index: 2;
-  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  opacity: 1; transform: scale(1);
 }
 
 .view-landing.hidden {
-  opacity: 0;
-  transform: translateY(-12px);
+  opacity: 0; transform: scale(1.04);
   pointer-events: none;
 }
 
-/* Content view — hidden by default */
+/* Content — hidden until opened */
 .view-content {
-  opacity: 0;
-  transform: translateY(12px);
-  z-index: 1;
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  opacity: 0; transform: translateY(20px);
   pointer-events: none;
 }
 
 .view-content.visible {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 1; transform: translateY(0);
   pointer-events: auto;
-  z-index: 3;
+  z-index: 2;
 }
 
 /* ===========================================
-   LANDING PAGE
+   LANDING — Glass Panel
    =========================================== */
 
 .landing {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 48px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100%;
-  padding: 48px 24px;
-  text-align: center;
+  gap: 0;
+}
+
+.landing-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow);
+  padding: 56px 48px 44px;
+  max-width: 400px;
+  width: 100%;
 }
 
 .landing-logo {
-  font-family: var(--font-heading);
-  font-size: 2.4rem;
+  font-family: var(--font-display);
+  font-size: 2rem;
   font-weight: 700;
-  color: var(--color-text);
-  letter-spacing: 0.15em;
-  margin-bottom: 8px;
+  color: var(--text);
+  letter-spacing: 0.16em;
+  line-height: 1.3;
 }
 
 .landing-sub {
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  color: var(--color-gold);
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  margin-bottom: 48px;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  margin-top: 8px;
+}
+
+.landing-divider {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-light), transparent);
+  margin: 28px auto;
+  border-radius: 1px;
 }
 
 .landing-streak {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-gold);
-  margin-bottom: 32px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 28px;
 }
 
-.landing-btn {
+/* Glass button */
+.glass-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 220px;
-  height: 54px;
-  background: var(--color-primary);
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 600;
+  width: 210px;
+  height: 52px;
   font-family: var(--font-body);
-  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #FFF;
+  background: linear-gradient(135deg, #C9A040, #A07828);
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 4px 20px rgba(184,134,11,0.3), 0 1px 3px rgba(0,0,0,0.08);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 2px 12px rgba(74,124,89,0.2);
 }
 
-.landing-btn:active {
-  background: var(--color-primary-dark);
-  transform: scale(0.97);
+.glass-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 10px rgba(184,134,11,0.2);
 }
 
 .landing-date {
-  margin-top: 32px;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-  font-family: var(--font-heading);
+  margin-top: 24px;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  color: var(--text-muted);
 }
 
 .landing-quote {
-  margin-top: 12px;
-  font-family: var(--font-heading);
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  color: var(--text-muted);
   font-style: italic;
 }
 
-.landing-archive {
-  margin-top: 40px;
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
+/* Archive link below panel */
+.landing-archive-wrap {
+  margin-top: 32px;
+  position: relative;
+  z-index: 2;
 }
 
-.landing-archive summary {
+.landing-archive-wrap summary {
   cursor: pointer;
-  font-family: var(--font-heading);
-  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-weight: 500;
   list-style: none;
   display: inline-flex;
   align-items: center;
@@ -197,33 +244,34 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.landing-archive summary::-webkit-details-marker { display: none; }
+.landing-archive-wrap summary::-webkit-details-marker { display: none; }
 
-.archive-mini-list {
-  list-style: none;
-  margin-top: 12px;
+.archive-mini {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+  margin-top: 14px;
+  list-style: none;
 }
 
-.archive-mini-list a {
+.archive-mini a {
   display: inline-block;
-  padding: 4px 14px;
-  font-size: 0.8rem;
-  color: var(--color-text);
+  padding: 6px 16px;
+  font-size: 0.78rem;
+  color: var(--text);
   text-decoration: none;
-  background: var(--color-card);
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.5);
   border-radius: 999px;
-  border: 1px solid var(--color-border);
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.2s, border-color 0.2s;
 }
 
-.archive-mini-list a:active {
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+.archive-mini a:active {
+  background: rgba(255,255,255,0.7);
+  border-color: var(--accent-light);
 }
 
 /* ===========================================
@@ -234,20 +282,26 @@ body {
   max-width: 720px;
   margin: 0 auto;
   padding: 0 16px 100px;
+  position: relative;
+  z-index: 2;
 }
 
-/* Top bar */
+/* Glass top bar */
 .topbar {
   position: sticky;
-  top: 0;
+  top: 12px;
   z-index: 10;
-  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  margin: 0 -16px;
-  border-bottom: 1px solid var(--color-border);
+  padding: 12px 20px;
+  margin: 12px -8px 24px;
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
 }
 
 .back-btn {
@@ -256,63 +310,69 @@ body {
   gap: 2px;
   background: none;
   border: none;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 4px 8px 4px 0;
+  padding: 6px 10px 6px 4px;
   font-family: var(--font-body);
   min-height: 44px;
+  border-radius: var(--radius-sm);
+  transition: color 0.2s, background 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.back-btn:active { color: var(--color-primary); }
+.back-btn:active {
+  color: var(--accent);
+  background: rgba(255,255,255,0.3);
+}
 
 .topbar-title {
-  font-family: var(--font-heading);
-  font-size: 1rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
   font-weight: 700;
-  color: var(--color-primary);
-  letter-spacing: 0.04em;
+  color: var(--text);
+  letter-spacing: 0.05em;
 }
 
 .topbar-date {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-display);
 }
 
-/* Sections */
-.section {
-  margin-bottom: 28px;
-}
-
+/* Section title */
 .section-title {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 700;
-  color: var(--color-text);
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--color-primary);
-  margin-bottom: 14px;
+  color: var(--text);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
   display: flex;
   align-items: baseline;
   gap: 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
 .section-title .count {
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 400;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
 }
+
+.section { margin-bottom: 28px; }
 
 .divider {
   border: none;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(0,0,0,0.06);
   margin: 28px 0;
 }
 
-/* Idiom cards */
+/* ===========================================
+   Glass Idiom Cards
+   =========================================== */
+
 .idiom-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -320,28 +380,34 @@ body {
 }
 
 .idiom-card {
-  background: var(--color-card);
+  background: var(--card-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.5);
   border-radius: var(--radius-md);
   padding: 16px;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.15s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-.idiom-card:active { transform: scale(0.98); }
+.idiom-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
 
 .idiom-word {
-  font-family: var(--font-heading);
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--accent);
   margin-bottom: 4px;
 }
 
 .idiom-explain {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  color: var(--text-muted);
   line-height: 1.7;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -351,92 +417,98 @@ body {
 
 .idiom-focus {
   display: inline-block;
-  font-size: 0.72rem;
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
-  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  background: rgba(184,134,11,0.08);
+  color: var(--accent);
+  border-radius: 6px;
   padding: 2px 10px;
   margin-top: 8px;
+  font-weight: 500;
 }
 
-/* Knowledge cards */
+/* ===========================================
+   Glass Knowledge Cards
+   =========================================== */
+
 .knowledge-card {
-  background: var(--color-card);
+  background: var(--card-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.5);
   border-radius: var(--radius-md);
-  padding: 16px 16px 16px 20px;
-  border-left: 3px solid var(--color-primary);
-  box-shadow: var(--shadow-card);
+  padding: 18px 18px 18px 22px;
+  border-left: 3px solid var(--accent-light);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
   margin-bottom: 10px;
 }
 
-.knowledge-card[data-category="科技"]        { border-left-color: var(--color-tech); }
-.knowledge-card[data-category="科技时政"]     { border-left-color: var(--color-tech); }
-.knowledge-card[data-category="法律"]        { border-left-color: var(--color-primary); }
-.knowledge-card[data-category="法律常识"]     { border-left-color: var(--color-primary); }
-.knowledge-card[data-category="时政"]        { border-left-color: var(--color-politics); }
-.knowledge-card[data-category="历史"]        { border-left-color: var(--color-history); }
-
 .k-tag {
   display: inline-block;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  color: #fff;
-  background: var(--color-primary);
-  border-radius: var(--radius-sm);
-  padding: 2px 10px;
-  margin-bottom: 6px;
+  color: #FFF;
+  background: linear-gradient(135deg, #C9A040, #B8860B);
+  border-radius: 6px;
+  padding: 3px 12px;
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
 }
 
-.knowledge-card[data-category="科技"] .k-tag,
-.knowledge-card[data-category="科技时政"] .k-tag  { background: var(--color-tech); }
-.knowledge-card[data-category="时政"] .k-tag       { background: var(--color-politics); }
-.knowledge-card[data-category="历史"] .k-tag       { background: var(--color-history); }
-
 .k-title {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   line-height: 1.5;
+  color: var(--text);
 }
 
 .k-body {
   font-size: 0.82rem;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
   line-height: 1.75;
 }
 
 .exam-point {
-  margin-top: 10px;
-  padding: 8px 12px;
-  background: var(--color-gold-bg);
-  border-left: 3px solid var(--color-gold-border);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(184,134,11,0.06);
+  border-left: 3px solid var(--accent-light);
+  border-radius: 0 8px 8px 0;
   font-size: 0.78rem;
-  color: var(--color-gold-text);
+  color: #8B6914;
   line-height: 1.65;
 }
 
-/* Bottom nav */
+/* ===========================================
+   Glass Bottom Nav
+   =========================================== */
+
 .bottombar {
   position: sticky;
-  bottom: 0;
+  bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 10px 16px;
-  margin: 28px -16px 0;
-  background: var(--color-bg);
-  border-top: 1px solid var(--color-border);
+  margin: 28px -8px 0;
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
 }
 
 .nav-btn {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 6px 12px;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 999px;
+  padding: 8px 16px;
   font-size: 0.82rem;
-  color: var(--color-text);
+  color: var(--text);
   cursor: pointer;
   min-width: 44px;
   min-height: 44px;
@@ -444,24 +516,26 @@ body {
   align-items: center;
   justify-content: center;
   font-family: var(--font-body);
-  transition: border-color 0.15s, color 0.15s, transform 0.15s;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
 .nav-btn:active {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: rgba(255,255,255,0.7);
+  border-color: var(--accent-light);
   transform: scale(0.96);
 }
 
 .nav-select {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 6px 8px;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 999px;
+  padding: 8px 12px;
   font-size: 0.82rem;
-  color: var(--color-text);
+  color: var(--text);
   cursor: pointer;
   min-height: 44px;
   max-width: 100px;
@@ -470,24 +544,29 @@ body {
 
 .today-btn {
   font-weight: 700;
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: rgba(184,134,11,0.08);
+  border-color: var(--accent-light);
+  color: var(--accent);
 }
 
-/* Loading */
+/* ===========================================
+   Misc
+   =========================================== */
+
 .loading {
   text-align: center;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
   padding: 60px 0;
   font-size: 0.85rem;
 }
 
 .site-footer {
   text-align: center;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
   font-size: 0.72rem;
-  padding: 16px 0 0;
-  border-top: 1px solid var(--color-border);
+  padding: 20px 0 8px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  margin-top: 20px;
 }
 
 /* ===========================================
@@ -496,48 +575,47 @@ body {
 
 @media (max-width: 480px) {
   .idiom-grid { grid-template-columns: 1fr; }
-  .landing-logo { font-size: 1.8rem; letter-spacing: 0.1em; }
-  .landing-sub { font-size: 0.9rem; }
-  .landing-btn { width: 200px; height: 50px; font-size: 1rem; }
-  .content-wrap { padding: 0 12px 90px; }
-  .topbar { padding: 12px; margin: 0 -12px; }
-  .bottombar {
-    padding: 8px 12px;
-    margin: 24px -12px 0;
-    gap: 4px;
-  }
-  .nav-btn { padding: 4px 8px; font-size: 0.78rem; }
+  .landing-panel { padding: 40px 28px 32px; max-width: 340px; }
+  .landing-logo { font-size: 1.6rem; letter-spacing: 0.1em; }
+  .glass-btn { width: 190px; height: 48px; font-size: 0.9rem; }
+  .content-wrap { padding: 0 10px 90px; }
+  .topbar { padding: 10px 14px; margin: 8px -4px 20px; border-radius: var(--radius-md); }
+  .bottombar { padding: 8px 10px; margin: 24px -4px 0; gap: 4px; border-radius: var(--radius-md); }
+  .nav-btn { padding: 6px 10px; font-size: 0.76rem; }
 }
 
 @media (min-width: 768px) {
   .content-wrap { padding: 0 32px 100px; }
-  .topbar { padding: 14px 32px; margin: 0 -32px; }
-  .bottombar { padding: 10px 32px; margin: 28px -32px 0; }
+  .topbar { padding: 14px 24px; margin: 12px 0 28px; }
+  .bottombar { padding: 10px 20px; margin: 28px 0 0; }
 }
 </style>
 </head>
 <body>
+
+<!-- Ambient light orbs -->
+<div class="ambient ambient-1"></div>
+<div class="ambient ambient-2"></div>
+<div class="ambient ambient-3"></div>
 
 <!-- ============================================
      LANDING VIEW
      ============================================ -->
 <div class="view view-landing" id="landingView">
   <div class="landing">
-    <h1 class="landing-logo">考 公 补 给 站</h1>
-    <p class="landing-sub">每日一点 · 积沙成塔</p>
+    <div class="landing-panel">
+      <h1 class="landing-logo">考 公 补 给 站</h1>
+      <p class="landing-sub">每日一点 · 积沙成塔</p>
+      <div class="landing-divider"></div>
+      <div class="landing-streak" id="landingStreak">🔥 已坚持 — 天</div>
+      <button class="glass-btn" onclick="openToday()">开始今天的学习</button>
+      <div class="landing-date" id="landingDate">—</div>
+      <div class="landing-quote" id="landingQuote"></div>
+    </div>
 
-    <div class="landing-streak" id="landingStreak">🔥 已坚持 — 天</div>
-
-    <button class="landing-btn" onclick="openToday()" aria-label="开始今天的学习">
-      开始今天的学习
-    </button>
-
-    <div class="landing-date" id="landingDate">—</div>
-    <div class="landing-quote" id="landingQuote"></div>
-
-    <details class="landing-archive" id="landingArchiveWrap">
+    <details class="landing-archive-wrap" id="landingArchiveWrap">
       <summary>往期回顾 ▾</summary>
-      <ul class="archive-mini-list" id="archiveMiniList"></ul>
+      <ul class="archive-mini" id="archiveMiniList"></ul>
     </details>
   </div>
 </div>
@@ -547,33 +625,32 @@ body {
      ============================================ -->
 <div class="view view-content" id="contentView">
   <div class="content-wrap">
-    <!-- Top bar -->
+    <!-- Glass top bar -->
     <div class="topbar">
       <button class="back-btn" onclick="goBack()">← 返回</button>
       <span class="topbar-title">考公补给站</span>
       <span class="topbar-date" id="topbarDate">—</span>
     </div>
 
-    <!-- Content -->
     <main id="content">
       <div class="loading">加载中...</div>
     </main>
 
-    <!-- Bottom nav -->
+    <!-- Glass bottom nav -->
     <nav class="bottombar">
-      <button class="nav-btn" onclick="prevDay()" aria-label="前一天">◀ 前一天</button>
-      <select class="nav-select" id="dateSelect" onchange="jumpTo(this.value)" aria-label="选择日期"></select>
-      <button class="nav-btn" onclick="nextDay()" aria-label="后一天">后一天 ▶</button>
+      <button class="nav-btn" onclick="prevDay()">◀ 前一天</button>
+      <select class="nav-select" id="dateSelect" onchange="jumpTo(this.value)"></select>
+      <button class="nav-btn" onclick="nextDay()">后一天 ▶</button>
       <button class="nav-btn today-btn" onclick="goToday()">今天</button>
     </nav>
 
-    <footer class="site-footer">考公补给站 · 每日自动生成 · 仅供学习参考</footer>
+    <footer class="site-footer">考公补给站 · 每日积累</footer>
   </div>
 </div>
 
 <script>
 /* ============================================
-   Data & State
+   State
    ============================================ */
 
 let allDates = [];
@@ -607,15 +684,6 @@ function computeStreak() {
   return s;
 }
 
-function getCategoryKey(cat) {
-  if (!cat) return '';
-  if (cat.indexOf('科技') >= 0) return '科技';
-  if (cat.indexOf('法律') >= 0) return '法律';
-  if (cat.indexOf('时政') >= 0) return '时政';
-  if (cat.indexOf('历史') >= 0) return '历史';
-  return cat;
-}
-
 /* ============================================
    View Switching
    ============================================ */
@@ -635,23 +703,21 @@ function openToday() {
 }
 
 function goBack() {
-  // Update landing stats
   refreshLandingStats();
-
   document.getElementById('landingView').classList.remove('hidden');
   document.getElementById('contentView').classList.remove('visible');
 }
 
 /* ============================================
-   Landing Page Setup
+   Landing Setup
    ============================================ */
 
 function refreshLandingStats() {
   document.getElementById('landingStreak').textContent = '🔥 已坚持 ' + computeStreak() + ' 天';
-  document.getElementById('landingDate').textContent = allDates.length > 0 ? reportsData.reports[allDates[0]].date : '—';
+  document.getElementById('landingDate').textContent = allDates.length > 0
+    ? reportsData.reports[allDates[0]].date : '—';
   document.getElementById('landingQuote').textContent = '「' + pickQuote() + '」';
 
-  // Mini archive list on landing
   var list = document.getElementById('archiveMiniList');
   list.innerHTML = '';
   allDates.forEach(function(d) {
@@ -667,17 +733,17 @@ function refreshLandingStats() {
     list.appendChild(a);
   });
 
-  // Hide archive toggle if no history
   document.getElementById('landingArchiveWrap').style.display = allDates.length <= 1 ? 'none' : '';
 }
 
 /* ============================================
-   Content Page Rendering
+   Content Rendering
    ============================================ */
 
 function renderContent(report) {
   document.getElementById('topbarDate').textContent = report ? report.date : '—';
-  document.getElementById('dateSelect').value = report ? currentDate : '';
+  var sel = document.getElementById('dateSelect');
+  if (sel) sel.value = report ? currentDate : '';
   populateSelect();
 
   if (!report) {
@@ -687,7 +753,6 @@ function renderContent(report) {
 
   var html = '';
 
-  // Idioms
   if (report.idioms && report.idioms.length > 0) {
     html += '<section class="section">';
     html += '<h2 class="section-title">📚 每日成语 <span class="count">' + report.idioms.length + '个</span></h2>';
@@ -704,14 +769,12 @@ function renderContent(report) {
     html += '</div></section>';
   }
 
-  // Knowledge
   if (report.knowledge && report.knowledge.length > 0) {
     html += '<hr class="divider">';
     html += '<section class="section">';
     html += '<h2 class="section-title">🧠 公考常识 <span class="count">' + report.knowledge.length + '条</span></h2>';
     report.knowledge.forEach(function(k) {
-      var cat = getCategoryKey(k.category);
-      html += '<div class="knowledge-card" data-category="' + esc(cat) + '">';
+      html += '<div class="knowledge-card">';
       html += '<span class="k-tag">' + esc(k.category) + '</span>';
       html += '<div class="k-title">' + esc(k.title) + '</div>';
       html += '<div class="k-body">' + esc(k.body) + '</div>';
@@ -723,55 +786,49 @@ function renderContent(report) {
     html += '</section>';
   }
 
-  if (!html) {
-    html = '<div class="loading">暂无数据</div>';
-  }
+  if (!html) html = '<div class="loading">暂无数据</div>';
 
   document.getElementById('content').innerHTML = html;
 
-  // Scroll content view to top
   var cv = document.getElementById('contentView');
   if (cv) cv.scrollTop = 0;
 }
-
-/* ============================================
-   Bottom Nav (content page)
-   ============================================ */
 
 function populateSelect() {
   var sel = document.getElementById('dateSelect');
   if (!sel) return;
   sel.innerHTML = allDates.map(function(d) {
-    var label = d.slice(5);
     var selected = d === currentDate ? ' selected' : '';
-    return '<option value="' + d + '"' + selected + '>' + label + '</option>';
+    return '<option value="' + d + '"' + selected + '>' + d.slice(5) + '</option>';
   }).join('');
 }
+
+/* ============================================
+   Bottom Nav
+   ============================================ */
 
 function prevDay() {
   var idx = allDates.indexOf(currentDate);
   if (idx < allDates.length - 1) { currentDate = allDates[idx + 1]; refreshContent(); }
 }
-
 function nextDay() {
   var idx = allDates.indexOf(currentDate);
   if (idx > 0) { currentDate = allDates[idx - 1]; refreshContent(); }
 }
-
-function jumpTo(date) {
-  currentDate = date;
-  refreshContent();
-}
-
+function jumpTo(d) { currentDate = d; refreshContent(); }
 function goToday() {
   if (allDates.length > 0) { currentDate = allDates[0]; refreshContent(); }
 }
-
 function refreshContent() {
   populateSelect();
   renderContent(reportsData.reports[currentDate]);
   var cv = document.getElementById('contentView');
   if (cv) cv.scrollTop = 0;
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /* ============================================
@@ -791,18 +848,7 @@ async function init() {
   currentDate = allDates[0];
   refreshLandingStats();
   populateSelect();
-
-  // Pre-render today's content so it's ready when user clicks
   renderContent(reportsData.reports[currentDate]);
-}
-
-function esc(s) {
-  if (!s) return '';
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 init();
