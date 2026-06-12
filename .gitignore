@@ -1,3 +1,10 @@
 _*.json
 _knowledge.json
 _today.json
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
