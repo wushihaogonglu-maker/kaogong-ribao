@@ -11,10 +11,10 @@
    =========================================== */
 
 :root {
-  --glass-bg:     rgba(255,255,255,0.5);
-  --glass-border: rgba(255,255,255,0.4);
+  --glass-bg:     rgba(255,255,255,0.35);
+  --glass-border: rgba(255,255,255,0.35);
   --glass-shadow: 0 8px 32px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03);
-  --glass-blur:   18px;
+  --glass-blur:   20px;
 
   --text:        #2C2416;
   --text-muted:  #8C7E6B;
@@ -38,7 +38,12 @@ body {
   height: 100%;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
-  background: #FAF6EF;
+  background:
+    radial-gradient(ellipse 120% 80% at 20% 10%, #F5E6CC 0%, transparent 50%),
+    radial-gradient(ellipse 100% 70% at 80% 20%, #E8DFD3 0%, transparent 50%),
+    radial-gradient(ellipse 90% 60% at 50% 80%, #EDE4D5 0%, transparent 50%),
+    radial-gradient(ellipse 80% 80% at 10% 70%, #F0E8D8 0%, transparent 50%),
+    #FAF5EC;
 }
 
 /* ===========================================
@@ -53,66 +58,108 @@ body {
   overflow: hidden;
 }
 
-/* Large slow orbs */
+/* Layer 1 — large slow color blobs */
 .orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.4;
+  filter: blur(60px);
 }
 .orb-1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(232,201,106,0.55) 0%, transparent 70%);
-  animation: drift1 18s ease-in-out infinite;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(210,180,140,0.7) 0%, rgba(210,180,140,0.3) 40%, transparent 70%);
+  animation: drift1 20s ease-in-out infinite;
 }
 .orb-2 {
-  width: 420px; height: 420px;
-  background: radial-gradient(circle, rgba(180,160,140,0.45) 0%, transparent 70%);
-  animation: drift2 22s ease-in-out infinite;
+  width: 440px; height: 440px;
+  background: radial-gradient(circle, rgba(160,190,170,0.65) 0%, rgba(160,190,170,0.25) 40%, transparent 70%);
+  animation: drift2 24s ease-in-out infinite;
 }
 .orb-3 {
-  width: 380px; height: 380px;
-  background: radial-gradient(circle, rgba(170,190,170,0.4) 0%, transparent 70%);
-  animation: drift3 20s ease-in-out infinite;
+  width: 460px; height: 460px;
+  background: radial-gradient(circle, rgba(220,195,155,0.6) 0%, rgba(220,195,155,0.2) 40%, transparent 70%);
+  animation: drift3 22s ease-in-out infinite;
 }
 .orb-4 {
-  width: 340px; height: 340px;
-  background: radial-gradient(circle, rgba(200,180,150,0.4) 0%, transparent 70%);
-  animation: drift4 24s ease-in-out infinite;
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(185,170,155,0.55) 0%, rgba(185,170,155,0.2) 40%, transparent 70%);
+  animation: drift4 26s ease-in-out infinite;
+}
+
+/* Layer 2 — sharper, smaller accent glows */
+.orb-accent {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(35px);
+  opacity: 0.55;
+}
+.orb-a1 {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(200,160,90,0.7) 0%, transparent 70%);
+  animation: driftA1 15s ease-in-out infinite;
+}
+.orb-a2 {
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(180,155,120,0.6) 0%, transparent 70%);
+  animation: driftA2 18s ease-in-out infinite;
+}
+.orb-a3 {
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(190,170,140,0.55) 0%, transparent 70%);
+  animation: driftA3 16s ease-in-out infinite;
 }
 
 @keyframes drift1 {
-  0%, 100% { top: -8%; left: -5%; }
-  25% { top: 5%; left: 15%; }
-  50% { top: -2%; left: 25%; }
-  75% { top: 3%; left: 8%; }
+  0%, 100% { top: -12%; left: -8%; }
+  33% { top: 8%; left: 18%; }
+  66% { top: -4%; left: 28%; }
 }
 @keyframes drift2 {
-  0%, 100% { top: 40%; right: -10%; }
-  25% { top: 30%; right: 5%; }
-  50% { top: 50%; right: -5%; }
-  75% { top: 35%; right: 10%; }
+  0%, 100% { top: 45%; right: -12%; }
+  33% { top: 25%; right: 8%; }
+  66% { top: 55%; right: -6%; }
 }
 @keyframes drift3 {
-  0%, 100% { bottom: -10%; left: 15%; }
-  33% { bottom: 5%; left: 30%; }
-  66% { bottom: -5%; left: 5%; }
+  0%, 100% { bottom: -12%; left: 10%; }
+  50% { bottom: 8%; left: 35%; }
 }
 @keyframes drift4 {
-  0%, 100% { top: 60%; left: 50%; }
-  50% { top: 45%; left: 60%; }
+  0%, 100% { top: 55%; left: 40%; }
+  50% { top: 35%; left: 55%; }
+}
+@keyframes driftA1 {
+  0%, 100% { top: 15%; right: 20%; }
+  50% { top: 30%; right: 40%; }
+}
+@keyframes driftA2 {
+  0%, 100% { bottom: 30%; left: 50%; }
+  50% { bottom: 15%; left: 35%; }
+}
+@keyframes driftA3 {
+  0%, 100% { top: 60%; left: 10%; }
+  50% { top: 45%; left: 20%; }
 }
 
-/* Subtle grain overlay */
+/* Grain overlay */
 .grain {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px 256px;
+}
+
+/* Subtle dot grid for texture */
+.dot-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* ===========================================
@@ -453,7 +500,7 @@ body {
 }
 
 .glass-card {
-  background: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.25);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.45);
@@ -637,8 +684,12 @@ body {
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
   <div class="orb orb-4"></div>
+  <div class="orb-accent orb-a1"></div>
+  <div class="orb-accent orb-a2"></div>
+  <div class="orb-accent orb-a3"></div>
 </div>
 <div class="grain"></div>
+<div class="dot-grid"></div>
 
 <!-- ============================================
      VIEW 1 — LANDING
