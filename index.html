@@ -126,13 +126,10 @@ body {
   overflow-x: hidden;
   z-index: 1;
   -webkit-overflow-scrolling: touch;
-  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), visibility 0.5s;
-}
-
-.view-hidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
 }
 
 /* Landing: default visible */
@@ -147,23 +144,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translateY(20px);
 }
 
-.view-hub.view-visible { transform: translateY(0); }
-
-/* Content */
-.view-content {
+/* Content — offset when hidden */
+.view-hub:not(.view-visible),
+.view-content:not(.view-visible) {
   transform: translateY(20px);
 }
-
-.view-content.view-visible { transform: translateY(0); }
 
 .view-visible {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   z-index: 2;
+  transform: translateY(0);
 }
 
 /* ===========================================
@@ -771,8 +765,6 @@ function computeStreak() {
 
 function switchView(from, to) {
   from.classList.remove('view-visible');
-  from.classList.add('view-hidden');
-  to.classList.remove('view-hidden');
   to.classList.add('view-visible');
   setTimeout(()=>{ to.scrollTop=0; }, 60);
 }
