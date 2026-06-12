@@ -67,8 +67,7 @@ body {
    =========================================== */
 
 .view-landing {
-  background: #1a1a1a;
-  color: #fff;
+  background: #fafaf7;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,8 +83,7 @@ body {
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.45);
-  text-transform: uppercase;
+  color: var(--ink-muted);
   margin-bottom: 32px;
 }
 
@@ -94,20 +92,20 @@ body {
   font-weight: 300;
   letter-spacing: 0.2em;
   line-height: 1.4;
-  color: #fff;
+  color: var(--ink);
 }
 
 .landing-line {
   width: 1px;
   height: 48px;
-  background: rgba(255,255,255,0.15);
+  background: var(--border);
   margin: 36px auto;
 }
 
 .landing-streak {
   font-size: 0.82rem;
   font-weight: 400;
-  color: rgba(255,255,255,0.5);
+  color: var(--ink-muted);
   letter-spacing: 0.04em;
   margin-bottom: 40px;
 }
@@ -121,8 +119,8 @@ body {
   font-size: 0.88rem;
   font-weight: 500;
   letter-spacing: 0.06em;
-  color: #1a1a1a;
-  background: #fff;
+  color: #fff;
+  background: var(--ink);
   border: none;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
@@ -131,14 +129,14 @@ body {
 }
 
 .landing-btn:active {
-  background: #e0e0e0;
+  background: #333;
   transform: scale(0.98);
 }
 
 .landing-meta {
   margin-top: 40px;
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.3);
+  color: var(--ink-muted);
   letter-spacing: 0.04em;
 }
 
