@@ -3,74 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>考公补给站 · 每日积累</title>
+<title>考公补给站</title>
 <style>
-/* ========================================
-   考公补给站 — Warm Academic Design System
-   ======================================== */
+/* ===========================================
+   考公补给站 — Warm Academic · Two-Page
+   =========================================== */
 
 :root {
-  /* Color tokens */
   --color-bg:         #FAF7F2;
   --color-card:       #FFFFFF;
   --color-text:       #3C3C3C;
   --color-text-muted: #8C8C8C;
   --color-primary:    #4A7C59;
-  --color-primary-hover: #3D6A4B;
+  --color-primary-dark:#3D6A4B;
   --color-primary-bg: #EDF4EF;
   --color-gold:       #D4A853;
   --color-gold-bg:    #FFF8EC;
   --color-gold-border:#E6B844;
   --color-gold-text:  #8B6914;
-  --color-danger:     #C44E4E;
   --color-border:     #EBE7E0;
 
-  /* Category accent colors */
-  --color-law:        #4A7C59;
   --color-tech:       #5B8BA0;
   --color-politics:   #D4A853;
   --color-history:    #B0785A;
-  --color-economy:    #7B8C5A;
 
-  /* Spacing (4px grid) */
-  --space-1:  4px;
-  --space-2:  8px;
-  --space-3:  12px;
-  --space-4:  16px;
-  --space-5:  20px;
-  --space-6:  24px;
-  --space-8:  32px;
-  --space-10: 40px;
-
-  /* Border radius */
-  --radius-sm:   6px;
-  --radius-md:  12px;
-
-  /* Shadows */
-  --shadow-card: 0 1px 3px rgba(60,60,60,0.06);
-
-  /* Fonts */
   --font-body:    "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
   --font-heading: "Noto Serif SC", "Source Han Serif SC", "PingFang SC", serif;
 
-  /* Type scale */
-  --text-xs:   12px;
-  --text-sm:   13px;
-  --text-base: 15px;
-  --text-md:   16px;
-  --text-lg:   18px;
-  --text-xl:   20px;
-
-  /* Motion */
-  --ease-out: 0.15s ease;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --shadow-card: 0 1px 3px rgba(60,60,60,0.06);
+  --ease: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Reset */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 html {
   font-size: 15px;
   -webkit-text-size-adjust: 100%;
+  height: 100%;
 }
 
 body {
@@ -78,68 +49,383 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   line-height: 1.75;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 var(--space-4) var(--space-10);
+  height: 100%;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ========================================
-   Top Bar
-   ======================================== */
+/* ===========================================
+   View Container
+   =========================================== */
 
-.topbar {
-  text-align: center;
-  padding: var(--space-8) 0 var(--space-5);
+.view {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: opacity var(--ease), transform var(--ease);
+  -webkit-overflow-scrolling: touch;
 }
 
-.logo {
+/* Landing view — default visible */
+.view-landing {
+  opacity: 1;
+  transform: translateY(0);
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.view-landing.hidden {
+  opacity: 0;
+  transform: translateY(-12px);
+  pointer-events: none;
+}
+
+/* Content view — hidden by default */
+.view-content {
+  opacity: 0;
+  transform: translateY(12px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.view-content.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  z-index: 3;
+}
+
+/* ===========================================
+   LANDING PAGE
+   =========================================== */
+
+.landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.landing-logo {
   font-family: var(--font-heading);
-  font-size: var(--text-xl);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+}
+
+.landing-sub {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--color-gold);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  margin-bottom: 48px;
+}
+
+.landing-streak {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-gold);
+  margin-bottom: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.landing-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 220px;
+  height: 54px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 12px rgba(74,124,89,0.2);
+}
+
+.landing-btn:active {
+  background: var(--color-primary-dark);
+  transform: scale(0.97);
+}
+
+.landing-date {
+  margin-top: 32px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-heading);
+}
+
+.landing-quote {
+  margin-top: 12px;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.landing-archive {
+  margin-top: 40px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.landing-archive summary {
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.landing-archive summary::-webkit-details-marker { display: none; }
+
+.archive-mini-list {
+  list-style: none;
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.archive-mini-list a {
+  display: inline-block;
+  padding: 4px 14px;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  text-decoration: none;
+  background: var(--color-card);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  transition: background 0.15s, color 0.15s;
+}
+
+.archive-mini-list a:active {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* ===========================================
+   CONTENT PAGE
+   =========================================== */
+
+.content-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 16px 100px;
+}
+
+/* Top bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  margin: 0 -16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px 8px 4px 0;
+  font-family: var(--font-body);
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-btn:active { color: var(--color-primary); }
+
+.topbar-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
   font-weight: 700;
   color: var(--color-primary);
   letter-spacing: 0.04em;
 }
 
-.date-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  margin-top: var(--space-2);
-  font-size: var(--text-sm);
+.topbar-date {
+  font-size: 0.8rem;
   color: var(--color-text-muted);
-}
-
-.streak {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 600;
-  color: var(--color-gold);
-}
-
-.encourage {
-  margin-top: var(--space-2);
   font-family: var(--font-heading);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  font-style: italic;
 }
 
-/* ========================================
-   Bottom Nav (sticky)
-   ======================================== */
+/* Sections */
+.section {
+  margin-bottom: 28px;
+}
 
+.section-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--color-primary);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.section-title .count {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 28px 0;
+}
+
+/* Idiom cards */
+.idiom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.idiom-card {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.idiom-card:active { transform: scale(0.98); }
+
+.idiom-word {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.idiom-explain {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.idiom-focus {
+  display: inline-block;
+  font-size: 0.72rem;
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 2px 10px;
+  margin-top: 8px;
+}
+
+/* Knowledge cards */
+.knowledge-card {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  padding: 16px 16px 16px 20px;
+  border-left: 3px solid var(--color-primary);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 10px;
+}
+
+.knowledge-card[data-category="科技"]        { border-left-color: var(--color-tech); }
+.knowledge-card[data-category="科技时政"]     { border-left-color: var(--color-tech); }
+.knowledge-card[data-category="法律"]        { border-left-color: var(--color-primary); }
+.knowledge-card[data-category="法律常识"]     { border-left-color: var(--color-primary); }
+.knowledge-card[data-category="时政"]        { border-left-color: var(--color-politics); }
+.knowledge-card[data-category="历史"]        { border-left-color: var(--color-history); }
+
+.k-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 2px 10px;
+  margin-bottom: 6px;
+}
+
+.knowledge-card[data-category="科技"] .k-tag,
+.knowledge-card[data-category="科技时政"] .k-tag  { background: var(--color-tech); }
+.knowledge-card[data-category="时政"] .k-tag       { background: var(--color-politics); }
+.knowledge-card[data-category="历史"] .k-tag       { background: var(--color-history); }
+
+.k-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+.k-body {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.75;
+}
+
+.exam-point {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--color-gold-bg);
+  border-left: 3px solid var(--color-gold-border);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.78rem;
+  color: var(--color-gold-text);
+  line-height: 1.65;
+}
+
+/* Bottom nav */
 .bottombar {
   position: sticky;
   bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  margin: var(--space-8) calc(-1 * var(--space-4)) 0;
+  gap: 8px;
+  padding: 10px 16px;
+  margin: 28px -16px 0;
   background: var(--color-bg);
   border-top: 1px solid var(--color-border);
 }
@@ -148,8 +434,8 @@ body {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
+  padding: 6px 12px;
+  font-size: 0.82rem;
   color: var(--color-text);
   cursor: pointer;
   min-width: 44px;
@@ -157,7 +443,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: border-color var(--ease-out), color var(--ease-out);
+  font-family: var(--font-body);
+  transition: border-color 0.15s, color 0.15s, transform 0.15s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -172,12 +459,13 @@ body {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-2);
-  font-size: var(--text-sm);
+  padding: 6px 8px;
+  font-size: 0.82rem;
   color: var(--color-text);
   cursor: pointer;
   min-height: 44px;
   max-width: 100px;
+  font-family: var(--font-body);
 }
 
 .today-btn {
@@ -186,292 +474,111 @@ body {
   color: var(--color-primary);
 }
 
-/* ========================================
-   Sections
-   ======================================== */
-
-.section {
-  margin-bottom: var(--space-8);
-}
-
-.section-title {
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--color-text);
-  padding-bottom: var(--space-2);
-  border-bottom: 2px solid var(--color-primary);
-  margin-bottom: var(--space-4);
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-}
-
-.section-title .count {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 400;
-  color: var(--color-text-muted);
-}
-
-.divider {
-  border: none;
-  border-top: 1px solid var(--color-border);
-  margin: var(--space-8) 0;
-}
-
-/* ========================================
-   Idiom Cards — 2-col grid
-   ======================================== */
-
-.idiom-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-
-.idiom-card {
-  background: var(--color-card);
-  border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-4);
-  box-shadow: var(--shadow-card);
-  transition: box-shadow var(--ease-out), transform var(--ease-out);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.idiom-card:active {
-  transform: scale(0.98);
-}
-
-.idiom-word {
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--color-primary);
-  margin-bottom: var(--space-1);
-}
-
-.idiom-explain {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.7;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.idiom-focus {
-  display: inline-block;
-  font-size: var(--text-xs);
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
-  border-radius: var(--radius-sm);
-  padding: 2px 10px;
-  margin-top: var(--space-2);
-}
-
-/* ========================================
-   Knowledge Cards — left border + category
-   ======================================== */
-
-.knowledge-card {
-  background: var(--color-card);
-  border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
-  border-left: 3px solid var(--color-primary);
-  box-shadow: var(--shadow-card);
-  margin-bottom: var(--space-3);
-}
-
-.knowledge-card[data-category="科技"]        { border-left-color: var(--color-tech); }
-.knowledge-card[data-category="科技时政"]     { border-left-color: var(--color-tech); }
-.knowledge-card[data-category="法律"]        { border-left-color: var(--color-law); }
-.knowledge-card[data-category="法律常识"]     { border-left-color: var(--color-law); }
-.knowledge-card[data-category="时政"]        { border-left-color: var(--color-politics); }
-.knowledge-card[data-category="历史"]        { border-left-color: var(--color-history); }
-.knowledge-card[data-category="经济"]        { border-left-color: var(--color-economy); }
-
-.k-tag {
-  display: inline-block;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-card);
-  background: var(--color-primary);
-  border-radius: var(--radius-sm);
-  padding: 2px 10px;
-  margin-bottom: var(--space-2);
-}
-
-.knowledge-card[data-category="科技"] .k-tag,
-.knowledge-card[data-category="科技时政"] .k-tag      { background: var(--color-tech); }
-.knowledge-card[data-category="时政"] .k-tag           { background: var(--color-politics); }
-.knowledge-card[data-category="历史"] .k-tag           { background: var(--color-history); }
-.knowledge-card[data-category="经济"] .k-tag           { background: var(--color-economy); }
-
-.k-title {
-  font-size: var(--text-base);
-  font-weight: 700;
-  margin-bottom: var(--space-1);
-  line-height: 1.5;
-}
-
-.k-body {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.75;
-}
-
-.exam-point {
-  margin-top: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-gold-bg);
-  border-left: 3px solid var(--color-gold-border);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-size: var(--text-xs);
-  color: var(--color-gold-text);
-  line-height: 1.65;
-}
-
-/* ========================================
-   Archive (折叠历史)
-   ======================================== */
-
-.archive {
-  font-size: var(--text-sm);
-}
-
-.archive summary {
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: 700;
-  cursor: pointer;
-  padding: var(--space-2) 0;
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 44px;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.archive summary::-webkit-details-marker { display: none; }
-
-.archive-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  margin-top: var(--space-2);
-}
-
-.archive-list a {
-  display: block;
-  padding: var(--space-2) var(--space-3);
-  color: var(--color-text);
-  text-decoration: none;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  transition: background var(--ease-out);
-  min-height: 40px;
-  line-height: 2.2;
-}
-
-.archive-list a:active {
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
-}
-
-/* ========================================
-   Loading / Empty
-   ======================================== */
-
+/* Loading */
 .loading {
   text-align: center;
   color: var(--color-text-muted);
-  padding: var(--space-10) 0;
-  font-size: var(--text-sm);
+  padding: 60px 0;
+  font-size: 0.85rem;
 }
-
-/* ========================================
-   Footer
-   ======================================== */
 
 .site-footer {
   text-align: center;
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  padding-top: var(--space-4);
+  font-size: 0.72rem;
+  padding: 16px 0 0;
   border-top: 1px solid var(--color-border);
 }
 
-/* ========================================
+/* ===========================================
    Responsive
-   ======================================== */
+   =========================================== */
 
 @media (max-width: 480px) {
-  .idiom-grid {
-    grid-template-columns: 1fr;
-  }
-  body {
-    padding: 0 var(--space-3) var(--space-8);
-  }
+  .idiom-grid { grid-template-columns: 1fr; }
+  .landing-logo { font-size: 1.8rem; letter-spacing: 0.1em; }
+  .landing-sub { font-size: 0.9rem; }
+  .landing-btn { width: 200px; height: 50px; font-size: 1rem; }
+  .content-wrap { padding: 0 12px 90px; }
+  .topbar { padding: 12px; margin: 0 -12px; }
   .bottombar {
-    margin: var(--space-6) calc(-1 * var(--space-3)) 0;
-    padding: var(--space-2) var(--space-2);
-    gap: var(--space-1);
+    padding: 8px 12px;
+    margin: 24px -12px 0;
+    gap: 4px;
   }
-  .nav-btn {
-    padding: var(--space-1) var(--space-2);
-    font-size: var(--text-xs);
-  }
+  .nav-btn { padding: 4px 8px; font-size: 0.78rem; }
 }
 
 @media (min-width: 768px) {
-  body {
-    padding: 0 var(--space-8) var(--space-10);
-  }
-  .bottombar {
-    margin: var(--space-8) calc(-1 * var(--space-8)) 0;
-    padding: var(--space-3) var(--space-6);
-  }
+  .content-wrap { padding: 0 32px 100px; }
+  .topbar { padding: 14px 32px; margin: 0 -32px; }
+  .bottombar { padding: 10px 32px; margin: 28px -32px 0; }
 }
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <h1 class="logo">考公补给站</h1>
-  <div class="date-row">
-    <span id="dateDisplay">—</span>
-    <span class="streak" id="streakDisplay"></span>
+<!-- ============================================
+     LANDING VIEW
+     ============================================ -->
+<div class="view view-landing" id="landingView">
+  <div class="landing">
+    <h1 class="landing-logo">考 公 补 给 站</h1>
+    <p class="landing-sub">每日一点 · 积沙成塔</p>
+
+    <div class="landing-streak" id="landingStreak">🔥 已坚持 — 天</div>
+
+    <button class="landing-btn" onclick="openToday()" aria-label="开始今天的学习">
+      开始今天的学习
+    </button>
+
+    <div class="landing-date" id="landingDate">—</div>
+    <div class="landing-quote" id="landingQuote"></div>
+
+    <details class="landing-archive" id="landingArchiveWrap">
+      <summary>往期回顾 ▾</summary>
+      <ul class="archive-mini-list" id="archiveMiniList"></ul>
+    </details>
   </div>
-  <p class="encourage" id="encourageDisplay"></p>
-</header>
+</div>
 
-<main id="content">
-  <div class="loading">加载中...</div>
-</main>
+<!-- ============================================
+     CONTENT VIEW
+     ============================================ -->
+<div class="view view-content" id="contentView">
+  <div class="content-wrap">
+    <!-- Top bar -->
+    <div class="topbar">
+      <button class="back-btn" onclick="goBack()">← 返回</button>
+      <span class="topbar-title">考公补给站</span>
+      <span class="topbar-date" id="topbarDate">—</span>
+    </div>
 
-<nav class="bottombar">
-  <button class="nav-btn" onclick="prevDay()" aria-label="前一天">◀ 前一天</button>
-  <select class="nav-select" id="dateSelect" onchange="jumpTo(this.value)" aria-label="选择日期"></select>
-  <button class="nav-btn" onclick="nextDay()" aria-label="后一天">后一天 ▶</button>
-  <button class="nav-btn today-btn" onclick="goToday()">今天</button>
-</nav>
+    <!-- Content -->
+    <main id="content">
+      <div class="loading">加载中...</div>
+    </main>
 
-<footer class="site-footer">
-  考公补给站 · 每日自动生成 · 仅供学习参考
-</footer>
+    <!-- Bottom nav -->
+    <nav class="bottombar">
+      <button class="nav-btn" onclick="prevDay()" aria-label="前一天">◀ 前一天</button>
+      <select class="nav-select" id="dateSelect" onchange="jumpTo(this.value)" aria-label="选择日期"></select>
+      <button class="nav-btn" onclick="nextDay()" aria-label="后一天">后一天 ▶</button>
+      <button class="nav-btn today-btn" onclick="goToday()">今天</button>
+    </nav>
+
+    <footer class="site-footer">考公补给站 · 每日自动生成 · 仅供学习参考</footer>
+  </div>
+</div>
 
 <script>
-/* ========================================
-   Data & Navigation
-   ======================================== */
+/* ============================================
+   Data & State
+   ============================================ */
 
 let allDates = [];
 let currentDate = '';
+let reportsData = null;
 
 const QUOTES = [
   '慢慢来，比较快',
@@ -480,78 +587,107 @@ const QUOTES = [
   '你走的每一步，都算数',
   '厚积薄发，水到渠成',
   '今天比昨天多知道一点，就够了',
-  '努力的意义是，以后的日子里放眼望去全都是自己喜欢的事',
   '安静下来，把一道题一道题做好',
+  '积沙成塔，集腋成裘',
 ];
 
-function getCategoryKey(category) {
-  // Normalize category strings for CSS data-category matching
-  if (!category) return '';
-  if (category.includes('科技')) return '科技';
-  if (category.includes('法律')) return '法律';
-  if (category.includes('时政')) return '时政';
-  if (category.includes('历史')) return '历史';
-  if (category.includes('经济')) return '经济';
-  return category;
+function pickQuote() {
+  var n = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
+  return QUOTES[n % QUOTES.length];
 }
 
 function computeStreak() {
-  // Count consecutive days backwards from the latest report
   if (allDates.length === 0) return 0;
-  let streak = 1;
-  for (let i = 1; i < allDates.length; i++) {
-    const prev = new Date(allDates[i-1]);
-    const curr = new Date(allDates[i]);
-    const diff = (prev - curr) / (1000 * 60 * 60 * 24);
-    if (Math.abs(diff - 1) < 0.1) {
-      streak++;
-    } else {
-      break;
-    }
+  var s = 1;
+  for (var i = 1; i < allDates.length; i++) {
+    var diff = (new Date(allDates[i-1]) - new Date(allDates[i])) / 864e5;
+    if (Math.abs(diff - 1) < 0.1) s++;
+    else break;
   }
-  return streak;
+  return s;
 }
 
-function pickQuote() {
-  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-  return QUOTES[dayOfYear % QUOTES.length];
+function getCategoryKey(cat) {
+  if (!cat) return '';
+  if (cat.indexOf('科技') >= 0) return '科技';
+  if (cat.indexOf('法律') >= 0) return '法律';
+  if (cat.indexOf('时政') >= 0) return '时政';
+  if (cat.indexOf('历史') >= 0) return '历史';
+  return cat;
 }
 
-async function load() {
-  const resp = await fetch('data.json?' + Date.now());
-  const data = await resp.json();
-  allDates = Object.keys(data.reports).sort().reverse();
-  if (allDates.length === 0) {
+/* ============================================
+   View Switching
+   ============================================ */
+
+function openToday() {
+  if (allDates.length > 0) {
+    currentDate = allDates[0];
+    renderContent(reportsData.reports[currentDate]);
+  }
+
+  document.getElementById('landingView').classList.add('hidden');
+  document.getElementById('contentView').classList.add('visible');
+
+  setTimeout(function() {
+    document.getElementById('contentView').scrollTop = 0;
+  }, 50);
+}
+
+function goBack() {
+  // Update landing stats
+  refreshLandingStats();
+
+  document.getElementById('landingView').classList.remove('hidden');
+  document.getElementById('contentView').classList.remove('visible');
+}
+
+/* ============================================
+   Landing Page Setup
+   ============================================ */
+
+function refreshLandingStats() {
+  document.getElementById('landingStreak').textContent = '🔥 已坚持 ' + computeStreak() + ' 天';
+  document.getElementById('landingDate').textContent = allDates.length > 0 ? reportsData.reports[allDates[0]].date : '—';
+  document.getElementById('landingQuote').textContent = '「' + pickQuote() + '」';
+
+  // Mini archive list on landing
+  var list = document.getElementById('archiveMiniList');
+  list.innerHTML = '';
+  allDates.forEach(function(d) {
+    var a = document.createElement('a');
+    a.href = '#';
+    a.textContent = d.slice(5);
+    a.onclick = function(e) {
+      e.preventDefault();
+      currentDate = d;
+      renderContent(reportsData.reports[d]);
+      openToday();
+    };
+    list.appendChild(a);
+  });
+
+  // Hide archive toggle if no history
+  document.getElementById('landingArchiveWrap').style.display = allDates.length <= 1 ? 'none' : '';
+}
+
+/* ============================================
+   Content Page Rendering
+   ============================================ */
+
+function renderContent(report) {
+  document.getElementById('topbarDate').textContent = report ? report.date : '—';
+  document.getElementById('dateSelect').value = report ? currentDate : '';
+  populateSelect();
+
+  if (!report) {
     document.getElementById('content').innerHTML = '<div class="loading">暂无数据</div>';
     return;
   }
-  currentDate = allDates[0];
 
-  // Header
-  document.getElementById('streakDisplay').textContent = '🔥 已坚持 ' + computeStreak() + ' 天';
-  document.getElementById('encourageDisplay').textContent = '「' + pickQuote() + '」';
+  var html = '';
 
-  populateSelect();
-  render(data.reports[currentDate]);
-}
-
-function populateSelect() {
-  const sel = document.getElementById('dateSelect');
-  sel.innerHTML = allDates.map(d => {
-    const label = d.slice(5);
-    const selected = d === currentDate ? ' selected' : '';
-    return '<option value="' + d + '"' + selected + '>' + label + '</option>';
-  }).join('');
-}
-
-function render(report) {
-  document.getElementById('dateDisplay').textContent = report.date;
-  document.getElementById('dateSelect').value = report.date;
-  currentDate = report.date;
-
-  let html = '';
-
-  // --- Idioms ---
+  // Idioms
   if (report.idioms && report.idioms.length > 0) {
     html += '<section class="section">';
     html += '<h2 class="section-title">📚 每日成语 <span class="count">' + report.idioms.length + '个</span></h2>';
@@ -568,7 +704,7 @@ function render(report) {
     html += '</div></section>';
   }
 
-  // --- Knowledge ---
+  // Knowledge
   if (report.knowledge && report.knowledge.length > 0) {
     html += '<hr class="divider">';
     html += '<section class="section">';
@@ -587,65 +723,77 @@ function render(report) {
     html += '</section>';
   }
 
-  // --- Archive ---
-  if (allDates.length > 1) {
-    html += '<hr class="divider">';
-    html += '<section class="section">';
-    html += '<details class="archive">';
-    html += '<summary>📅 往期回顾</summary>';
-    html += '<ul class="archive-list">';
-    allDates.forEach(function(d) {
-      if (d === currentDate) return;
-      html += '<li><a href="#" onclick="jumpTo(\'' + d + '\');return false">' + d.slice(5) + '</a></li>';
-    });
-    html += '</ul></details></section>';
-  }
-
   if (!html) {
     html = '<div class="loading">暂无数据</div>';
   }
 
   document.getElementById('content').innerHTML = html;
 
-  // Scroll to top when switching days
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Scroll content view to top
+  var cv = document.getElementById('contentView');
+  if (cv) cv.scrollTop = 0;
 }
 
-/* --- Navigation --- */
+/* ============================================
+   Bottom Nav (content page)
+   ============================================ */
+
+function populateSelect() {
+  var sel = document.getElementById('dateSelect');
+  if (!sel) return;
+  sel.innerHTML = allDates.map(function(d) {
+    var label = d.slice(5);
+    var selected = d === currentDate ? ' selected' : '';
+    return '<option value="' + d + '"' + selected + '>' + label + '</option>';
+  }).join('');
+}
 
 function prevDay() {
   var idx = allDates.indexOf(currentDate);
-  if (idx < allDates.length - 1) {
-    currentDate = allDates[idx + 1];
-    refreshDay();
-  }
+  if (idx < allDates.length - 1) { currentDate = allDates[idx + 1]; refreshContent(); }
 }
 
 function nextDay() {
   var idx = allDates.indexOf(currentDate);
-  if (idx > 0) {
-    currentDate = allDates[idx - 1];
-    refreshDay();
-  }
+  if (idx > 0) { currentDate = allDates[idx - 1]; refreshContent(); }
 }
 
 function jumpTo(date) {
   currentDate = date;
-  refreshDay();
+  refreshContent();
 }
 
 function goToday() {
-  if (allDates.length > 0) {
-    currentDate = allDates[0];
-    refreshDay();
-  }
+  if (allDates.length > 0) { currentDate = allDates[0]; refreshContent(); }
 }
 
-function refreshDay() {
+function refreshContent() {
   populateSelect();
-  fetch('data.json?' + Date.now())
-    .then(function(r) { return r.json(); })
-    .then(function(data) { render(data.reports[currentDate]); });
+  renderContent(reportsData.reports[currentDate]);
+  var cv = document.getElementById('contentView');
+  if (cv) cv.scrollTop = 0;
+}
+
+/* ============================================
+   Init
+   ============================================ */
+
+async function init() {
+  var resp = await fetch('data.json?' + Date.now());
+  reportsData = await resp.json();
+  allDates = Object.keys(reportsData.reports).sort().reverse();
+
+  if (allDates.length === 0) {
+    document.getElementById('content').innerHTML = '<div class="loading">暂无数据</div>';
+    return;
+  }
+
+  currentDate = allDates[0];
+  refreshLandingStats();
+  populateSelect();
+
+  // Pre-render today's content so it's ready when user clicks
+  renderContent(reportsData.reports[currentDate]);
 }
 
 function esc(s) {
@@ -657,7 +805,7 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
-load();
+init();
 </script>
 </body>
 </html>
