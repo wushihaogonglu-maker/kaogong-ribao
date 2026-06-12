@@ -6,124 +6,168 @@
 <title>考公补给站</title>
 <style>
 /* ===========================================
-   考公补给站 — Glass Edition
+   考公补给站 — Glass Edition v2
+   Three-page: Landing → Hub (4 cards) → Content
    =========================================== */
 
 :root {
-  --glass-bg:    rgba(255,255,255,0.55);
-  --glass-border:rgba(255,255,255,0.45);
-  --glass-shadow:0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-  --glass-blur:  16px;
-  --glass-light: rgba(255,255,255,0.85);
+  --glass-bg:     rgba(255,255,255,0.5);
+  --glass-border: rgba(255,255,255,0.4);
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03);
+  --glass-blur:   18px;
 
-  --text:       #2C2416;
-  --text-muted: #8C7E6B;
-  --accent:     #B8860B;
+  --text:        #2C2416;
+  --text-muted:  #8C7E6B;
+  --accent:      #B8860B;
   --accent-light:#E8C96A;
-  --accent-glow:rgba(184,134,11,0.15);
-  --card-glass: rgba(255,255,255,0.5);
+  --radius-xl:   24px;
+  --radius-lg:   18px;
+  --radius-md:   14px;
 
-  --radius-xl: 24px;
-  --radius-lg: 18px;
-  --radius-md: 14px;
-  --radius-sm: 10px;
-
-  --font-body:   "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-  --font-display:"Noto Serif SC", "Source Han Serif SC", serif;
-
-  --ease: cubic-bezier(0.4,0,0.2,1);
+  --font-body:    "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-display: "Noto Serif SC", "Source Han Serif SC", serif;
+  --ease:         cubic-bezier(0.4,0,0.2,1);
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
 html { font-size: 15px; height: 100%; -webkit-text-size-adjust: 100%; }
-
 body {
   font-family: var(--font-body);
   color: var(--text);
   line-height: 1.75;
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
-
-  /* Warm gradient base */
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 0%,   #FDF6E8 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 90% 30%,  #F5EDE0 0%, transparent 60%),
-    radial-gradient(ellipse 50% 60% at 10% 60%,  #FAF2E5 0%, transparent 60%),
-    radial-gradient(ellipse 70% 40% at 60% 100%, #F8EFDD 0%, transparent 60%),
-    #FAF7F2;
+  background: #FAF6EF;
 }
 
 /* ===========================================
-   Ambient orbs (fixed, behind everything)
+   ANIMATED AMBIENT BACKGROUND
    =========================================== */
 
-.ambient {
+.bg-layer {
   position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
-  pointer-events: none;
+  inset: 0;
   z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
-.ambient-1 {
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(232,201,106,0.5) 0%, transparent 70%);
-  top: -5%; left: -10%;
+
+/* Large slow orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
 }
-.ambient-2 {
-  width: 350px; height: 350px;
-  background: radial-gradient(circle, rgba(180,160,140,0.4) 0%, transparent 70%);
-  top: 50%; right: -8%;
+.orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(232,201,106,0.55) 0%, transparent 70%);
+  animation: drift1 18s ease-in-out infinite;
 }
-.ambient-3 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(160,180,155,0.35) 0%, transparent 70%);
-  bottom: -5%; left: 20%;
+.orb-2 {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(180,160,140,0.45) 0%, transparent 70%);
+  animation: drift2 22s ease-in-out infinite;
+}
+.orb-3 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(170,190,170,0.4) 0%, transparent 70%);
+  animation: drift3 20s ease-in-out infinite;
+}
+.orb-4 {
+  width: 340px; height: 340px;
+  background: radial-gradient(circle, rgba(200,180,150,0.4) 0%, transparent 70%);
+  animation: drift4 24s ease-in-out infinite;
+}
+
+@keyframes drift1 {
+  0%, 100% { top: -8%; left: -5%; }
+  25% { top: 5%; left: 15%; }
+  50% { top: -2%; left: 25%; }
+  75% { top: 3%; left: 8%; }
+}
+@keyframes drift2 {
+  0%, 100% { top: 40%; right: -10%; }
+  25% { top: 30%; right: 5%; }
+  50% { top: 50%; right: -5%; }
+  75% { top: 35%; right: 10%; }
+}
+@keyframes drift3 {
+  0%, 100% { bottom: -10%; left: 15%; }
+  33% { bottom: 5%; left: 30%; }
+  66% { bottom: -5%; left: 5%; }
+}
+@keyframes drift4 {
+  0%, 100% { top: 60%; left: 50%; }
+  50% { top: 45%; left: 60%; }
+}
+
+/* Subtle grain overlay */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
 /* ===========================================
-   View System
+   VIEW SYSTEM
    =========================================== */
 
 .view {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: auto; overflow-x: hidden;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   z-index: 1;
   -webkit-overflow-scrolling: touch;
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), visibility 0.5s;
 }
 
-/* Landing — default visible */
+.view-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Landing: default visible */
 .view-landing {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
-  opacity: 1; transform: scale(1);
 }
 
-.view-landing.hidden {
-  opacity: 0; transform: scale(1.04);
-  pointer-events: none;
+/* Hub */
+.view-hub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(20px);
 }
 
-/* Content — hidden until opened */
+.view-hub.view-visible { transform: translateY(0); }
+
+/* Content */
 .view-content {
-  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
-  opacity: 0; transform: translateY(20px);
-  pointer-events: none;
+  transform: translateY(20px);
 }
 
-.view-content.visible {
-  opacity: 1; transform: translateY(0);
+.view-content.view-visible { transform: translateY(0); }
+
+.view-visible {
+  opacity: 1;
+  visibility: visible;
   pointer-events: auto;
   z-index: 2;
 }
 
 /* ===========================================
-   LANDING — Glass Panel
+   LANDING PAGE
    =========================================== */
 
 .landing {
@@ -131,10 +175,6 @@ body {
   z-index: 2;
   text-align: center;
   padding: 48px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
 }
 
 .landing-panel {
@@ -157,7 +197,6 @@ body {
   letter-spacing: 0.16em;
   line-height: 1.3;
 }
-
 .landing-sub {
   font-family: var(--font-display);
   font-size: 0.92rem;
@@ -165,15 +204,12 @@ body {
   letter-spacing: 0.1em;
   margin-top: 8px;
 }
-
 .landing-divider {
-  width: 40px;
-  height: 2px;
+  width: 40px; height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent-light), transparent);
   margin: 28px auto;
   border-radius: 1px;
 }
-
 .landing-streak {
   font-size: 0.88rem;
   font-weight: 500;
@@ -181,28 +217,24 @@ body {
   margin-bottom: 28px;
 }
 
-/* Glass button */
+/* Gold gradient button */
 .glass-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 210px;
-  height: 52px;
+  width: 210px; height: 52px;
   font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.95rem; font-weight: 600;
   letter-spacing: 0.06em;
   color: #FFF;
   background: linear-gradient(135deg, #C9A040, #A07828);
-  border: none;
-  border-radius: 999px;
+  border: none; border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(184,134,11,0.3), 0 1px 3px rgba(0,0,0,0.08);
-  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  box-shadow: 0 4px 20px rgba(184,134,11,0.3);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
-
 .glass-btn:active {
   transform: scale(0.96);
   box-shadow: 0 2px 10px rgba(184,134,11,0.2);
@@ -214,7 +246,6 @@ body {
   font-size: 0.82rem;
   color: var(--text-muted);
 }
-
 .landing-quote {
   margin-top: 8px;
   font-family: var(--font-display);
@@ -223,55 +254,123 @@ body {
   font-style: italic;
 }
 
-/* Archive link below panel */
-.landing-archive-wrap {
-  margin-top: 32px;
+/* ===========================================
+   HUB PAGE — 4 Glass Cards
+   =========================================== */
+
+.hub {
   position: relative;
   z-index: 2;
+  text-align: center;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
 }
 
-.landing-archive-wrap summary {
-  cursor: pointer;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+.hub-title {
   font-family: var(--font-display);
-  font-weight: 500;
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 44px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.hub-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  font-family: var(--font-display);
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.hub-card {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  padding: 28px 20px 24px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s var(--ease);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+/* Subtle shine on top */
+.hub-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+  transition: opacity 0.3s;
+}
+
+.hub-card:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border-color: rgba(200,170,100,0.5);
+}
+
+.hub-card-icon {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  display: block;
+  transition: transform 0.3s var(--ease);
+}
+
+.hub-card:active .hub-card-icon {
+  transform: scale(1.1);
+}
+
+.hub-card-label {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.06em;
+}
+
+.hub-card-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.hub-back {
+  margin-top: 28px;
+}
+
+.hub-back-link {
+  background: none;
+  border: none;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-display);
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: color 0.2s, background 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.landing-archive-wrap summary::-webkit-details-marker { display: none; }
-
-.archive-mini {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 14px;
-  list-style: none;
-}
-
-.archive-mini a {
-  display: inline-block;
-  padding: 6px 16px;
-  font-size: 0.78rem;
-  color: var(--text);
-  text-decoration: none;
-  background: rgba(255,255,255,0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.5);
-  border-radius: 999px;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.archive-mini a:active {
-  background: rgba(255,255,255,0.7);
-  border-color: var(--accent-light);
+.hub-back-link:active {
+  color: var(--accent);
+  background: rgba(255,255,255,0.3);
 }
 
 /* ===========================================
@@ -296,10 +395,10 @@ body {
   justify-content: space-between;
   padding: 12px 20px;
   margin: 12px -8px 24px;
-  background: rgba(255,255,255,0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255,255,255,0.45);
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 20px rgba(0,0,0,0.04);
 }
@@ -308,30 +407,21 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  background: none;
-  border: none;
-  font-size: 0.88rem;
-  color: var(--text-muted);
+  background: none; border: none;
+  font-size: 0.88rem; color: var(--text-muted);
   cursor: pointer;
   padding: 6px 10px 6px 4px;
   font-family: var(--font-body);
   min-height: 44px;
-  border-radius: var(--radius-sm);
-  transition: color 0.2s, background 0.2s;
+  border-radius: var(--radius-md);
   -webkit-tap-highlight-color: transparent;
 }
-
-.back-btn:active {
-  color: var(--accent);
-  background: rgba(255,255,255,0.3);
-}
+.back-btn:active { color: var(--accent); background: rgba(255,255,255,0.3); }
 
 .topbar-title {
   font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.05em;
+  font-size: 0.95rem; font-weight: 700;
+  color: var(--text); letter-spacing: 0.05em;
 }
 
 .topbar-date {
@@ -340,248 +430,200 @@ body {
   font-family: var(--font-display);
 }
 
-/* Section title */
+/* Section */
 .section-title {
   font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1rem; font-weight: 700;
   color: var(--text);
-  padding-bottom: 10px;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding-bottom: 10px; margin-bottom: 16px;
+  display: flex; align-items: baseline; gap: 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.07);
 }
-
 .section-title .count {
   font-family: var(--font-body);
-  font-size: 0.72rem;
-  font-weight: 400;
+  font-size: 0.72rem; font-weight: 400;
   color: var(--text-muted);
 }
-
 .section { margin-bottom: 28px; }
-
 .divider {
   border: none;
-  border-top: 1px solid rgba(0,0,0,0.06);
+  border-top: 1px solid rgba(0,0,0,0.05);
   margin: 28px 0;
 }
 
-/* ===========================================
-   Glass Idiom Cards
-   =========================================== */
-
+/* Glass cards */
 .idiom-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
-.idiom-card {
-  background: var(--card-glass);
+.glass-card {
+  background: rgba(255,255,255,0.4);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.45);
   border-radius: var(--radius-md);
   padding: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  transition: transform 0.2s var(--ease);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-.idiom-card:active {
-  transform: scale(0.98);
-  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
-}
+.glass-card:active { transform: scale(0.98); }
 
 .idiom-word {
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 4px;
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--accent); margin-bottom: 4px;
 }
-
 .idiom-explain {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-size: 0.8rem; color: var(--text-muted);
   line-height: 1.7;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
 .idiom-focus {
   display: inline-block;
-  font-size: 0.7rem;
-  background: rgba(184,134,11,0.08);
+  font-size: 0.7rem; font-weight: 500;
+  background: rgba(184,134,11,0.07);
   color: var(--accent);
-  border-radius: 6px;
-  padding: 2px 10px;
-  margin-top: 8px;
-  font-weight: 500;
+  border-radius: 6px; padding: 2px 10px; margin-top: 8px;
 }
 
-/* ===========================================
-   Glass Knowledge Cards
-   =========================================== */
-
+/* Knowledge glass card */
 .knowledge-card {
-  background: var(--card-glass);
+  background: rgba(255,255,255,0.4);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.45);
   border-radius: var(--radius-md);
   padding: 18px 18px 18px 22px;
   border-left: 3px solid var(--accent-light);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
   margin-bottom: 10px;
 }
 
 .k-tag {
   display: inline-block;
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: 0.68rem; font-weight: 600;
   color: #FFF;
   background: linear-gradient(135deg, #C9A040, #B8860B);
-  border-radius: 6px;
-  padding: 3px 12px;
-  margin-bottom: 8px;
-  letter-spacing: 0.04em;
+  border-radius: 6px; padding: 3px 12px;
+  margin-bottom: 8px; letter-spacing: 0.04em;
 }
-
-.k-title {
-  font-size: 0.92rem;
-  font-weight: 700;
-  margin-bottom: 6px;
-  line-height: 1.5;
-  color: var(--text);
-}
-
 .k-body {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  line-height: 1.75;
+  font-size: 0.82rem; color: var(--text-muted); line-height: 1.75;
 }
-
 .exam-point {
-  margin-top: 12px;
-  padding: 10px 14px;
-  background: rgba(184,134,11,0.06);
+  margin-top: 12px; padding: 10px 14px;
+  background: rgba(184,134,11,0.05);
   border-left: 3px solid var(--accent-light);
   border-radius: 0 8px 8px 0;
-  font-size: 0.78rem;
-  color: #8B6914;
-  line-height: 1.65;
+  font-size: 0.78rem; color: #8B6914; line-height: 1.65;
 }
 
-/* ===========================================
-   Glass Bottom Nav
-   =========================================== */
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+.empty-state .empty-text {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+.empty-state .empty-hint {
+  font-size: 0.78rem;
+  margin-top: 6px;
+  opacity: 0.7;
+}
 
+/* Bottom nav */
 .bottombar {
   position: sticky;
   bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   gap: 8px;
   padding: 10px 16px;
   margin: 28px -8px 0;
-  background: rgba(255,255,255,0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255,255,255,0.45);
   border-radius: var(--radius-lg);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
 }
 
-.nav-btn {
-  background: rgba(255,255,255,0.4);
+.nav-pill {
+  background: rgba(255,255,255,0.35);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.45);
   border-radius: 999px;
   padding: 8px 16px;
-  font-size: 0.82rem;
-  color: var(--text);
+  font-size: 0.82rem; color: var(--text);
   cursor: pointer;
-  min-width: 44px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  min-width: 44px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
   font-family: var(--font-body);
   transition: background 0.2s, border-color 0.2s, transform 0.15s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
-
-.nav-btn:active {
-  background: rgba(255,255,255,0.7);
+.nav-pill:active {
+  background: rgba(255,255,255,0.65);
   border-color: var(--accent-light);
   transform: scale(0.96);
 }
-
 .nav-select {
-  background: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.35);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.45);
   border-radius: 999px;
   padding: 8px 12px;
-  font-size: 0.82rem;
-  color: var(--text);
+  font-size: 0.82rem; color: var(--text);
   cursor: pointer;
-  min-height: 44px;
-  max-width: 100px;
+  min-height: 44px; max-width: 100px;
   font-family: var(--font-body);
 }
-
-.today-btn {
+.nav-today {
   font-weight: 700;
-  background: rgba(184,134,11,0.08);
+  background: rgba(184,134,11,0.06);
   border-color: var(--accent-light);
   color: var(--accent);
 }
 
-/* ===========================================
-   Misc
-   =========================================== */
-
-.loading {
-  text-align: center;
-  color: var(--text-muted);
-  padding: 60px 0;
-  font-size: 0.85rem;
-}
-
-.site-footer {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  padding: 20px 0 8px;
-  border-top: 1px solid rgba(0,0,0,0.06);
-  margin-top: 20px;
-}
+/* Misc */
+.loading { text-align: center; color: var(--text-muted); padding: 60px 0; font-size: 0.85rem; }
+.site-footer { text-align: center; color: var(--text-muted); font-size: 0.72rem; padding: 20px 0 8px; border-top: 1px solid rgba(0,0,0,0.05); margin-top: 20px; }
 
 /* ===========================================
-   Responsive
+   RESPONSIVE
    =========================================== */
 
 @media (max-width: 480px) {
   .idiom-grid { grid-template-columns: 1fr; }
-  .landing-panel { padding: 40px 28px 32px; max-width: 340px; }
-  .landing-logo { font-size: 1.6rem; letter-spacing: 0.1em; }
+  .landing-panel { padding: 40px 24px 32px; max-width: 320px; }
+  .landing-logo { font-size: 1.5rem; }
   .glass-btn { width: 190px; height: 48px; font-size: 0.9rem; }
+  .hub-grid { gap: 10px; max-width: 340px; }
+  .hub-card { padding: 22px 14px 18px; }
+  .hub-card-icon { font-size: 1.8rem; }
+  .hub-card-label { font-size: 0.95rem; }
   .content-wrap { padding: 0 10px 90px; }
-  .topbar { padding: 10px 14px; margin: 8px -4px 20px; border-radius: var(--radius-md); }
+  .topbar { padding: 10px 14px; margin: 8px -4px 20px; }
   .bottombar { padding: 8px 10px; margin: 24px -4px 0; gap: 4px; border-radius: var(--radius-md); }
-  .nav-btn { padding: 6px 10px; font-size: 0.76rem; }
+  .nav-pill { padding: 6px 10px; font-size: 0.76rem; }
 }
 
 @media (min-width: 768px) {
@@ -593,55 +635,96 @@ body {
 </head>
 <body>
 
-<!-- Ambient light orbs -->
-<div class="ambient ambient-1"></div>
-<div class="ambient ambient-2"></div>
-<div class="ambient ambient-3"></div>
+<!-- ============================================
+     ANIMATED AMBIENT BACKGROUND
+     ============================================ -->
+<div class="bg-layer">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+</div>
+<div class="grain"></div>
 
 <!-- ============================================
-     LANDING VIEW
+     VIEW 1 — LANDING
      ============================================ -->
-<div class="view view-landing" id="landingView">
+<div class="view view-landing view-visible" id="landingView">
   <div class="landing">
     <div class="landing-panel">
       <h1 class="landing-logo">考 公 补 给 站</h1>
       <p class="landing-sub">每日一点 · 积沙成塔</p>
       <div class="landing-divider"></div>
       <div class="landing-streak" id="landingStreak">🔥 已坚持 — 天</div>
-      <button class="glass-btn" onclick="openToday()">开始今天的学习</button>
+      <button class="glass-btn" onclick="goToHub()">开始今天的学习</button>
       <div class="landing-date" id="landingDate">—</div>
       <div class="landing-quote" id="landingQuote"></div>
     </div>
-
-    <details class="landing-archive-wrap" id="landingArchiveWrap">
-      <summary>往期回顾 ▾</summary>
-      <ul class="archive-mini" id="archiveMiniList"></ul>
-    </details>
   </div>
 </div>
 
 <!-- ============================================
-     CONTENT VIEW
+     VIEW 2 — HUB (4 Cards)
+     ============================================ -->
+<div class="view view-hub" id="hubView">
+  <div class="hub">
+    <h2 class="hub-title">今日学习</h2>
+    <p class="hub-sub" id="hubDate">—</p>
+
+    <div class="hub-grid">
+      <!-- 成语 -->
+      <div class="hub-card" onclick="openContent('idioms')">
+        <span class="hub-card-icon">📚</span>
+        <div class="hub-card-label">成 语</div>
+        <div class="hub-card-desc">每日积累 · 出口成章</div>
+      </div>
+
+      <!-- 实词 -->
+      <div class="hub-card" onclick="openContent('vocab')">
+        <span class="hub-card-icon">📝</span>
+        <div class="hub-card-label">实 词</div>
+        <div class="hub-card-desc">言语理解 · 精准辨析</div>
+      </div>
+
+      <!-- 常识 -->
+      <div class="hub-card" onclick="openContent('knowledge')">
+        <span class="hub-card-icon">🧠</span>
+        <div class="hub-card-label">常 识</div>
+        <div class="hub-card-desc">百科知识 · 日积月累</div>
+      </div>
+
+      <!-- 时政 -->
+      <div class="hub-card" onclick="openContent('politics')">
+        <span class="hub-card-icon">📰</span>
+        <div class="hub-card-label">时 政</div>
+        <div class="hub-card-desc">紧跟热点 · 考场必备</div>
+      </div>
+    </div>
+
+    <div class="hub-back">
+      <button class="hub-back-link" onclick="goToLanding()">← 返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     VIEW 3 — CONTENT
      ============================================ -->
 <div class="view view-content" id="contentView">
   <div class="content-wrap">
-    <!-- Glass top bar -->
     <div class="topbar">
-      <button class="back-btn" onclick="goBack()">← 返回</button>
-      <span class="topbar-title">考公补给站</span>
+      <button class="back-btn" onclick="backToHub()">← 返回</button>
+      <span class="topbar-title" id="contentTitle">—</span>
       <span class="topbar-date" id="topbarDate">—</span>
     </div>
 
-    <main id="content">
-      <div class="loading">加载中...</div>
-    </main>
+    <main id="content"><div class="loading">加载中...</div></main>
 
-    <!-- Glass bottom nav -->
     <nav class="bottombar">
-      <button class="nav-btn" onclick="prevDay()">◀ 前一天</button>
+      <button class="nav-pill" onclick="prevDay()">◀ 前一天</button>
       <select class="nav-select" id="dateSelect" onchange="jumpTo(this.value)"></select>
-      <button class="nav-btn" onclick="nextDay()">后一天 ▶</button>
-      <button class="nav-btn today-btn" onclick="goToday()">今天</button>
+      <button class="nav-pill" onclick="nextDay()">后一天 ▶</button>
+      <button class="nav-pill nav-today" onclick="goToday()">今天</button>
     </nav>
 
     <footer class="site-footer">考公补给站 · 每日积累</footer>
@@ -650,205 +733,162 @@ body {
 
 <script>
 /* ============================================
-   State
+   STATE
    ============================================ */
 
-let allDates = [];
-let currentDate = '';
-let reportsData = null;
+let allDates = [], currentDate = '', currentCategory = 'idioms', reportsData = null;
+
+const CATEGORY_CONFIG = {
+  idioms:   { title: '📚 每日成语', icon: '📚', emptyIcon: '📚', emptyText: '成语内容准备中', emptyHint: '每日成语即将上线，敬请期待' },
+  vocab:    { title: '📝 每日实词', icon: '📝', emptyIcon: '📝', emptyText: '实词内容准备中', emptyHint: '言语理解与表达专项即将上线' },
+  knowledge:{ title: '🧠 公考常识', icon: '🧠', emptyIcon: '🧠', emptyText: '常识内容准备中', emptyHint: '百科常识每日积累即将上线' },
+  politics: { title: '📰 每日时政', icon: '📰', emptyIcon: '📰', emptyText: '时政内容准备中', emptyHint: '时政热点每日推送即将上线' },
+};
 
 const QUOTES = [
-  '慢慢来，比较快',
-  '日拱一卒，功不唐捐',
-  '每一天的积累都在靠近答案',
-  '你走的每一步，都算数',
-  '厚积薄发，水到渠成',
-  '今天比昨天多知道一点，就够了',
-  '安静下来，把一道题一道题做好',
-  '积沙成塔，集腋成裘',
+  '慢慢来，比较快','日拱一卒，功不唐捐','每一天的积累都在靠近答案',
+  '你走的每一步，都算数','厚积薄发，水到渠成','今天比昨天多知道一点，就够了',
+  '安静下来，把一道题一道题做好','积沙成塔，集腋成裘',
 ];
 
 function pickQuote() {
-  var n = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
-  return QUOTES[n % QUOTES.length];
+  return QUOTES[Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5) % QUOTES.length];
 }
 
 function computeStreak() {
-  if (allDates.length === 0) return 0;
-  var s = 1;
-  for (var i = 1; i < allDates.length; i++) {
-    var diff = (new Date(allDates[i-1]) - new Date(allDates[i])) / 864e5;
-    if (Math.abs(diff - 1) < 0.1) s++;
-    else break;
+  if (allDates.length===0) return 0;
+  let s=1;
+  for (let i=1;i<allDates.length;i++) {
+    let diff=(new Date(allDates[i-1])-new Date(allDates[i]))/864e5;
+    if (Math.abs(diff-1)<0.1) s++; else break;
   }
   return s;
 }
 
 /* ============================================
-   View Switching
+   VIEW SWITCHING
    ============================================ */
 
-function openToday() {
-  if (allDates.length > 0) {
-    currentDate = allDates[0];
-    renderContent(reportsData.reports[currentDate]);
-  }
-
-  document.getElementById('landingView').classList.add('hidden');
-  document.getElementById('contentView').classList.add('visible');
-
-  setTimeout(function() {
-    document.getElementById('contentView').scrollTop = 0;
-  }, 50);
+function switchView(from, to) {
+  from.classList.remove('view-visible');
+  from.classList.add('view-hidden');
+  to.classList.remove('view-hidden');
+  to.classList.add('view-visible');
+  setTimeout(()=>{ to.scrollTop=0; }, 60);
 }
 
-function goBack() {
+function goToHub() {
+  document.getElementById('hubDate').textContent = allDates.length>0 ? reportsData.reports[allDates[0]].date : '—';
+  switchView(document.getElementById('landingView'), document.getElementById('hubView'));
+}
+
+function goToLanding() {
   refreshLandingStats();
-  document.getElementById('landingView').classList.remove('hidden');
-  document.getElementById('contentView').classList.remove('visible');
+  switchView(document.getElementById('hubView'), document.getElementById('landingView'));
+}
+
+function openContent(category) {
+  currentCategory = category;
+  currentDate = allDates.length>0 ? allDates[0] : '';
+  document.getElementById('contentTitle').textContent = CATEGORY_CONFIG[category].title;
+  renderCategoryContent();
+  switchView(document.getElementById('hubView'), document.getElementById('contentView'));
+}
+
+function backToHub() {
+  document.getElementById('hubDate').textContent = allDates.length>0 ? reportsData.reports[allDates[0]].date : '—';
+  switchView(document.getElementById('contentView'), document.getElementById('hubView'));
 }
 
 /* ============================================
-   Landing Setup
+   LANDING REFRESH
    ============================================ */
 
 function refreshLandingStats() {
-  document.getElementById('landingStreak').textContent = '🔥 已坚持 ' + computeStreak() + ' 天';
-  document.getElementById('landingDate').textContent = allDates.length > 0
-    ? reportsData.reports[allDates[0]].date : '—';
-  document.getElementById('landingQuote').textContent = '「' + pickQuote() + '」';
-
-  var list = document.getElementById('archiveMiniList');
-  list.innerHTML = '';
-  allDates.forEach(function(d) {
-    var a = document.createElement('a');
-    a.href = '#';
-    a.textContent = d.slice(5);
-    a.onclick = function(e) {
-      e.preventDefault();
-      currentDate = d;
-      renderContent(reportsData.reports[d]);
-      openToday();
-    };
-    list.appendChild(a);
-  });
-
-  document.getElementById('landingArchiveWrap').style.display = allDates.length <= 1 ? 'none' : '';
+  document.getElementById('landingStreak').textContent = '🔥 已坚持 '+computeStreak()+' 天';
+  document.getElementById('landingDate').textContent = allDates.length>0 ? reportsData.reports[allDates[0]].date : '—';
+  document.getElementById('landingQuote').textContent = '「'+pickQuote()+'」';
 }
 
 /* ============================================
-   Content Rendering
+   CONTENT RENDERING
    ============================================ */
 
-function renderContent(report) {
-  document.getElementById('topbarDate').textContent = report ? report.date : '—';
-  var sel = document.getElementById('dateSelect');
-  if (sel) sel.value = report ? currentDate : '';
+function renderCategoryContent() {
+  const cfg = CATEGORY_CONFIG[currentCategory];
+  document.getElementById('topbarDate').textContent = currentDate
+    ? reportsData.reports[currentDate].date : '—';
   populateSelect();
 
-  if (!report) {
-    document.getElementById('content').innerHTML = '<div class="loading">暂无数据</div>';
-    return;
-  }
+  const report = currentDate ? reportsData.reports[currentDate] : null;
+  let html = '';
 
-  var html = '';
-
-  if (report.idioms && report.idioms.length > 0) {
+  if (currentCategory === 'idioms' && report && report.idioms && report.idioms.length>0) {
     html += '<section class="section">';
-    html += '<h2 class="section-title">📚 每日成语 <span class="count">' + report.idioms.length + '个</span></h2>';
+    html += '<h2 class="section-title">'+cfg.icon+' '+cfg.title+' <span class="count">'+report.idioms.length+'个</span></h2>';
     html += '<div class="idiom-grid">';
-    report.idioms.forEach(function(i) {
-      html += '<div class="idiom-card">';
-      html += '<div class="idiom-word">' + esc(i.idiom) + '</div>';
-      html += '<div class="idiom-explain">' + esc(i.explanation || '') + '</div>';
-      if (i.focus) {
-        html += '<span class="idiom-focus">🎯 ' + esc(i.focus) + '</span>';
-      }
+    report.idioms.forEach(i=>{
+      html += '<div class="glass-card">';
+      html += '<div class="idiom-word">'+esc(i.idiom)+'</div>';
+      html += '<div class="idiom-explain">'+esc(i.explanation||'')+'</div>';
+      if (i.focus) html += '<span class="idiom-focus">🎯 '+esc(i.focus)+'</span>';
       html += '</div>';
     });
     html += '</div></section>';
-  }
-
-  if (report.knowledge && report.knowledge.length > 0) {
-    html += '<hr class="divider">';
+  } else if ((currentCategory==='knowledge'||currentCategory==='politics') && report && report.knowledge && report.knowledge.length>0) {
     html += '<section class="section">';
-    html += '<h2 class="section-title">🧠 公考常识 <span class="count">' + report.knowledge.length + '条</span></h2>';
-    report.knowledge.forEach(function(k) {
+    html += '<h2 class="section-title">'+cfg.icon+' '+cfg.title+' <span class="count">'+report.knowledge.length+'条</span></h2>';
+    report.knowledge.forEach(k=>{
       html += '<div class="knowledge-card">';
-      html += '<span class="k-tag">' + esc(k.category) + '</span>';
-      html += '<div class="k-title">' + esc(k.title) + '</div>';
-      html += '<div class="k-body">' + esc(k.body) + '</div>';
-      if (k.exam_point) {
-        html += '<div class="exam-point">📝 考点：' + esc(k.exam_point) + '</div>';
-      }
+      html += '<span class="k-tag">'+esc(k.category)+'</span>';
+      html += '<div class="k-title" style="font-weight:700;font-size:0.92rem;margin-bottom:6px;">'+esc(k.title)+'</div>';
+      html += '<div class="k-body">'+esc(k.body)+'</div>';
+      if (k.exam_point) html += '<div class="exam-point">📝 考点：'+esc(k.exam_point)+'</div>';
       html += '</div>';
     });
     html += '</section>';
+  } else {
+    // Empty state
+    html += '<div class="empty-state">';
+    html += '<span class="empty-icon">'+cfg.emptyIcon+'</span>';
+    html += '<div class="empty-text">'+cfg.emptyText+'</div>';
+    html += '<div class="empty-hint">'+cfg.emptyHint+'</div>';
+    html += '</div>';
   }
 
-  if (!html) html = '<div class="loading">暂无数据</div>';
-
   document.getElementById('content').innerHTML = html;
-
-  var cv = document.getElementById('contentView');
-  if (cv) cv.scrollTop = 0;
-}
-
-function populateSelect() {
-  var sel = document.getElementById('dateSelect');
-  if (!sel) return;
-  sel.innerHTML = allDates.map(function(d) {
-    var selected = d === currentDate ? ' selected' : '';
-    return '<option value="' + d + '"' + selected + '>' + d.slice(5) + '</option>';
-  }).join('');
+  const cv=document.getElementById('contentView'); if(cv) cv.scrollTop=0;
 }
 
 /* ============================================
-   Bottom Nav
+   BOTTOM NAV
    ============================================ */
 
-function prevDay() {
-  var idx = allDates.indexOf(currentDate);
-  if (idx < allDates.length - 1) { currentDate = allDates[idx + 1]; refreshContent(); }
-}
-function nextDay() {
-  var idx = allDates.indexOf(currentDate);
-  if (idx > 0) { currentDate = allDates[idx - 1]; refreshContent(); }
-}
-function jumpTo(d) { currentDate = d; refreshContent(); }
-function goToday() {
-  if (allDates.length > 0) { currentDate = allDates[0]; refreshContent(); }
-}
-function refreshContent() {
-  populateSelect();
-  renderContent(reportsData.reports[currentDate]);
-  var cv = document.getElementById('contentView');
-  if (cv) cv.scrollTop = 0;
+function populateSelect() {
+  const sel=document.getElementById('dateSelect');
+  if (!sel) return;
+  sel.innerHTML = allDates.map(d=>'<option value="'+d+'"'+(d===currentDate?' selected':'')+'>'+d.slice(5)+'</option>').join('');
 }
 
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function prevDay(){const i=allDates.indexOf(currentDate);if(i<allDates.length-1){currentDate=allDates[i+1];renderCategoryContent();}}
+function nextDay(){const i=allDates.indexOf(currentDate);if(i>0){currentDate=allDates[i-1];renderCategoryContent();}}
+function jumpTo(d){currentDate=d;renderCategoryContent();}
+function goToday(){if(allDates.length>0){currentDate=allDates[0];renderCategoryContent();}}
+
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 /* ============================================
-   Init
+   INIT
    ============================================ */
 
 async function init() {
-  var resp = await fetch('data.json?' + Date.now());
-  reportsData = await resp.json();
-  allDates = Object.keys(reportsData.reports).sort().reverse();
-
-  if (allDates.length === 0) {
-    document.getElementById('content').innerHTML = '<div class="loading">暂无数据</div>';
-    return;
-  }
-
-  currentDate = allDates[0];
+  const resp=await fetch('data.json?'+Date.now());
+  reportsData=await resp.json();
+  allDates=Object.keys(reportsData.reports).sort().reverse();
+  if (allDates.length>0) currentDate=allDates[0];
   refreshLandingStats();
   populateSelect();
-  renderContent(reportsData.reports[currentDate]);
+  renderCategoryContent();
 }
 
 init();
