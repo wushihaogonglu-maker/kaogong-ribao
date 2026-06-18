@@ -1261,10 +1261,10 @@ function saveState(){try{var s={d:currentDate,c:currentCategory,n:displayCount,i
 function loadState(){try{var s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch(e){}return null;}
 function updateHubCounts(){updateHubDueCounts();}
 
-function switchView(from,to){from.classList.remove('view-visible');from.setAttribute('aria-hidden','true');to.classList.add('view-visible');to.setAttribute('aria-hidden','false');setTimeout(function(){to.scrollTop=0;if(to.focus)to.focus();},60);}
-function goToHub(){updateHubCardStates();switchView(document.getElementById('landingView'),document.getElementById('hubView'));}
+function switchView(from,to){var all=document.querySelectorAll('.view-visible');for(var i=0;i<all.length;i++){all[i].classList.remove('view-visible');all[i].setAttribute('aria-hidden','true');}to.classList.add('view-visible');to.setAttribute('aria-hidden','false');setTimeout(function(){to.scrollTop=0;if(to.focus)to.focus();},60);}
+function goToHub(){updateHubCardStates();switchView(activeView(),document.getElementById('hubView'));}
 function backToHub(){switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
-function goToLanding(){refreshLandingStats();switchView(document.getElementById('hubView'),document.getElementById('landingView'));}
+function goToLanding(){refreshLandingStats();switchView(activeView(),document.getElementById('landingView'));}
 
 function refreshLandingStats(){
   document.getElementById('navStreakNum').textContent=computeStreak();
