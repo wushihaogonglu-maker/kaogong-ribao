@@ -1,5 +1,5 @@
 /* 考公补给站 Service Worker — 离线缓存 */
-const CACHE_NAME='kaogong-v23';
+const CACHE_NAME='kaogong-v24';
 const CORE_FILES=[
   '/',
   '/index.html',
@@ -30,7 +30,7 @@ self.addEventListener('activate',function(e){
       // Notify all open clients about the update
       return self.clients.matchAll({type:'window'}).then(function(clients){
         clients.forEach(function(client){
-          client.postMessage({type:'SW_UPDATED',version:'v23'});
+          client.postMessage({type:'SW_UPDATED',version:'v24'});
         });
       });
     })
@@ -44,35 +44,26 @@ self.addEventListener('message',function(e){
   }
 });
 
-// Fetch: network-first for HTML/data, cache-first for assets
+// Fetch: stale-while-revalidate for HTML/data, cache-first for assets
 self.addEventListener('fetch',function(e){
   var url=new URL(e.request.url);
   if(e.request.method!=='GET')return;
 
-  // HTML pages: network first to always get latest version
+  // HTML & data.json: stale-while-revalidate (instant from cache, update in background)
   var isHTML=url.pathname==='/'||url.pathname.endsWith('.html');
-  if(isHTML){
+  var isData=url.pathname.endsWith('data.json')||url.pathname.endsWith('items.json');
+  if(isHTML||isData){
     e.respondWith(
-      fetch(e.request).then(function(r){
-        var resp=r.clone();
-        caches.open(CACHE_NAME).then(function(c){return c.put(e.request,resp);});
-        return r;
-      }).catch(function(){
-        return caches.match(e.request);
-      })
-    );
-    return;
-  }
-
-  // data.json: network first, fallback to cache
-  if(url.pathname.endsWith('data.json')){
-    e.respondWith(
-      fetch(e.request).then(function(r){
-        var resp=r.clone();
-        caches.open(CACHE_NAME).then(function(c){return c.put(e.request,resp);});
-        return r;
-      }).catch(function(){
-        return caches.match(e.request);
+      caches.match(e.request).then(function(cached){
+        var networkFetch=fetch(e.request).then(function(r){
+          if(r.ok){
+            var resp=r.clone();
+            caches.open(CACHE_NAME).then(function(c){return c.put(e.request,resp);});
+          }
+          return r;
+        }).catch(function(){return null;});
+        // Return cached immediately if available, otherwise wait for network
+        return cached||networkFetch||new Response('Offline',{status:503});
       })
     );
     return;
