@@ -878,6 +878,7 @@ function getCurrentItems(){
   var report=currentDate?reportsData.reports[currentDate]:null;
   if(!report)return[];
   if(currentCategory==='idioms')return report.idioms||[];
+  if(currentCategory==='vocab')return report.vocab||[];
   return report.knowledge||[];
 }
 
@@ -927,10 +928,12 @@ function renderCategoryContent(){
   if(currentIndex<0)currentIndex=0;
 
   var isIdiom=currentCategory==='idioms';
+  var isVocab=currentCategory==='vocab';
   var unit=isIdiom?'个':'条';
+  var sectionLabel=isIdiom?'Idioms':(isVocab?'Vocab':'Knowledge');
 
   html+='<section class="section">';
-  html+='<div class="section-label">'+(isIdiom?'Idioms':'Knowledge')+'</div>';
+  html+='<div class="section-label">'+sectionLabel+'</div>';
   html+='<div class="section-header">';
   html+='<h2 class="section-title">'+cfg.title+' <span class="count">'+actualTotal+'/'+total+unit+'</span></h2>';
   html+=pillsHTML(counts);
