@@ -763,6 +763,8 @@
 /* ===== SPA View System ===== */
 .view { display: none; }
 .view.view-visible { display: block; animation: fadeUp 0.35s ease both; }
+#landingView.view-visible { display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
+#landingView .hero { flex: 1; }
 .skip-link { position: absolute; top: -100px; left: 16px; background: var(--ink-900); color: #fff; padding: 8px 16px; border-radius: 6px; z-index: 999; font-size: 14px; }
 .skip-link:focus { top: 80px; }
 
