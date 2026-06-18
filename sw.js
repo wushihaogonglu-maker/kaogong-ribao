@@ -1,5 +1,5 @@
 /* 考公补给站 Service Worker — 离线缓存 */
-const CACHE_NAME='kaogong-v17';
+const CACHE_NAME='kaogong-v18';
 const CORE_FILES=[
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const CORE_FILES=[
   '/manifest.json',
   '/robots.txt',
   '/items.json',
+  '/version.txt',
 ];
 
 // Install: pre-cache core shell
@@ -18,13 +19,29 @@ self.addEventListener('install',function(e){
   );
 });
 
-// Activate: clean old caches
+// Activate: clean old caches, notify clients
 self.addEventListener('activate',function(e){
   e.waitUntil(
     caches.keys().then(function(keys){
       return Promise.all(keys.filter(function(k){return k!==CACHE_NAME;}).map(function(k){return caches.delete(k);}));
-    }).then(function(){return self.clients.claim();})
+    }).then(function(){
+      return self.clients.claim();
+    }).then(function(){
+      // Notify all open clients about the update
+      return self.clients.matchAll({type:'window'}).then(function(clients){
+        clients.forEach(function(client){
+          client.postMessage({type:'SW_UPDATED',version:'v18'});
+        });
+      });
+    })
   );
+});
+
+// Message handler
+self.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='SKIP_WAITING'){
+    self.skipWaiting();
+  }
 });
 
 // Fetch: network-first for data, cache-first for assets
@@ -40,6 +57,16 @@ self.addEventListener('fetch',function(e){
         caches.open(CACHE_NAME).then(function(c){return c.put(e.request,resp);});
         return r;
       }).catch(function(){
+        return caches.match(e.request);
+      })
+    );
+    return;
+  }
+
+  // version.txt: always network
+  if(url.pathname.endsWith('version.txt')){
+    e.respondWith(
+      fetch(e.request).catch(function(){
         return caches.match(e.request);
       })
     );

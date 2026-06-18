@@ -1659,6 +1659,39 @@ function saveSRSState(){
   try{localStorage.setItem(SRS_KEY,JSON.stringify(srsState));}catch(e){}
 }
 
+/* ── Version Check ── */
+
+async function checkVersion(){
+  try{
+    var resp=await fetch('version.txt?t='+Date.now(),{signal:AbortSignal.timeout(3000)});
+    if(!resp.ok)return;
+    var remoteVersion=parseInt((await resp.text()).trim(),10);
+    if(isNaN(remoteVersion))return;
+    var localVersion=parseInt(localStorage.getItem('kaogong_version')||'0',10);
+    if(remoteVersion>localVersion){
+      localStorage.setItem('kaogong_version',String(remoteVersion));
+      showUpdateBanner();
+    }
+  }catch(e){/* silently skip */}
+}
+
+function showUpdateBanner(){
+  var banner=document.createElement('div');
+  banner.id='updateBanner';
+  banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:0.8rem;z-index:9999;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.15);animation:fadeInUp 0.3s ease;white-space:nowrap;';
+  banner.textContent='有新版本，点击刷新 ✨';
+  banner.onclick=function(){
+    if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+      // Tell SW to skip waiting, then reload
+      navigator.serviceWorker.controller.postMessage({type:'SKIP_WAITING'});
+    }
+    location.reload();
+  };
+  document.body.appendChild(banner);
+  // Auto-dismiss after 15s
+  setTimeout(function(){if(banner.parentNode)banner.remove();},15000);
+}
+
 function initSRSState(){
   srsState=loadSRSState();
   if(!srsState){
@@ -2250,6 +2283,9 @@ async function init(){
   try {
     var today=new Date().toISOString().slice(0,10);
 
+    // Version check: detect new deployment
+    checkVersion();
+
     // Fetch data.json + items.json in parallel
     var results=await Promise.allSettled([
       fetch('data.json?v='+today+'-v15'),
@@ -2344,8 +2380,13 @@ document.addEventListener('touchend',function(e){
   }
 },{passive:true});
 
-// Service Worker
-if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}
+// Service Worker — listen for update notifications from SW
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(function(){});
+  navigator.serviceWorker.addEventListener('message',function(e){
+    if(e.data&&e.data.type==='SW_UPDATED')showUpdateBanner();
+  });
+}
 
 init();
 </script>
