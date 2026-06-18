@@ -5,4 +5,4 @@
   Cache-Control: public, max-age=300, s-maxage=600
 
 /data.json
-  Cache-Control: public, max-age=3600, s-maxage=86400
+  Cache-Control: public, max-age=60, s-maxage=120

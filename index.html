@@ -1011,7 +1011,7 @@ function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/<
 async function init(){
   try {
     var today=new Date().toISOString().slice(0,10);
-    var resp=await fetch('data.json?v='+today);
+    var resp=await fetch('data.json?v='+today+'-v14');
     if(!resp.ok)throw new Error('HTTP '+resp.status);
     reportsData=await resp.json();
     allDates=Object.keys(reportsData.reports).sort().reverse();
