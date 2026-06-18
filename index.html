@@ -752,8 +752,8 @@
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  .hero-left { animation: fadeUp 0.6s ease both; }
-  .hero-card-dropdown .hero-card { animation: fadeUp 0.6s ease 0.15s both; }
+  .hero-grid > * { animation: fadeUp 0.6s ease both; }
+  .hero-grid > *:nth-child(2) { animation-delay: 0.15s; }
   .modules .module:nth-child(1) { animation: fadeUp 0.5s ease 0.1s both; }
   .modules .module:nth-child(2) { animation: fadeUp 0.5s ease 0.2s both; }
   .modules .module:nth-child(3) { animation: fadeUp 0.5s ease 0.3s both; }
@@ -761,6 +761,7 @@
 
   /* ============ RESPONSIVE ============ */
   @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 32px; }
     .hero-title { font-size: 38px; }
     .modules { grid-template-columns: repeat(2, 1fr); }
     .features { grid-template-columns: 1fr; }
@@ -901,7 +902,31 @@
       </div>
       <button class="sync-btn" onclick="openSettings()">同步进度</button>
     </div>
-    <div class="hero-card-dropdown" id="heroCardDropdown">
+  </div>
+</nav>
+
+
+<div class="view view-visible" id="landingView" role="region" aria-label="首页" tabindex="-1">
+<section class="hero" id="main-content">
+  <div class="hero-grid">
+    <div class="hero-left">
+      <div class="tag">
+        <span class="pulse"></span>
+        <span id="landingQuote">日拱一卒，功不唐捐</span>
+      </div>
+      <h1 class="hero-title">
+        每天一点积累<br>
+        <span class="highlight">离上岸更近一步</span>
+      </h1>
+      <p class="hero-sub" id="landingDate">考公补给站为你提供成语、实词、常识、时政四大模块的每日学习内容。</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="goToHub()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          开始今天的学习
+        </button>
+        <button class="btn-ghost" onclick="setMode('browse');goToHub();">浏览模式</button>
+      </div>
+    </div>
     <div class="hero-card">
       <div class="hero-card-header">
         <div>
@@ -934,31 +959,7 @@
       </div>
     </div>
   </div>
-  </div>
-</nav>
-
-
-<div class="view view-visible" id="landingView" role="region" aria-label="首页" tabindex="-1">
-<section class="hero" id="main-content">
-    <div class="hero-left">
-      <div class="tag">
-        <span class="pulse"></span>
-        <span id="landingQuote">日拱一卒，功不唐捐</span>
-      </div>
-      <h1 class="hero-title">
-        每天一点积累<br>
-        <span class="highlight">离上岸更近一步</span>
-      </h1>
-      <p class="hero-sub" id="landingDate">考公补给站为你提供成语、实词、常识、时政四大模块的每日学习内容。</p>
-      <div class="hero-actions">
-        <button class="btn-primary" onclick="goToHub()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          开始今天的学习
-        </button>
-        <button class="btn-ghost" onclick="setMode('browse');goToHub();">浏览模式</button>
-      </div>
-    </div>
-  </section>
+</section>
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
