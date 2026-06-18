@@ -44,12 +44,27 @@ self.addEventListener('message',function(e){
   }
 });
 
-// Fetch: network-first for data, cache-first for assets
+// Fetch: network-first for HTML/data, cache-first for assets
 self.addEventListener('fetch',function(e){
   var url=new URL(e.request.url);
   if(e.request.method!=='GET')return;
 
-  // data.json: network first, fallback to cache, max-age 120s
+  // HTML pages: network first to always get latest version
+  var isHTML=url.pathname==='/'||url.pathname.endsWith('.html');
+  if(isHTML){
+    e.respondWith(
+      fetch(e.request).then(function(r){
+        var resp=r.clone();
+        caches.open(CACHE_NAME).then(function(c){return c.put(e.request,resp);});
+        return r;
+      }).catch(function(){
+        return caches.match(e.request);
+      })
+    );
+    return;
+  }
+
+  // data.json: network first, fallback to cache
   if(url.pathname.endsWith('data.json')){
     e.respondWith(
       fetch(e.request).then(function(r){
