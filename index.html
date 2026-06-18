@@ -260,6 +260,24 @@ body {
   margin-top: 4px;
 }
 
+.hub-card.checked-in {
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.hub-card-check {
+  font-size: 0.68rem;
+  color: var(--accent);
+  margin-top: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.hub-card.checked-in .hub-card-icon { opacity: 1; }
+.hub-card.checked-in .hub-card-desc { color: var(--ink-muted); }
+
 .hub-back {
   margin-top: 36px;
 }
@@ -1298,6 +1316,9 @@ body {
       <span class="landing-srs-stat">📋 待复习 <span class="landing-srs-num" id="landingDue">0</span> 个</span>
       <span class="landing-srs-stat">📚 已学习 <span class="landing-srs-num" id="landingLearned">0</span> 个</span>
     </div>
+    <div class="landing-checkin" id="landingCheckin" style="margin-top:10px;">
+      <span class="landing-srs-stat">今日签到 <span class="landing-srs-num" id="landingCheckinCount">0</span>/4</span>
+    </div>
   </div>
 </div>
 
@@ -1314,25 +1335,29 @@ body {
     </div>
 
     <div class="hub-grid">
-      <div class="hub-card" role="button" tabindex="0" onclick="handleHubCardClick('idioms')">
+      <div class="hub-card" role="button" tabindex="0" onclick="handleHubCardClick('idioms')" id="hubCardIdioms">
         <span class="hub-card-icon">一</span>
         <div class="hub-card-label">成语</div>
         <div class="hub-card-desc" id="hubDescIdioms">每日积累</div>
+        <div class="hub-card-check" id="hubCheckIdioms" style="display:none">✓ 已签到</div>
       </div>
-      <div class="hub-card" role="button" tabindex="0" onclick="handleHubCardClick('vocab')">
+      <div class="hub-card" role="button" tabindex="0" onclick="handleHubCardClick('vocab')" id="hubCardVocab">
         <span class="hub-card-icon">字</span>
         <div class="hub-card-label">实词</div>
         <div class="hub-card-desc" id="hubDescVocab">言语理解</div>
+        <div class="hub-card-check" id="hubCheckVocab" style="display:none">✓ 已签到</div>
       </div>
-      <div class="hub-card" role="button" tabindex="0" onclick="handleHubCardClick('knowledge')">
+      <div class="hub-card" role="button" tabindex="0" onclick="handleHubCardClick('knowledge')" id="hubCardKnowledge">
         <span class="hub-card-icon">识</span>
         <div class="hub-card-label">常识</div>
         <div class="hub-card-desc" id="hubDescKnowledge">百科知识</div>
+        <div class="hub-card-check" id="hubCheckKnowledge" style="display:none">✓ 已签到</div>
       </div>
-      <div class="hub-card" role="button" tabindex="0" onclick="handleHubCardClick('politics')">
+      <div class="hub-card" role="button" tabindex="0" onclick="handleHubCardClick('politics')" id="hubCardPolitics">
         <span class="hub-card-icon">闻</span>
         <div class="hub-card-label">时政</div>
         <div class="hub-card-desc" id="hubDescPolitics">紧跟热点</div>
+        <div class="hub-card-check" id="hubCheckPolitics" style="display:none">✓ 已签到</div>
       </div>
     </div>
 
@@ -1437,15 +1462,70 @@ const QUOTES=[
 ];
 
 function pickQuote(){return QUOTES[Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5)%QUOTES.length];}
-function computeStreak(){/* use actual study history from SRS */if(srsState&&srsState.stats&&srsState.stats.reviewHistory){var studiedDates=Object.keys(srsState.stats.reviewHistory).sort().reverse();if(studiedDates.length===0)return 0;var today=toDateStr(new Date());var yesterday=toDateStr(new Date(Date.now()-864e5));var mostRecent=studiedDates[0];if(mostRecent!==today&&mostRecent!==yesterday)return 0;var streak=1;for(var i=1;i<studiedDates.length;i++){var d=(new Date(studiedDates[i-1])-new Date(studiedDates[i]))/864e5;if(Math.abs(d-1)<0.1)streak++;else break;}return streak;}/* fallback: consecutive dates in data */if(allDates.length===0)return 0;var s=1;for(var j=1;j<allDates.length;j++){var d2=(new Date(allDates[j-1])-new Date(allDates[j]))/864e5;if(Math.abs(d2-1)<0.1)s++;else break;}return s;}
+/* ── Check-in System ── */
+var CHECKIN_KEY='kaogong_checkin';
+function loadCheckins(){try{var raw=localStorage.getItem(CHECKIN_KEY);return raw?JSON.parse(raw):{};}catch(e){return {};}}
+function saveCheckins(d){try{localStorage.setItem(CHECKIN_KEY,JSON.stringify(d));}catch(e){}}
+function checkIn(cat){
+  var c=loadCheckins();var today=toDateStr(new Date());
+  if(!c[today])c[today]={};c[today][cat]=true;saveCheckins(c);
+  updateHubCardStates();refreshLandingStats();
+}
+function isCheckedIn(cat){var c=loadCheckins();var today=toDateStr(new Date());return !!(c[today]&&c[today][cat]);}
+function getCheckinCount(){var c=loadCheckins();var today=toDateStr(new Date());var cats=['idioms','vocab','knowledge','politics'];var n=0;for(var i=0;i<cats.length;i++){if(c[today]&&c[today][cats[i]])n++;}return n;}
+function allCheckedIn(){return getCheckinCount()>=4;}
+function updateHubCardStates(){
+  var cats=['idioms','vocab','knowledge','politics'];
+  for(var i=0;i<cats.length;i++){
+    var cat=cats[i];
+    var card=document.getElementById('hubCard'+cat.charAt(0).toUpperCase()+cat.slice(1));
+    var check=document.getElementById('hubCheck'+cat.charAt(0).toUpperCase()+cat.slice(1));
+    if(isCheckedIn(cat)){if(card)card.classList.add('checked-in');if(check)check.style.display='';}
+    else{if(card)card.classList.remove('checked-in');if(check)check.style.display='none';}
+  }
+  updateHubDueCounts();
+}
+
+function computeStreak(){
+  /* Priority: check-in based (4 categories all done = one day) */
+  var checkins=loadCheckins();
+  var dates=Object.keys(checkins).filter(function(d){var c=checkins[d];return c.idioms&&c.vocab&&c.knowledge&&c.politics;}).sort().reverse();
+  if(dates.length>0){
+    var today=toDateStr(new Date());var yesterday=toDateStr(new Date(Date.now()-864e5));
+    var mostRecent=dates[0];
+    if(mostRecent===today||mostRecent===yesterday){
+      var streak=1;
+      for(var i=1;i<dates.length;i++){var d=(new Date(dates[i-1])-new Date(dates[i]))/864e5;if(Math.abs(d-1)<0.1)streak++;else break;}
+      return streak;
+    }
+  }
+  /* fallback: SRS review history */
+  if(srsState&&srsState.stats&&srsState.stats.reviewHistory){
+    var studiedDates=Object.keys(srsState.stats.reviewHistory).sort().reverse();
+    if(studiedDates.length>0){
+      var t2=toDateStr(new Date());var y2=toDateStr(new Date(Date.now()-864e5));
+      var mr=studiedDates[0];
+      if(mr===t2||mr===y2){
+        var s2=1;
+        for(var j=1;j<studiedDates.length;j++){var d2=(new Date(studiedDates[j-1])-new Date(studiedDates[j]))/864e5;if(Math.abs(d2-1)<0.1)s2++;else break;}
+        return s2;
+      }
+    }
+    return 0;
+  }
+  /* last resort: data dates */
+  if(allDates.length===0)return 0;var s3=1;
+  for(var k=1;k<allDates.length;k++){var d3=(new Date(allDates[k-1])-new Date(allDates[k]))/864e5;if(Math.abs(d3-1)<0.1)s3++;else break;}
+  return s3;
+}
 
 function saveState(){try{var s={d:currentDate,c:currentCategory,n:displayCount,i:currentIndex};localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}catch(e){}}
 function loadState(){try{var s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch(e){}return null;}
-function updateHubCounts(){if(!reportsData||allDates.length===0)return;var r=reportsData.reports[allDates[0]];if(!r)return;var d=document.getElementById('hubDescIdioms');if(d)d.textContent='每日积累 · '+(r.idioms||[]).length+'个';d=document.getElementById('hubDescVocab');if(d)d.textContent='言语理解 · '+(r.vocab||[]).length+'组';d=document.getElementById('hubDescKnowledge');if(d)d.textContent='百科知识 · '+(r.knowledge||[]).length+'条';d=document.getElementById('hubDescPolitics');if(d)d.textContent='紧跟热点 · '+((r.politics||[]).length||0)+'条';}
+function updateHubCounts(){updateHubDueCounts();}
 
 function switchView(from,to){from.classList.remove('view-visible');from.setAttribute('aria-hidden','true');to.classList.add('view-visible');to.setAttribute('aria-hidden','false');setTimeout(function(){to.scrollTop=0;if(to.focus)to.focus();},60);}
-function goToHub(){switchView(document.getElementById('landingView'),document.getElementById('hubView'));}
-function backToHub(){switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
+function goToHub(){updateHubCardStates();switchView(document.getElementById('landingView'),document.getElementById('hubView'));}
+function backToHub(){checkIn(currentCategory);switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
 function goToLanding(){refreshLandingStats();switchView(document.getElementById('hubView'),document.getElementById('landingView'));}
 function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
 
@@ -1453,6 +1533,7 @@ function refreshLandingStats(){
   document.getElementById('landingStreak').textContent='已坚持 '+computeStreak()+' 天';
   document.getElementById('landingDate').textContent=allDates.length>0?reportsData.reports[allDates[0]].date:'—';
   document.getElementById('landingQuote').textContent=pickQuote();
+  document.getElementById('landingCheckinCount').textContent=getCheckinCount();
 }
 
 function getCurrentItems(){
@@ -1606,8 +1687,8 @@ function sm2(card,rating,now){
   var today=toDateStr(now||new Date());
   var s=Object.assign({},card);
   if(rating===1){
-    // Again: reset, due today for immediate re-review
-    s.reps=0;s.interval=1;s.nextReview=today;
+    // Again: reset
+    s.reps=0;s.interval=1;
   }else if(rating===3){
     // Hard
     s.interval=Math.max(1,Math.round((s.interval||1)*1.2));
@@ -1619,7 +1700,7 @@ function sm2(card,rating,now){
     else s.interval=Math.round(s.interval*s.ease*1.3);
     s.ease=Math.min(3.0,s.ease+0.15);s.reps+=1;
   }
-  if(!s.nextReview)s.nextReview=addDays(today,s.interval);
+  s.nextReview=addDays(today,s.interval);
   s.lastReview=today;
   if(!s.firstLearned)s.firstLearned=today;
   s.status=s.interval>=60?'mastered':s.interval>=21?'graduate':'learning';
@@ -2074,6 +2155,7 @@ function forceLearnCategory(category){
 }
 
 function exitSRS(){
+  if(learnSession&&learnSession.category)checkIn(learnSession.category);
   learnSession=null;
   cardRevealed=false;
   updateHubDueCounts();
@@ -2109,33 +2191,31 @@ function setMode(mode){
 }
 
 function updateHubDueCounts(){
-  if(!srsState||!ITEM_POOLS)return;
-  var due=countDueToday();
-  var pols=document.querySelectorAll('.hub-due');
-  // Remove old due elements
-  pols.forEach(function(e){e.remove();});
-  ['idioms','vocab','knowledge'].forEach(function(cat,i){
+  var due=srsState&&ITEM_POOLS?countDueToday():{idioms:0,vocab:0,knowledge:0};
+  ['idioms','vocab','knowledge','politics'].forEach(function(cat){
     var desc=document.getElementById('hubDesc'+(cat.charAt(0).toUpperCase()+cat.slice(1)));
-    if(desc){
-      // Update desc for browse mode
-      if(currentMode==='browse'&&reportsData&&allDates.length>0){
+    if(!desc)return;
+    if(isCheckedIn(cat)){
+      desc.textContent='✓ 今日已完成';
+      return;
+    }
+    if(cat==='politics'){
+      if(reportsData&&allDates.length>0){
         var r=reportsData.reports[allDates[0]];
-        var labels={idioms:'每日积累 · ',vocab:'言语理解 · ',knowledge:'百科知识 · '};
-        var units={idioms:'个',vocab:'组',knowledge:'条'};
-        desc.textContent=labels[cat]+((r[cat]||[]).length)+units[cat];
+        desc.textContent='时政热点 · '+((r.politics||[]).length||0)+'条';
       }
-      if(currentMode==='learn'){
-        var itemCount=ITEM_POOLS[cat]?ITEM_POOLS[cat].length:0;
-        desc.textContent=itemCount+'条 · 待复习 '+due[cat]+' 个';
-      }
+      return;
+    }
+    if(currentMode==='browse'&&reportsData&&allDates.length>0){
+      var r=reportsData.reports[allDates[0]];
+      var labels={idioms:'每日积累 · ',vocab:'言语理解 · ',knowledge:'百科知识 · '};
+      var units={idioms:'个',vocab:'组',knowledge:'条'};
+      desc.textContent=labels[cat]+((r[cat]||[]).length)+units[cat];
+    }else if(currentMode==='learn'&&ITEM_POOLS){
+      var itemCount=ITEM_POOLS[cat]?ITEM_POOLS[cat].length:0;
+      desc.textContent=itemCount+'条 · 待复习 '+due[cat]+' 个';
     }
   });
-  // Politics always shows browse info
-  var pd=document.getElementById('hubDescPolitics');
-  if(pd&&reportsData&&allDates.length>0){
-    var r=reportsData.reports[allDates[0]];
-    pd.textContent='紧跟热点 · '+((r.politics||[]).length||0)+'条';
-  }
 }
 
 function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
