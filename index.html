@@ -22,8 +22,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="考公补给站">
-<link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg">
 
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
@@ -793,22 +793,22 @@ body {
       <div class="hub-card" role="button" tabindex="0" onclick="openContent('idioms')">
         <span class="hub-card-icon">一</span>
         <div class="hub-card-label">成语</div>
-        <div class="hub-card-desc">每日积累</div>
+        <div class="hub-card-desc" id="hubDescIdioms">每日积累</div>
       </div>
       <div class="hub-card" role="button" tabindex="0" onclick="openContent('vocab')">
         <span class="hub-card-icon">字</span>
         <div class="hub-card-label">实词</div>
-        <div class="hub-card-desc">言语理解</div>
+        <div class="hub-card-desc" id="hubDescVocab">言语理解</div>
       </div>
       <div class="hub-card" role="button" tabindex="0" onclick="openContent('knowledge')">
         <span class="hub-card-icon">识</span>
         <div class="hub-card-label">常识</div>
-        <div class="hub-card-desc">百科知识</div>
+        <div class="hub-card-desc" id="hubDescKnowledge">百科知识</div>
       </div>
       <div class="hub-card" role="button" tabindex="0" onclick="openContent('politics')">
         <span class="hub-card-icon">闻</span>
         <div class="hub-card-label">时政</div>
-        <div class="hub-card-desc">紧跟热点</div>
+        <div class="hub-card-desc" id="hubDescPolitics">紧跟热点</div>
       </div>
     </div>
 
@@ -845,6 +845,8 @@ let allDates=[],currentDate='',currentCategory='idioms',reportsData=null;
 let displayCount=0;
 let currentIndex=0;
 const COUNT_OPTIONS=[3,5,10];
+const STORAGE_KEY='kaogong_state';
+var touchStartX=0,touchStartY=0,touchStartTime=0;
 
 const CATEGORY_CONFIG={
   idioms:{title:'成语',emptyIcon:'一',emptyText:'成语内容准备中',emptyHint:'每日成语即将上线'},
@@ -862,11 +864,15 @@ const QUOTES=[
 function pickQuote(){return QUOTES[Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5)%QUOTES.length];}
 function computeStreak(){if(allDates.length===0)return 0;let s=1;for(let i=1;i<allDates.length;i++){let d=(new Date(allDates[i-1])-new Date(allDates[i]))/864e5;if(Math.abs(d-1)<0.1)s++;else break;}return s;}
 
+function saveState(){try{var s={d:currentDate,c:currentCategory,n:displayCount,i:currentIndex};localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}catch(e){}}
+function loadState(){try{var s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch(e){}return null;}
+function updateHubCounts(){if(!reportsData||allDates.length===0)return;var r=reportsData.reports[allDates[0]];if(!r)return;var d=document.getElementById('hubDescIdioms');if(d)d.textContent='每日积累 · '+(r.idioms||[]).length+'个';d=document.getElementById('hubDescVocab');if(d)d.textContent='言语理解 · '+(r.vocab||[]).length+'组';d=document.getElementById('hubDescKnowledge');if(d)d.textContent='百科知识 · '+(r.knowledge||[]).length+'条';d=document.getElementById('hubDescPolitics');if(d)d.textContent='紧跟热点 · '+((r.politics||[]).length||0)+'条';}
+
 function switchView(from,to){from.classList.remove('view-visible');from.setAttribute('aria-hidden','true');to.classList.add('view-visible');to.setAttribute('aria-hidden','false');setTimeout(function(){to.scrollTop=0;if(to.focus)to.focus();},60);}
 function goToHub(){switchView(document.getElementById('landingView'),document.getElementById('hubView'));}
 function backToHub(){switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
 function goToLanding(){refreshLandingStats();switchView(document.getElementById('hubView'),document.getElementById('landingView'));}
-function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;renderCategoryContent();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
+function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
 
 function refreshLandingStats(){
   document.getElementById('landingStreak').textContent='已坚持 '+computeStreak()+' 天';
@@ -879,6 +885,7 @@ function getCurrentItems(){
   if(!report)return[];
   if(currentCategory==='idioms')return report.idioms||[];
   if(currentCategory==='vocab')return report.vocab||[];
+  if(currentCategory==='politics')return report.politics||[];
   return report.knowledge||[];
 }
 
@@ -989,11 +996,11 @@ function renderCategoryContent(){
   if(nextBtn)nextBtn.disabled=idx<=0;
 }
 
-function nextCard(){currentIndex++;renderCategoryContent();}
-function prevCard(){if(currentIndex>0){currentIndex--;renderCategoryContent();}}
-function finishSession(){var items=getCurrentItems();var n=displayCount===0?items.length:Math.min(displayCount,items.length);currentIndex=n;renderCategoryContent();}
+function nextCard(){currentIndex++;renderCategoryContent();saveState();}
+function prevCard(){if(currentIndex>0){currentIndex--;renderCategoryContent();saveState();}}
+function finishSession(){var items=getCurrentItems();var n=displayCount===0?items.length:Math.min(displayCount,items.length);currentIndex=n;renderCategoryContent();saveState();}
 
-function setCount(n){displayCount=n;currentIndex=0;renderCategoryContent();}
+function setCount(n){displayCount=n;currentIndex=0;renderCategoryContent();saveState();}
 
 function populateSelect(){
   var sel=document.getElementById('dateSelect');
@@ -1001,22 +1008,33 @@ function populateSelect(){
   sel.innerHTML=allDates.map(function(d){return '<option value="'+d+'"'+(d===currentDate?' selected':'')+'>'+d.slice(5)+'</option>';}).join('');
 }
 
-function prevDay(){var i=allDates.indexOf(currentDate);if(i<allDates.length-1){currentDate=allDates[i+1];currentIndex=0;renderCategoryContent();}}
-function nextDay(){var i=allDates.indexOf(currentDate);if(i>0){currentDate=allDates[i-1];currentIndex=0;renderCategoryContent();}}
-function jumpTo(d){currentDate=d;currentIndex=0;renderCategoryContent();}
-function goToday(){if(allDates.length>0){currentDate=allDates[0];currentIndex=0;renderCategoryContent();}}
+function prevDay(){var i=allDates.indexOf(currentDate);if(i<allDates.length-1){currentDate=allDates[i+1];currentIndex=0;renderCategoryContent();saveState();}}
+function nextDay(){var i=allDates.indexOf(currentDate);if(i>0){currentDate=allDates[i-1];currentIndex=0;renderCategoryContent();saveState();}}
+function jumpTo(d){currentDate=d;currentIndex=0;renderCategoryContent();saveState();}
+function goToday(){if(allDates.length>0){currentDate=allDates[0];currentIndex=0;renderCategoryContent();saveState();}}
 
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
 async function init(){
   try {
     var today=new Date().toISOString().slice(0,10);
-    var resp=await fetch('data.json?v='+today+'-v14');
+    var resp=await fetch('data.json?v='+today+'-v15');
     if(!resp.ok)throw new Error('HTTP '+resp.status);
     reportsData=await resp.json();
     allDates=Object.keys(reportsData.reports).sort().reverse();
     if(allDates.length>0)currentDate=allDates[0];
+
+    // Restore saved state
+    var saved=loadState();
+    if(saved&&saved.d&&allDates.indexOf(saved.d)>=0){
+      currentDate=saved.d;
+      if(saved.c)currentCategory=saved.c;
+      if(typeof saved.n==='number')displayCount=saved.n;
+      if(typeof saved.i==='number')currentIndex=saved.i;
+    }
+
     refreshLandingStats();
+    updateHubCounts();
     populateSelect();
     renderCategoryContent();
   } catch(err) {
@@ -1027,12 +1045,37 @@ async function init(){
   }
 }
 
-// Keyboard support for hub cards
+// Keyboard support: hub cards + flashcard arrows
 document.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&e.target.classList.contains('hub-card')){
     e.target.click();
+    return;
+  }
+  var cv=document.getElementById('contentView');
+  if(cv&&cv.classList.contains('view-visible')){
+    if(e.key==='ArrowRight'){e.preventDefault();nextCard();}
+    else if(e.key==='ArrowLeft'){e.preventDefault();prevCard();}
   }
 });
+
+// Touch swipe support for flashcard navigation
+document.addEventListener('touchstart',function(e){touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;touchStartTime=Date.now();},{passive:true});
+document.addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-touchStartX;
+  var dy=e.changedTouches[0].clientY-touchStartY;
+  var dt=Date.now()-touchStartTime;
+  if(dt<50)return;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>60){
+    var cv=document.getElementById('contentView');
+    if(cv&&cv.classList.contains('view-visible')){
+      if(dx<0)nextCard();
+      else prevCard();
+    }
+  }
+},{passive:true});
+
+// Service Worker
+if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}
 
 init();
 </script>
