@@ -823,7 +823,8 @@
 .nav-select { padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--ink-200); border-radius: 8px; font-size: 0.82rem; color: var(--ink-700); cursor: pointer; font-family: inherit; }
 
 /* ===== Settings Overlay ===== */
-.settings-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(28,28,40,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.settings-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(28,28,40,0.4); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+.view.settings-overlay.view-visible { display: flex; }
 .settings-overlay .settings-panel { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto; }
 .settings-close { background: none; border: none; font-size: 1.2rem; color: var(--ink-500); cursor: pointer; padding: 4px; }
 .settings-group { padding: 16px 0; }
