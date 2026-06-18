@@ -1934,11 +1934,6 @@ function setMode(mode){
     if(title)title.textContent='今日学习';
   }
   updateHubDueCounts();
-}else{
-    document.getElementById('hubModeLabel').textContent='Daily Browse';
-    document.getElementById('hubModeTitle').textContent='今日学习';
-  }
-  updateHubDueCounts();
 }
 
 function updateHubDueCounts(){
@@ -2047,8 +2042,7 @@ function copySyncCode(){
   var code=getUID();
   if(navigator.clipboard){
     navigator.clipboard.writeText(code).then(function(){
-      alert('同步码已复制：'+code+'
-把此码粘贴到另一台设备设置中即可同步');
+      alert('同步码已复制：'+code+'\n把此码粘贴到另一台设备设置中即可同步');
     });
   }else{
     prompt('复制此同步码，在新设备的设置中输入：',code);
