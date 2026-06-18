@@ -1,11 +1,12 @@
 /* 考公补给站 Service Worker — 离线缓存 */
-const CACHE_NAME='kaogong-v16';
+const CACHE_NAME='kaogong-v17';
 const CORE_FILES=[
   '/',
   '/index.html',
   '/favicon.svg',
   '/manifest.json',
   '/robots.txt',
+  '/items.json',
 ];
 
 // Install: pre-cache core shell
