@@ -343,6 +343,25 @@ body {
 
 .back-btn:active { color: var(--ink); }
 
+.checkin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-family: var(--font);
+  letter-spacing: 0.03em;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.checkin-btn:active { opacity: 0.8; }
+
 .topbar-title {
   font-size: 0.88rem;
   font-weight: 500;
@@ -1416,6 +1435,7 @@ body {
       <button class="back-btn" onclick="backToHub()">← 返回</button>
       <span class="topbar-title" id="contentTitle">—</span>
       <span class="topbar-date" id="topbarDate">—</span>
+      <button class="checkin-btn" id="contentCheckinBtn" onclick="checkIn(currentCategory);this.textContent='✓ 已签到';this.disabled=true;this.style.opacity='0.6';setTimeout(function(){backToHub();},600);" style="display:none;">签到</button>
     </div>
 
     <main id="content"><div class="loading">—</div></main>
@@ -1525,9 +1545,8 @@ function updateHubCounts(){updateHubDueCounts();}
 
 function switchView(from,to){from.classList.remove('view-visible');from.setAttribute('aria-hidden','true');to.classList.add('view-visible');to.setAttribute('aria-hidden','false');setTimeout(function(){to.scrollTop=0;if(to.focus)to.focus();},60);}
 function goToHub(){updateHubCardStates();switchView(document.getElementById('landingView'),document.getElementById('hubView'));}
-function backToHub(){checkIn(currentCategory);switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
+function backToHub(){switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
 function goToLanding(){refreshLandingStats();switchView(document.getElementById('hubView'),document.getElementById('landingView'));}
-function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
 
 function refreshLandingStats(){
   document.getElementById('landingStreak').textContent='已坚持 '+computeStreak()+' 天';
@@ -2105,6 +2124,31 @@ function renderLearnDone(){
   updateLandingSRSStats();
 }
 
+function showCategoryComplete(cat){
+  // Show completion screen when user clicks a checked-in card
+  var cfg=CATEGORY_CONFIG[cat];
+  var limits=srsState.settings.dailyLimits;
+  var limit=limits[cat]||5;
+  var due=countDueToday();
+  var catDue=due[cat]||0;
+  document.getElementById('learnTitle').textContent=cfg.title;
+  document.getElementById('learnProgress').textContent='已完成';
+  document.getElementById('learnProgressFill').style.width='100%';
+  var html='';
+  html+='<div class="learn-done">';
+  html+='<span class="learn-done-icon">✓</span>';
+  html+='<div class="learn-done-title">今日已完成</div>';
+  html+='<div class="learn-done-stats">每日限额: '+limit+' 个</div>';
+  if(catDue>0){
+    html+='<div class="learn-done-stats" style="margin-top:8px;color:var(--ink-muted);">还有 '+catDue+' 个逾期待复习</div>';
+    html+='<button class="learn-done-btn" style="margin-top:16px" onclick="forceLearnCategory(\''+cat+'\')">继续复习 ('+catDue+'个)</button>';
+  }
+  html+='<button class="learn-done-btn primary" style="margin-top:'+(catDue>0?'8px':'16px')+'" onclick="learnSession=null;cardRevealed=false;updateHubDueCounts();updateLandingSRSStats();switchView(document.getElementById(\'learnView\'),document.getElementById(\'hubView\'));">返回</button>';
+  html+='</div>';
+  document.getElementById('learnContent').innerHTML=html;
+  switchView(activeView(),document.getElementById('learnView'));
+}
+
 function renderLearnEmpty(category){
   var cfg=CATEGORY_CONFIG[category];
   var dueCount=countDueToday();
@@ -2218,11 +2262,13 @@ function updateHubDueCounts(){
   });
 }
 
-function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
+function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;var btn=document.getElementById('contentCheckinBtn');if(btn){if(isCheckedIn(cat)){btn.textContent='✓ 已签到';btn.disabled=true;btn.style.opacity='0.6';}else{btn.textContent='签到';btn.disabled=false;btn.style.opacity='1';}btn.style.display='';}renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
 
 function handleHubCardClick(cat){
-  if(cat==='politics'){
-    // Politics always uses browse mode
+  if(currentMode==='learn'&&isCheckedIn(cat)){
+    // Already completed today → show completion screen
+    showCategoryComplete(cat);
+  }else if(cat==='politics'){
     openContent(cat);
   }else if(currentMode==='learn'){
     startSRSLearning(cat);
