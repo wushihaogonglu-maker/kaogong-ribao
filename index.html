@@ -1606,8 +1606,8 @@ function sm2(card,rating,now){
   var today=toDateStr(now||new Date());
   var s=Object.assign({},card);
   if(rating===1){
-    // Again: reset
-    s.reps=0;s.interval=1;
+    // Again: reset, due today for immediate re-review
+    s.reps=0;s.interval=1;s.nextReview=today;
   }else if(rating===3){
     // Hard
     s.interval=Math.max(1,Math.round((s.interval||1)*1.2));
@@ -1619,7 +1619,7 @@ function sm2(card,rating,now){
     else s.interval=Math.round(s.interval*s.ease*1.3);
     s.ease=Math.min(3.0,s.ease+0.15);s.reps+=1;
   }
-  s.nextReview=addDays(today,s.interval);
+  if(!s.nextReview)s.nextReview=addDays(today,s.interval);
   s.lastReview=today;
   if(!s.firstLearned)s.firstLearned=today;
   s.status=s.interval>=60?'mastered':s.interval>=21?'graduate':'learning';
