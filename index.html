@@ -92,6 +92,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
   }
   .logo {
     display: flex;
@@ -339,7 +340,7 @@
   .hero-card-dropdown {
     position: absolute;
     top: calc(100% + 16px);
-    right: 32px;
+    right: 0;
     width: 340px;
     z-index: 99;
   }
@@ -900,8 +901,7 @@
       </div>
       <button class="sync-btn" onclick="openSettings()">同步进度</button>
     </div>
-  </div>
-  <div class="hero-card-dropdown" id="heroCardDropdown">
+    <div class="hero-card-dropdown" id="heroCardDropdown">
     <div class="hero-card">
       <div class="hero-card-header">
         <div>
@@ -933,6 +933,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 </nav>
 
