@@ -4,6 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>考公补给站</title>
+
+<!-- SEO -->
+<meta name="description" content="考公补给站 — 每日更新的公务员考试备考工具，涵盖成语积累、实词辨析、常识百科、时政热点四大板块，助你日拱一卒，成功上岸。">
+<link rel="canonical" href="https://shanganbujizhan.top/">
+
+<!-- Open Graph / 社交分享 -->
+<meta property="og:title" content="考公补给站 — 每日考公学习">
+<meta property="og:description" content="成语积累 · 实词辨析 · 常识百科 · 时政热点">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shanganbujizhan.top/">
+<meta property="og:image" content="https://shanganbujizhan.top/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- 移动端 -->
+<meta name="theme-color" content="#1a1a1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="考公补给站">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- 资源预加载 -->
+<link rel="preload" href="/data.json" as="fetch" crossorigin>
+
+<!-- 结构化数据 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "考公补给站",
+  "url": "https://shanganbujizhan.top/",
+  "description": "每日更新的公务员考试备考学习工具"
+}
+</script>
+
 <style>
 /* ===========================================
    考公补给站 — Minimal Premium
@@ -13,7 +51,7 @@
 :root {
   --ink:        #1a1a1a;
   --ink-light:  #666666;
-  --ink-muted:  #999999;
+  --ink-muted:  #6b6b6b;
   --surface:    #ffffff;
   --bg:         #f5f4f1;
   --bg-subtle:  #f0efec;
@@ -654,6 +692,7 @@ body {
 }
 
 .nav-btn:active { color: var(--ink); }
+.nav-btn:disabled { opacity: 0.25; pointer-events: none; }
 
 .nav-select {
   background: none;
@@ -688,12 +727,50 @@ body {
   .hub-card { padding: 28px 18px 24px; }
   .content-wrap { padding: 0 14px 80px; }
 }
+
+/* ===========================================
+   Dark Mode
+   =========================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink:        #e0e0e0;
+    --ink-light:  #a0a0a0;
+    --ink-muted:  #707070;
+    --surface:    #1a1a1a;
+    --bg:         #121212;
+    --bg-subtle:  #1e1e1e;
+    --border:     #2a2a2a;
+    --border-light:#222222;
+  }
+  .landing-line { background: var(--border); }
+  .exam-point { border-left-color: var(--ink-light); }
+}
+
+/* Skip to content */
+.skip-link {
+  position: absolute;
+  top: -44px;
+  left: 12px;
+  background: var(--ink);
+  color: #fff;
+  padding: 8px 18px;
+  z-index: 100;
+  font-size: 0.78rem;
+  font-family: var(--font);
+  border-radius: 0 0 var(--radius) var(--radius);
+  transition: top 0.2s;
+  text-decoration: none;
+}
+.skip-link:focus { top: 0; }
 </style>
 </head>
 <body>
 
+<a href="#content" class="skip-link">跳到主要内容</a>
+
 <!-- VIEW 1: LANDING -->
-<div class="view view-landing view-visible" id="landingView">
+<div class="view view-landing view-visible" id="landingView" role="region" aria-label="首页" tabindex="-1">
   <div class="landing">
     <div class="landing-badge">Daily Supply</div>
     <h1 class="landing-logo">考 公 补 给 站</h1>
@@ -707,28 +784,28 @@ body {
 </div>
 
 <!-- VIEW 2: HUB -->
-<div class="view view-hub" id="hubView">
+<div class="view view-hub" id="hubView" role="region" aria-label="学习中心" tabindex="-1">
   <div class="hub">
     <div class="hub-label">Today's Study</div>
     <h2 class="hub-title">今日学习</h2>
 
     <div class="hub-grid">
-      <div class="hub-card" onclick="openContent('idioms')">
+      <div class="hub-card" role="button" tabindex="0" onclick="openContent('idioms')">
         <span class="hub-card-icon">一</span>
         <div class="hub-card-label">成语</div>
         <div class="hub-card-desc">每日积累</div>
       </div>
-      <div class="hub-card" onclick="openContent('vocab')">
+      <div class="hub-card" role="button" tabindex="0" onclick="openContent('vocab')">
         <span class="hub-card-icon">字</span>
         <div class="hub-card-label">实词</div>
         <div class="hub-card-desc">言语理解</div>
       </div>
-      <div class="hub-card" onclick="openContent('knowledge')">
+      <div class="hub-card" role="button" tabindex="0" onclick="openContent('knowledge')">
         <span class="hub-card-icon">识</span>
         <div class="hub-card-label">常识</div>
         <div class="hub-card-desc">百科知识</div>
       </div>
-      <div class="hub-card" onclick="openContent('politics')">
+      <div class="hub-card" role="button" tabindex="0" onclick="openContent('politics')">
         <span class="hub-card-icon">闻</span>
         <div class="hub-card-label">时政</div>
         <div class="hub-card-desc">紧跟热点</div>
@@ -742,7 +819,7 @@ body {
 </div>
 
 <!-- VIEW 3: CONTENT -->
-<div class="view view-content" id="contentView">
+<div class="view view-content" id="contentView" role="region" aria-label="学习内容" tabindex="-1">
   <div class="content-wrap">
     <div class="topbar">
       <button class="back-btn" onclick="backToHub()">← 返回</button>
@@ -754,7 +831,7 @@ body {
 
     <nav class="bottombar">
       <button class="nav-btn" onclick="prevDay()">前一天</button>
-      <select class="nav-select" id="dateSelect" onchange="jumpTo(this.value)"></select>
+      <select class="nav-select" id="dateSelect" aria-label="选择日期" onchange="jumpTo(this.value)"></select>
       <button class="nav-btn" onclick="nextDay()">后一天</button>
       <button class="nav-btn nav-today" onclick="goToday()">今天</button>
     </nav>
@@ -785,7 +862,7 @@ const QUOTES=[
 function pickQuote(){return QUOTES[Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5)%QUOTES.length];}
 function computeStreak(){if(allDates.length===0)return 0;let s=1;for(let i=1;i<allDates.length;i++){let d=(new Date(allDates[i-1])-new Date(allDates[i]))/864e5;if(Math.abs(d-1)<0.1)s++;else break;}return s;}
 
-function switchView(from,to){from.classList.remove('view-visible');to.classList.add('view-visible');setTimeout(function(){to.scrollTop=0;},60);}
+function switchView(from,to){from.classList.remove('view-visible');from.setAttribute('aria-hidden','true');to.classList.add('view-visible');to.setAttribute('aria-hidden','false');setTimeout(function(){to.scrollTop=0;if(to.focus)to.focus();},60);}
 function goToHub(){switchView(document.getElementById('landingView'),document.getElementById('hubView'));}
 function backToHub(){switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
 function goToLanding(){refreshLandingStats();switchView(document.getElementById('hubView'),document.getElementById('landingView'));}
@@ -901,6 +978,12 @@ function renderCategoryContent(){
 
   document.getElementById('content').innerHTML=html;
   var cv=document.getElementById('contentView');if(cv)cv.scrollTop=0;
+  // Update bottom nav disabled states
+  var idx=allDates.indexOf(currentDate);
+  var prevBtn=document.querySelector('button[onclick*="prevDay"]');
+  var nextBtn=document.querySelector('button[onclick*="nextDay"]');
+  if(prevBtn)prevBtn.disabled=idx>=allDates.length-1;
+  if(nextBtn)nextBtn.disabled=idx<=0;
 }
 
 function nextCard(){currentIndex++;renderCategoryContent();}
@@ -920,17 +1003,33 @@ function nextDay(){var i=allDates.indexOf(currentDate);if(i>0){currentDate=allDa
 function jumpTo(d){currentDate=d;currentIndex=0;renderCategoryContent();}
 function goToday(){if(allDates.length>0){currentDate=allDates[0];currentIndex=0;renderCategoryContent();}}
 
-function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
 async function init(){
-  var resp=await fetch('data.json?'+Date.now());
-  reportsData=await resp.json();
-  allDates=Object.keys(reportsData.reports).sort().reverse();
-  if(allDates.length>0)currentDate=allDates[0];
-  refreshLandingStats();
-  populateSelect();
-  renderCategoryContent();
+  try {
+    var today=new Date().toISOString().slice(0,10);
+    var resp=await fetch('data.json?v='+today);
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    reportsData=await resp.json();
+    allDates=Object.keys(reportsData.reports).sort().reverse();
+    if(allDates.length>0)currentDate=allDates[0];
+    refreshLandingStats();
+    populateSelect();
+    renderCategoryContent();
+  } catch(err) {
+    console.error('加载失败:',err);
+    document.getElementById('landingStreak').textContent='加载失败，请刷新重试';
+    var btn=document.querySelector('.landing-btn');
+    if(btn){btn.textContent='重新加载';btn.onclick=function(){location.reload();};}
+  }
 }
+
+// Keyboard support for hub cards
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&e.target.classList.contains('hub-card')){
+    e.target.click();
+  }
+});
 
 init();
 </script>
