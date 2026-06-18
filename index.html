@@ -1374,7 +1374,12 @@ body {
         <span class="sync-code-text" id="syncCodeText">----</span>
         <button class="settings-btn" onclick="copySyncCode()" style="flex:0;min-width:60px;padding:8px 14px;font-size:0.72rem;">复制</button>
       </div>
-      <div style="font-size:0.68rem;color:var(--ink-muted);margin-top:6px;">在新设备设置中输入此码即可同步学习进度</div>
+      <div style="font-size:0.68rem;color:var(--ink-muted);margin-top:6px;">把此码复制到另一台设备绑定，即可同步进度</div>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <input id="bindCodeInput" placeholder="粘贴另一台设备的同步码" style="flex:1;padding:8px 10px;font-size:0.72rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--ink);" maxlength="64">
+        <button class="settings-btn" onclick="bindSyncCode()" style="flex:0;min-width:60px;padding:8px 14px;font-size:0.72rem;">绑定</button>
+      </div>
+      <div id="bindMsg" style="font-size:0.68rem;margin-top:4px;display:none;"></div>
     </div>
   </div>
 </div>
@@ -2175,10 +2180,56 @@ function copySyncCode(){
   var code=getUID();
   if(navigator.clipboard){
     navigator.clipboard.writeText(code).then(function(){
-      alert('同步码已复制：'+code+'\n在新设备的设置中输入此码后即可同步');
+      alert('同步码已复制：'+code+'\n把此码粘贴到另一台设备设置中即可同步');
     });
   }else{
     prompt('复制此同步码，在新设备的设置中输入：',code);
+  }
+}
+
+async function bindSyncCode(){
+  var input=document.getElementById('bindCodeInput');
+  var msg=document.getElementById('bindMsg');
+  var code=input.value.trim();
+  if(!code||code.length<5){
+    msg.style.display='block';
+    msg.style.color='var(--rating-again)';
+    msg.textContent='请粘贴有效的同步码';
+    return;
+  }
+  if(code===getUID()){
+    msg.style.display='block';
+    msg.style.color='var(--ink-muted)';
+    msg.textContent='这就是当前设备的同步码，无需绑定';
+    return;
+  }
+  localStorage.setItem('kaogong_uid',code);
+  msg.style.display='block';
+  msg.style.color='var(--ink-muted)';
+  msg.textContent='正在同步...';
+  try{
+    var resp=await fetch('https://shanganbujizhan.top/sync?uid='+encodeURIComponent(code),{signal:AbortSignal.timeout(5000)});
+    if(!resp.ok)throw new Error('network');
+    var remote=await resp.json();
+    if(remote&&remote.items&&Object.keys(remote.items).length>0){
+      srsState=remote;
+      saveSRSState();
+      document.getElementById('syncCodeText').textContent=code;
+      updateHubDueCounts();
+      updateLandingSRSStats();
+      msg.style.color='var(--rating-good)';
+      msg.textContent='已绑定！同步了 '+Object.keys(remote.items).length+' 条学习记录';
+    }else{
+      document.getElementById('syncCodeText').textContent=code;
+      msg.style.color='var(--rating-good)';
+      msg.textContent='已绑定，云端暂无数据，先开始学习吧';
+    }
+    input.value='';
+  }catch(e){
+    document.getElementById('syncCodeText').textContent=code;
+    msg.style.color='var(--ink-muted)';
+    msg.textContent='已绑定（离线同步将在联网后自动完成）';
+    input.value='';
   }
 }
 
