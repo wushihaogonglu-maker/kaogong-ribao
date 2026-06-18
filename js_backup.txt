@@ -1,0 +1,1064 @@
+let allDates=[],currentDate='',currentCategory='idioms',reportsData=null;
+let displayCount=0;
+let currentIndex=0;
+const COUNT_OPTIONS=[3,5,10];
+const STORAGE_KEY='kaogong_state';
+const SRS_KEY='kaogong_srs_v2';
+const SRS_VERSION=2;
+var touchStartX=0,touchStartY=0,touchStartTime=0;
+
+/* ── SRS Globals ── */
+var ITEM_POOLS=null;               // {idioms:[], vocab:[], knowledge:[], politics:[]}
+var srsState=null;                 // full kaogong_srs state object
+var learnSession=null;             // {category, queue:[], idx, reviewCount, newCount}
+var currentMode='browse';          // 'browse' | 'learn'
+var cardRevealed=false;            // whether current card back is showing
+
+const CATEGORY_CONFIG={
+  idioms:{title:'成语',emptyIcon:'一',emptyText:'成语内容准备中',emptyHint:'每日成语即将上线'},
+  vocab:{title:'实词',emptyIcon:'字',emptyText:'实词内容准备中',emptyHint:'言语理解专项即将上线'},
+  knowledge:{title:'常识',emptyIcon:'识',emptyText:'常识内容准备中',emptyHint:'百科常识即将上线'},
+  politics:{title:'时政',emptyIcon:'闻',emptyText:'时政内容准备中',emptyHint:'时政热点即将上线'},
+};
+
+const QUOTES=[
+  '慢慢来，比较快','日拱一卒，功不唐捐','每一天的积累都在靠近答案',
+  '你走的每一步，都算数','厚积薄发，水到渠成','安静下来，把一道题一道题做好',
+  '积沙成塔','集腋成裘',
+];
+
+function pickQuote(){return QUOTES[Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5)%QUOTES.length];}
+/* ── Check-in System ── */
+var CHECKIN_KEY='kaogong_checkin';
+function loadCheckins(){try{var raw=localStorage.getItem(CHECKIN_KEY);return raw?JSON.parse(raw):{};}catch(e){return {};}}
+function saveCheckins(d){try{localStorage.setItem(CHECKIN_KEY,JSON.stringify(d));}catch(e){}}
+function checkIn(cat){
+  var c=loadCheckins();var today=toDateStr(new Date());
+  if(!c[today])c[today]={};c[today][cat]=true;saveCheckins(c);
+  updateHubCardStates();refreshLandingStats();
+}
+function isCheckedIn(cat){var c=loadCheckins();var today=toDateStr(new Date());return !!(c[today]&&c[today][cat]);}
+function getCheckinCount(){var c=loadCheckins();var today=toDateStr(new Date());var cats=['idioms','vocab','knowledge','politics'];var n=0;for(var i=0;i<cats.length;i++){if(c[today]&&c[today][cats[i]])n++;}return n;}
+function allCheckedIn(){return getCheckinCount()>=4;}
+function updateHubCardStates(){
+  var cats=['idioms','vocab','knowledge','politics'];
+  for(var i=0;i<cats.length;i++){
+    var cat=cats[i];
+    var card=document.getElementById('hubCard'+cat.charAt(0).toUpperCase()+cat.slice(1));
+    var check=document.getElementById('hubCheck'+cat.charAt(0).toUpperCase()+cat.slice(1));
+    if(isCheckedIn(cat)){if(card)card.classList.add('checked-in');if(check)check.style.display='';}
+    else{if(card)card.classList.remove('checked-in');if(check)check.style.display='none';}
+  }
+  updateHubDueCounts();
+}
+
+function computeStreak(){
+  /* Priority: check-in based (4 categories all done = one day) */
+  var checkins=loadCheckins();
+  var dates=Object.keys(checkins).filter(function(d){var c=checkins[d];return c.idioms&&c.vocab&&c.knowledge&&c.politics;}).sort().reverse();
+  if(dates.length>0){
+    var today=toDateStr(new Date());var yesterday=toDateStr(new Date(Date.now()-864e5));
+    var mostRecent=dates[0];
+    if(mostRecent===today||mostRecent===yesterday){
+      var streak=1;
+      for(var i=1;i<dates.length;i++){var d=(new Date(dates[i-1])-new Date(dates[i]))/864e5;if(Math.abs(d-1)<0.1)streak++;else break;}
+      return streak;
+    }
+  }
+  /* fallback: SRS review history */
+  if(srsState&&srsState.stats&&srsState.stats.reviewHistory){
+    var studiedDates=Object.keys(srsState.stats.reviewHistory).sort().reverse();
+    if(studiedDates.length>0){
+      var t2=toDateStr(new Date());var y2=toDateStr(new Date(Date.now()-864e5));
+      var mr=studiedDates[0];
+      if(mr===t2||mr===y2){
+        var s2=1;
+        for(var j=1;j<studiedDates.length;j++){var d2=(new Date(studiedDates[j-1])-new Date(studiedDates[j]))/864e5;if(Math.abs(d2-1)<0.1)s2++;else break;}
+        return s2;
+      }
+    }
+    return 0;
+  }
+  /* last resort: data dates */
+  if(allDates.length===0)return 0;var s3=1;
+  for(var k=1;k<allDates.length;k++){var d3=(new Date(allDates[k-1])-new Date(allDates[k]))/864e5;if(Math.abs(d3-1)<0.1)s3++;else break;}
+  return s3;
+}
+
+function saveState(){try{var s={d:currentDate,c:currentCategory,n:displayCount,i:currentIndex};localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}catch(e){}}
+function loadState(){try{var s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch(e){}return null;}
+function updateHubCounts(){updateHubDueCounts();}
+
+function switchView(from,to){from.classList.remove('view-visible');from.setAttribute('aria-hidden','true');to.classList.add('view-visible');to.setAttribute('aria-hidden','false');setTimeout(function(){to.scrollTop=0;if(to.focus)to.focus();},60);}
+function goToHub(){updateHubCardStates();switchView(document.getElementById('landingView'),document.getElementById('hubView'));}
+function backToHub(){switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
+function goToLanding(){refreshLandingStats();switchView(document.getElementById('hubView'),document.getElementById('landingView'));}
+
+function refreshLandingStats(){
+  document.getElementById('landingStreak').textContent='已坚持 '+computeStreak()+' 天';
+  document.getElementById('landingDate').textContent=allDates.length>0?reportsData.reports[allDates[0]].date:'—';
+  document.getElementById('landingQuote').textContent=pickQuote();
+  document.getElementById('landingCheckinCount').textContent=getCheckinCount();
+}
+
+function getCurrentItems(){
+  var report=currentDate?reportsData.reports[currentDate]:null;
+  if(!report)return[];
+  if(currentCategory==='idioms')return report.idioms||[];
+  if(currentCategory==='vocab')return report.vocab||[];
+  if(currentCategory==='politics')return report.politics||[];
+  return report.knowledge||[];
+}
+
+function renderCategoryContent(){
+  var cfg=CATEGORY_CONFIG[currentCategory];
+  document.getElementById('topbarDate').textContent=currentDate?reportsData.reports[currentDate].date:'—';
+  populateSelect();
+  var allItems=getCurrentItems();
+  var total=allItems.length;
+  var html='';
+
+  function buildCounts(total){
+    var a=COUNT_OPTIONS.filter(function(n){return n<total;});
+    a.push(0);
+    return a.filter(function(v,i,s){return s.indexOf(v)===i;});
+  }
+
+  function pillsHTML(counts){
+    var labels={3:'3个',5:'5个',10:'10个',0:'全部'};
+    var h='<div class="count-selector">';
+    counts.forEach(function(c){
+      h+='<button class="count-pill'+(c===displayCount?' active':'')+'" onclick="setCount('+c+')">'+labels[c]+'</button>';
+    });
+    h+='</div>';
+    return h;
+  }
+
+  // --- Empty ---
+  if(total===0){
+    html+='<div class="empty-state">';
+    html+='<span class="empty-icon">'+cfg.emptyIcon+'</span>';
+    html+='<div class="empty-text">'+cfg.emptyText+'</div>';
+    html+='<div class="empty-hint">'+cfg.emptyHint+'</div>';
+    html+='</div>';
+    document.getElementById('content').innerHTML=html;
+    var cv=document.getElementById('contentView');if(cv)cv.scrollTop=0;
+    return;
+  }
+
+  var counts=buildCounts(total);
+  if(displayCount===0||displayCount>total)displayCount=0;
+  var items=displayCount===0?allItems:allItems.slice(0,displayCount);
+  var actualTotal=items.length;
+
+  // Clamp index
+  if(currentIndex>=actualTotal)currentIndex=actualTotal-1;
+  if(currentIndex<0)currentIndex=0;
+
+  var isIdiom=currentCategory==='idioms';
+  var isVocab=currentCategory==='vocab';
+  var unit=isIdiom?'个':'条';
+  var sectionLabel=isIdiom?'Idioms':(isVocab?'Vocab':'Knowledge');
+
+  html+='<section class="section">';
+  html+='<div class="section-label">'+sectionLabel+'</div>';
+  html+='<div class="section-header">';
+  html+='<h2 class="section-title">'+cfg.title+' <span class="count">'+actualTotal+'/'+total+unit+'</span></h2>';
+  html+=pillsHTML(counts);
+  html+='</div>';
+
+  // --- Flashcard ---
+  if(currentIndex<actualTotal){
+    var item=items[currentIndex];
+    html+='<div class="flashcard-wrap">';
+    html+='<div class="flashcard-progress">第 '+(currentIndex+1)+'/'+actualTotal+unit+'</div>';
+    html+='<div class="flashcard">';
+    if(isIdiom){
+      html+='<div class="fc-idiom-word">'+esc(item.idiom)+'</div>';
+      html+='<div class="fc-idiom-explain">'+esc(item.explanation||'')+'</div>';
+      if(item.focus)html+='<div class="fc-idiom-focus">'+esc(item.focus)+'</div>';
+    } else {
+      html+='<div class="fc-k-tag">'+esc(item.category)+'</div>';
+      html+='<div class="fc-k-title">'+esc(item.title)+'</div>';
+      html+='<div class="fc-k-body">'+esc(item.body)+'</div>';
+      if(item.exam_point)html+='<div class="fc-exam-point">'+esc(item.exam_point)+'</div>';
+    }
+    html+='</div>';
+
+    // Navigation
+    html+='<div class="flashcard-nav">';
+    html+='<button class="fc-nav-btn" onclick="prevCard()"'+(currentIndex===0?' disabled':'')+'>← 上一个</button>';
+    if(currentIndex<actualTotal-1){
+      html+='<button class="fc-nav-btn fc-nav-primary" onclick="nextCard()">记住了 →</button>';
+    } else {
+      html+='<button class="fc-nav-btn fc-nav-primary" onclick="finishSession()">✓ 完成</button>';
+    }
+    html+='</div>';
+    html+='</div>';
+  } else {
+    // Completion
+    html+='<div class="flashcard-done">';
+    html+='<span class="fc-done-icon">✓</span>';
+    html+='<div class="fc-done-text">全部完成</div>';
+    html+='<div class="fc-done-hint">今天又进步了一点</div>';
+    html+='<button class="fc-nav-btn fc-nav-primary" style="margin-top:28px" onclick="currentIndex=0;renderCategoryContent();">再来一遍</button>';
+    html+='</div>';
+  }
+
+  html+='</section>';
+
+  document.getElementById('content').innerHTML=html;
+  var cv=document.getElementById('contentView');if(cv)cv.scrollTop=0;
+  // Update bottom nav disabled states
+  var idx=allDates.indexOf(currentDate);
+  var prevBtn=document.querySelector('button[onclick*="prevDay"]');
+  var nextBtn=document.querySelector('button[onclick*="nextDay"]');
+  if(prevBtn)prevBtn.disabled=idx>=allDates.length-1;
+  if(nextBtn)nextBtn.disabled=idx<=0;
+}
+
+function nextCard(){currentIndex++;renderCategoryContent();saveState();}
+function prevCard(){if(currentIndex>0){currentIndex--;renderCategoryContent();saveState();}}
+function finishSession(){var items=getCurrentItems();var n=displayCount===0?items.length:Math.min(displayCount,items.length);currentIndex=n;renderCategoryContent();saveState();}
+
+function setCount(n){displayCount=n;currentIndex=0;renderCategoryContent();saveState();}
+
+function populateSelect(){
+  var sel=document.getElementById('dateSelect');
+  if(!sel)return;
+  sel.innerHTML=allDates.map(function(d){return '<option value="'+d+'"'+(d===currentDate?' selected':'')+'>'+d.slice(5)+'</option>';}).join('');
+}
+
+function prevDay(){var i=allDates.indexOf(currentDate);if(i<allDates.length-1){currentDate=allDates[i+1];currentIndex=0;renderCategoryContent();saveState();}}
+function nextDay(){var i=allDates.indexOf(currentDate);if(i>0){currentDate=allDates[i-1];currentIndex=0;renderCategoryContent();saveState();}}
+function jumpTo(d){currentDate=d;currentIndex=0;renderCategoryContent();saveState();}
+function goToday(){if(allDates.length>0){currentDate=allDates[0];currentIndex=0;renderCategoryContent();saveState();}}
+
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+/* ══════════════════════════════════════════
+   SRS: SM-2 Algorithm + State Management
+   ══════════════════════════════════════════ */
+
+function toDateStr(d){return d instanceof Date?d.toISOString().slice(0,10):d;}
+function addDays(ds,n){var d=new Date(ds);d.setDate(d.getDate()+n);return toDateStr(d);}
+function daysAgo(ds){return Math.floor((new Date()-new Date(ds))/864e5);}
+
+function createCardState(){
+  return {ease:2.5,interval:0,reps:0,nextReview:null,lastReview:null,firstLearned:null,status:'new'};
+}
+
+function sm2(card,rating,now){
+  var today=toDateStr(now||new Date());
+  var s=Object.assign({},card);
+  if(rating===1){
+    // Again: reset
+    s.reps=0;s.interval=1;
+  }else if(rating===3){
+    // Hard
+    s.interval=Math.max(1,Math.round((s.interval||1)*1.2));
+    s.ease=Math.max(1.3,s.ease-0.15);s.reps+=1;
+  }else if(rating===5){
+    // Good
+    if(s.reps===0)s.interval=4;
+    else if(s.reps===1)s.interval=10;
+    else s.interval=Math.round(s.interval*s.ease*1.3);
+    s.ease=Math.min(3.0,s.ease+0.15);s.reps+=1;
+  }
+  s.nextReview=addDays(today,s.interval);
+  s.lastReview=today;
+  if(!s.firstLearned)s.firstLearned=today;
+  s.status=s.interval>=60?'mastered':s.interval>=21?'graduate':'learning';
+  return s;
+}
+
+function intervalHint(card,rating){
+  if(!card||card.interval===0){
+    if(rating===1)return '再来一次';
+    if(rating===3)return '<10分钟';
+    return '4天';
+  }
+  var s=Object.assign({},card);
+  if(rating===1)return '再来一次';
+  if(rating===3){s.interval=Math.max(1,Math.round(s.interval*1.2));}
+  else{s.interval=s.reps===0?4:s.reps===1?10:Math.round(s.interval*s.ease*1.3);}
+  if(s.interval<1)return '<1天';
+  if(s.interval===1)return '1天';
+  if(s.interval<30)return s.interval+'天';
+  return Math.round(s.interval/30)+'月';
+}
+
+/* ── SRS State Persistence ── */
+
+function loadSRSState(){
+  try{
+    var raw=localStorage.getItem(SRS_KEY);
+    if(raw){
+      var s=JSON.parse(raw);
+      if(s.version===SRS_VERSION)return s;
+    }
+  }catch(e){}
+  return null;
+}
+
+function saveSRSState(){
+  try{localStorage.setItem(SRS_KEY,JSON.stringify(srsState));}catch(e){}
+}
+
+/* ── Version Check ── */
+
+async function checkVersion(){
+  try{
+    var resp=await fetch('version.txt?t='+Date.now(),{signal:AbortSignal.timeout(3000)});
+    if(!resp.ok)return;
+    var remoteVersion=parseInt((await resp.text()).trim(),10);
+    if(isNaN(remoteVersion))return;
+    var localVersion=parseInt(localStorage.getItem('kaogong_version')||'0',10);
+    if(remoteVersion>localVersion){
+      localStorage.setItem('kaogong_version',String(remoteVersion));
+      showUpdateBanner();
+    }
+  }catch(e){/* silently skip */}
+}
+
+function showUpdateBanner(){
+  var banner=document.createElement('div');
+  banner.id='updateBanner';
+  banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:0.8rem;z-index:9999;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.15);animation:fadeInUp 0.3s ease;white-space:nowrap;';
+  banner.textContent='有新版本，点击刷新 ✨';
+  banner.onclick=function(){
+    if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+      // Tell SW to skip waiting, then reload
+      navigator.serviceWorker.controller.postMessage({type:'SKIP_WAITING'});
+    }
+    location.reload();
+  };
+  document.body.appendChild(banner);
+  // Auto-dismiss after 15s
+  setTimeout(function(){if(banner.parentNode)banner.remove();},15000);
+}
+
+function initSRSState(){
+  srsState=loadSRSState();
+  if(!srsState){
+    srsState={
+      version:SRS_VERSION,
+      items:{},
+      settings:{dailyLimits:{idioms:10,vocab:6,knowledge:5}},
+      stats:{totalLearned:0,totalMastered:0,streakDays:0,lastStudyDate:null,totalReviews:0,reviewHistory:{}},
+      updatedAt:Date.now()
+    };
+  }
+  // Migrate old format if needed
+  if(!srsState.updatedAt)srsState.updatedAt=Date.now();
+}
+
+/* ── Queue Builder ── */
+
+function shuffle(a){var b=a.slice();for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}return b;}
+
+function getItemKey(cat,item){
+  if(cat==='idioms')return cat+':'+(item.idiom||item.id);
+  return cat+':'+(item.title||item.id);
+}
+
+function buildQueue(category){
+  if(!ITEM_POOLS)return null;
+  var pool=ITEM_POOLS[category];
+  if(!pool||!pool.length)return null;
+
+  var limit=srsState.settings.dailyLimits[category]||5;
+  var today=toDateStr(new Date());
+  var dueReviews=[],newItems=[];
+
+  pool.forEach(function(item){
+    var key=getItemKey(category,item);
+    var card=srsState.items[key];
+    if(!card||card.nextReview===null){
+      // New — never studied
+      newItems.push(key);
+    }else if(card.nextReview<=today){
+      // Due for review
+      dueReviews.push({key:key,nextReview:card.nextReview});
+    }
+    // else: future — skip
+  });
+
+  // Sort due reviews: most overdue first
+  dueReviews.sort(function(a,b){return a.nextReview.localeCompare(b.nextReview);});
+
+  // Shuffle new items
+  newItems=shuffle(newItems);
+
+  // Build: reviews first, then new up to limit
+  var queue=[];
+  var reviewCount=Math.min(dueReviews.length,limit);
+  for(var i=0;i<reviewCount;i++)queue.push(dueReviews[i].key);
+  var newCount=Math.min(limit-queue.length,newItems.length);
+  for(var i=0;i<newCount;i++)queue.push(newItems[i]);
+
+  return {
+    category:category,
+    queue:queue,
+    idx:0,
+    reviewCount:reviewCount,
+    newCount:newCount,
+    overdueTotal:dueReviews.length,
+    newRemaining:newItems.length-newCount,
+    totalPool:pool.length
+  };
+}
+
+/* ── Stats ── */
+
+function recomputeStats(){
+  var today=toDateStr(new Date());
+  var totalLearned=0,totalMastered=0;
+  for(var k in srsState.items){
+    var c=srsState.items[k];
+    if(c.status!=='new')totalLearned++;
+    if(c.status==='mastered')totalMastered++;
+  }
+  srsState.stats.totalLearned=totalLearned;
+  srsState.stats.totalMastered=totalMastered;
+
+  // Streak
+  if(srsState.stats.lastStudyDate){
+    var d=new Date(srsState.stats.lastStudyDate);
+    var t=new Date(today);
+    var diff=Math.floor((t-d)/864e5);
+    if(diff===1){srsState.stats.streakDays+=1;}else if(diff>1){srsState.stats.streakDays=1;}
+  }else{
+    srsState.stats.streakDays=1;
+  }
+  srsState.stats.lastStudyDate=today;
+
+  // Capped review history
+  srsState.stats.reviewHistory[today]=(srsState.stats.reviewHistory[today]||0);
+  var keys=Object.keys(srsState.stats.reviewHistory).sort();
+  while(keys.length>365){delete srsState.stats.reviewHistory[keys.shift()];}
+
+  srsState.updatedAt=Date.now();
+  saveSRSState();
+}
+
+function countDueToday(){
+  if(!srsState||!ITEM_POOLS)return {idioms:0,vocab:0,knowledge:0,total:0};
+  var today=toDateStr(new Date());
+  var counts={idioms:0,vocab:0,knowledge:0,total:0};
+  ['idioms','vocab','knowledge'].forEach(function(cat){
+    var pool=ITEM_POOLS[cat];
+    if(!pool)return;
+    pool.forEach(function(item){
+      var key=getItemKey(cat,item);
+      var card=srsState.items[key];
+      if(card&&card.nextReview&&card.nextReview<=today&&card.status!=='mastered')counts[cat]++;
+    });
+    counts.total+=counts[cat];
+  });
+  return counts;
+}
+
+/* ══════════════════════════════════════════
+   SRS: Cloudflare Sync
+   ══════════════════════════════════════════ */
+
+function getUID(){
+  var uid=localStorage.getItem('kaogong_uid');
+  if(!uid){
+    uid='kg-'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,4);
+    localStorage.setItem('kaogong_uid',uid);
+  }
+  return uid;
+}
+
+async function syncData(){
+  if(!srsState)return;
+  var uid=getUID();
+  var syncUrl='https://shanganbujizhan.top/sync?uid='+encodeURIComponent(uid);
+  try{
+    // GET: fetch remote state
+    var resp=await fetch(syncUrl,{method:'GET',signal:AbortSignal.timeout(5000)});
+    if(resp.ok){
+      var remote=await resp.json();
+      if(remote&&remote.updatedAt){
+        // Merge: take the newer one
+        if(remote.updatedAt>(srsState.updatedAt||0)){
+          // Remote is newer — use remote
+          srsState=remote;
+          saveSRSState();
+        }
+        // else: local is newer or equal, keep local
+      }
+    }
+  }catch(e){/* offline — silently skip */}
+
+  // POST: push local state
+  try{
+    await fetch(syncUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(srsState),
+      signal:AbortSignal.timeout(5000)
+    });
+  }catch(e){/* offline — silently skip */}
+}
+
+/* ══════════════════════════════════════════
+   SRS: Learning Flow
+   ══════════════════════════════════════════ */
+
+function startSRSLearning(category){
+  if(!ITEM_POOLS){
+    alert('数据加载中，请稍后重试');
+    return;
+  }
+  learnSession=buildQueue(category);
+  if(!learnSession||learnSession.queue.length===0){
+    renderLearnEmpty(category);
+    document.getElementById('learnTitle').textContent=CATEGORY_CONFIG[category].title+' · 学习';
+    document.getElementById('learnProgress').textContent='0/0';
+    switchView(activeView(),document.getElementById('learnView'));
+    return;
+  }
+  cardRevealed=false;
+  document.getElementById('learnTitle').textContent=CATEGORY_CONFIG[category].title+' · 学习';
+  renderLearnCard();
+  switchView(activeView(),document.getElementById('learnView'));
+}
+
+function activeView(){
+  var vs=document.querySelectorAll('.view');
+  for(var i=0;i<vs.length;i++){if(vs[i].classList.contains('view-visible'))return vs[i];}
+  return document.getElementById('hubView');
+}
+
+function renderLearnCard(){
+  if(!learnSession||learnSession.idx>=learnSession.queue.length){
+    renderLearnDone();
+    return;
+  }
+  cardRevealed=false;
+  var cat=learnSession.category;
+  var key=learnSession.queue[learnSession.idx];
+  var item=findItemByKey(cat,key);
+  if(!item){learnSession.idx++;renderLearnCard();return;}
+
+  var card=srsState.items[key];
+  var isNew=!card||card.nextReview===null;
+  var statusLabel=isNew?'新学':'复习';
+  var total=learnSession.queue.length;
+
+  document.getElementById('learnProgress').textContent=(learnSession.idx+1)+'/'+total;
+  document.getElementById('learnProgressFill').style.width=((learnSession.idx)/total*100)+'%';
+
+  var isIdiom=cat==='idioms';
+  var word=isIdiom?item.idiom:item.title;
+  var tag=isIdiom?item.category:(item.category||'');
+
+  var intervalInfo='';
+  if(!isNew&&card){
+    intervalInfo='上次: '+card.lastReview+' · 间隔 '+card.interval+'天';
+  }
+
+  var html='';
+  html+='<div class="learn-card-wrap">';
+  html+='<div class="learn-card-meta">';
+  html+='<span>'+statusLabel+' · '+(learnSession.idx+1)+'/'+total+'</span>';
+  html+='<span class="learn-card-meta-dot"></span>';
+  html+='<span>复习'+learnSession.reviewCount+' + 新学'+learnSession.newCount+'</span>';
+  if(intervalInfo)html+='<span class="learn-card-meta-dot"></span><span>'+intervalInfo+'</span>';
+  html+='</div>';
+
+  // Card front
+  html+='<div class="learn-card" id="learnCard" onclick="revealCard()">';
+  html+='<div class="learn-card-front">';
+  html+='<div class="lc-word">'+esc(word)+'</div>';
+  html+='<div class="lc-hint">点击卡片查看释义</div>';
+  html+='</div>';
+
+  // Card back (hidden until reveal)
+  html+='<div class="learn-card-back" style="display:none;">';
+  if(isIdiom){
+    html+='<div class="lc-word">'+esc(item.idiom)+'</div>';
+    html+='<div class="lc-body">'+esc(item.explanation||'')+'</div>';
+    if(item.focus)html+='<div class="lc-focus">'+esc(item.focus)+'</div>';
+  }else{
+    html+='<div class="lc-tag">'+esc(tag)+'</div>';
+    html+='<div class="lc-word" style="font-size:1.4rem;letter-spacing:0.04em;">'+esc(item.title||'')+'</div>';
+    html+='<div class="lc-body">'+esc(item.body||'')+'</div>';
+    if(item.exam_point)html+='<div class="lc-exam-point">'+esc(item.exam_point)+'</div>';
+  }
+  html+='</div>';
+  html+='</div>';
+
+  // Rating buttons
+  var cardState=srsState.items[key]||createCardState();
+  html+='<div class="rating-bar">';
+  html+='<button class="rating-btn again" onclick="event.stopPropagation();rateCard(1)" aria-label="忘记">';
+  html+='<span class="rating-btn-label">忘记</span>';
+  html+='<span class="rating-btn-sub">'+intervalHint(cardState,1)+'</span>';
+  html+='</button>';
+  html+='<button class="rating-btn hard" onclick="event.stopPropagation();rateCard(3)" aria-label="模糊">';
+  html+='<span class="rating-btn-label">模糊</span>';
+  html+='<span class="rating-btn-sub">'+intervalHint(cardState,3)+'</span>';
+  html+='</button>';
+  html+='<button class="rating-btn good" onclick="event.stopPropagation();rateCard(5)" aria-label="记得">';
+  html+='<span class="rating-btn-label">记得</span>';
+  html+='<span class="rating-btn-sub">'+intervalHint(cardState,5)+'</span>';
+  html+='</button>';
+  html+='</div>';
+  html+='<div class="rating-shortcut">键盘 1 2 3 快速评分</div>';
+
+  html+='</div>'; // .learn-card-wrap
+
+  document.getElementById('learnContent').innerHTML=html;
+  document.getElementById('learnView').scrollTop=0;
+}
+
+function revealCard(){
+  if(cardRevealed)return;
+  cardRevealed=true;
+  var card=document.getElementById('learnCard');
+  var front=card.querySelector('.learn-card-front');
+  var back=card.querySelector('.learn-card-back');
+  if(front)front.style.display='none';
+  if(back)back.style.display='flex';
+}
+
+function rateCard(rating){
+  if(!learnSession||learnSession.idx>=learnSession.queue.length)return;
+  var key=learnSession.queue[learnSession.idx];
+  var card=srsState.items[key]||createCardState();
+  var isNew=!card.nextReview;
+
+  srsState.items[key]=sm2(card,rating);
+  srsState.stats.totalReviews=(srsState.stats.totalReviews||0)+1;
+  if(isNew&&rating!==1)learnSession.newCount=Math.max(0,(learnSession.newCount||0)-1);
+
+  learnSession.idx++;
+
+  if(learnSession.idx>=learnSession.queue.length){
+    // Session complete
+    recomputeStats();
+    learnSession=null;
+    syncData();
+    saveSRSState();
+    renderLearnDone();
+  }else{
+    saveSRSState();
+    renderLearnCard();
+  }
+}
+
+function renderLearnDone(){
+  var stats={
+    review:learnSession?learnSession.reviewCount:0,
+    newc:learnSession?learnSession.newCount:0,
+    again:srsState.stats.totalReviews||0
+  };
+  var html='';
+  html+='<div class="learn-done">';
+  html+='<span class="learn-done-icon">✓</span>';
+  html+='<div class="learn-done-title">今日学习完成</div>';
+  html+='<div class="learn-done-stats">复习: '+(learnSession?learnSession.reviewCount:0)+' 个 &nbsp; 新学: '+(learnSession?learnSession.newCount:0)+' 个</div>';
+  html+='<button class="learn-done-btn primary" onclick="exitSRS()">返回首页</button>';
+  html+='</div>';
+  document.getElementById('learnContent').innerHTML=html;
+  document.getElementById('learnProgress').textContent='完成';
+  document.getElementById('learnProgressFill').style.width='100%';
+  updateLandingSRSStats();
+}
+
+function showCategoryComplete(cat){
+  // Show completion screen when user clicks a checked-in card
+  var cfg=CATEGORY_CONFIG[cat];
+  var limits=srsState.settings.dailyLimits;
+  var limit=limits[cat]||5;
+  var due=countDueToday();
+  var catDue=due[cat]||0;
+  document.getElementById('learnTitle').textContent=cfg.title;
+  document.getElementById('learnProgress').textContent='已完成';
+  document.getElementById('learnProgressFill').style.width='100%';
+  var html='';
+  html+='<div class="learn-done">';
+  html+='<span class="learn-done-icon">✓</span>';
+  html+='<div class="learn-done-title">今日已完成</div>';
+  html+='<div class="learn-done-stats">每日限额: '+limit+' 个</div>';
+  if(catDue>0){
+    html+='<div class="learn-done-stats" style="margin-top:8px;color:var(--ink-muted);">还有 '+catDue+' 个逾期待复习</div>';
+    html+='<button class="learn-done-btn" style="margin-top:16px" onclick="forceLearnCategory(\''+cat+'\')">继续复习 ('+catDue+'个)</button>';
+  }
+  html+='<button class="learn-done-btn primary" style="margin-top:'+(catDue>0?'8px':'16px')+'" onclick="learnSession=null;cardRevealed=false;updateHubDueCounts();updateLandingSRSStats();switchView(document.getElementById(\'learnView\'),document.getElementById(\'hubView\'));">返回</button>';
+  html+='</div>';
+  document.getElementById('learnContent').innerHTML=html;
+  switchView(activeView(),document.getElementById('learnView'));
+}
+
+function renderLearnEmpty(category){
+  var cfg=CATEGORY_CONFIG[category];
+  var dueCount=countDueToday();
+  var catDue=dueCount[category]||0;
+  var html='';
+  if(catDue>0){
+    html+='<div class="learn-empty">';
+    html+='<span class="learn-empty-icon">📋</span>';
+    html+='<div class="learn-empty-text">还有 '+catDue+' 个待复习</div>';
+    html+='<div class="learn-empty-hint">今日限额已用完，明天继续</div>';
+    html+='<button class="learn-done-btn primary" style="margin-top:20px" onclick="forceLearnCategory(\''+category+'\')">继续复习 ('+catDue+'个)</button>';
+    html+='</div>';
+  }else{
+    html+='<div class="learn-empty">';
+    html+='<span class="learn-empty-icon">🎉</span>';
+    html+='<div class="learn-empty-text">今天没有待复习内容</div>';
+    html+='<div class="learn-empty-hint">所有卡片都在按计划复习中</div>';
+    html+='</div>';
+  }
+  html+='<button class="learn-done-btn" style="margin:20px auto;display:block" onclick="exitSRS()">返回</button>';
+  document.getElementById('learnContent').innerHTML=html;
+}
+
+function forceLearnCategory(category){
+  // Build queue with only due reviews (no daily limit)
+  if(!ITEM_POOLS)return;
+  var pool=ITEM_POOLS[category];
+  var today=toDateStr(new Date());
+  var dueReviews=[];
+  pool.forEach(function(item){
+    var key=getItemKey(category,item);
+    var card=srsState.items[key];
+    if(card&&card.nextReview&&card.nextReview<=today&&card.status!=='mastered'){
+      dueReviews.push(key);
+    }
+  });
+  dueReviews.sort(function(a,b){
+    return (srsState.items[a]||{}).nextReview.localeCompare((srsState.items[b]||{}).nextReview);
+  });
+  if(dueReviews.length===0)return;
+  learnSession={
+    category:category,queue:dueReviews,idx:0,
+    reviewCount:dueReviews.length,newCount:0,
+    overdueTotal:dueReviews.length,newRemaining:0,totalPool:pool.length
+  };
+  cardRevealed=false;
+  renderLearnCard();
+}
+
+function exitSRS(){
+  if(learnSession&&learnSession.category)checkIn(learnSession.category);
+  learnSession=null;
+  cardRevealed=false;
+  updateHubDueCounts();
+  updateLandingSRSStats();
+  switchView(document.getElementById('learnView'),document.getElementById('hubView'));
+}
+
+function findItemByKey(cat,key){
+  if(!ITEM_POOLS||!ITEM_POOLS[cat])return null;
+  var pool=ITEM_POOLS[cat];
+  for(var i=0;i<pool.length;i++){
+    if(getItemKey(cat,pool[i])===key)return pool[i];
+  }
+  return null;
+}
+
+/* ══════════════════════════════════════════
+   SRS: Mode + Settings
+   ══════════════════════════════════════════ */
+
+function setMode(mode){
+  currentMode=mode;
+  document.getElementById('modeBrowse').classList.toggle('active',mode==='browse');
+  document.getElementById('modeLearn').classList.toggle('active',mode==='learn');
+  if(mode==='learn'){
+    document.getElementById('hubModeLabel').textContent='SRS Learning';
+    document.getElementById('hubModeTitle').textContent='智能学习';
+  }else{
+    document.getElementById('hubModeLabel').textContent='Daily Browse';
+    document.getElementById('hubModeTitle').textContent='今日学习';
+  }
+  updateHubDueCounts();
+}
+
+function updateHubDueCounts(){
+  var due=srsState&&ITEM_POOLS?countDueToday():{idioms:0,vocab:0,knowledge:0};
+  ['idioms','vocab','knowledge','politics'].forEach(function(cat){
+    var desc=document.getElementById('hubDesc'+(cat.charAt(0).toUpperCase()+cat.slice(1)));
+    if(!desc)return;
+    if(isCheckedIn(cat)){
+      desc.textContent='✓ 今日已完成';
+      return;
+    }
+    if(cat==='politics'){
+      if(reportsData&&allDates.length>0){
+        var r=reportsData.reports[allDates[0]];
+        desc.textContent='时政热点 · '+((r.politics||[]).length||0)+'条';
+      }
+      return;
+    }
+    if(currentMode==='browse'&&reportsData&&allDates.length>0){
+      var r=reportsData.reports[allDates[0]];
+      var labels={idioms:'每日积累 · ',vocab:'言语理解 · ',knowledge:'百科知识 · '};
+      var units={idioms:'个',vocab:'组',knowledge:'条'};
+      desc.textContent=labels[cat]+((r[cat]||[]).length)+units[cat];
+    }else if(currentMode==='learn'&&ITEM_POOLS){
+      var itemCount=ITEM_POOLS[cat]?ITEM_POOLS[cat].length:0;
+      desc.textContent=itemCount+'条 · 待复习 '+due[cat]+' 个';
+    }
+  });
+}
+
+function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;var btn=document.getElementById('contentCheckinBtn');if(btn){if(isCheckedIn(cat)){btn.textContent='✓ 已签到';btn.disabled=true;btn.style.opacity='0.6';}else{btn.textContent='签到';btn.disabled=false;btn.style.opacity='1';}btn.style.display='';}renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
+
+function handleHubCardClick(cat){
+  if(currentMode==='learn'&&isCheckedIn(cat)){
+    // Already completed today → show completion screen
+    showCategoryComplete(cat);
+  }else if(cat==='politics'){
+    openContent(cat);
+  }else if(currentMode==='learn'){
+    startSRSLearning(cat);
+  }else{
+    openContent(cat);
+  }
+}
+
+/* ── Settings ── */
+
+function openSettings(){
+  renderSettingsPanel();
+  switchView(activeView(),document.getElementById('settingsView'));
+}
+
+function closeSettings(){
+  switchView(document.getElementById('settingsView'),document.getElementById('hubView'));
+}
+
+function renderSettingsPanel(){
+  if(!srsState)return;
+  var limits=srsState.settings.dailyLimits;
+  var labels={idioms:'成语',vocab:'实词',knowledge:'常识'};
+  var html='';
+  var total=0;
+  Object.keys(labels).forEach(function(cat){
+    var val=limits[cat]||5;
+    total+=val;
+    html+='<div class="settings-group">';
+    html+='<div class="settings-label"><span>'+labels[cat]+'</span><span class="settings-label-value">'+val+'</span></div>';
+    html+='<input type="range" class="settings-slider" min="1" max="50" value="'+val+'" oninput="updateSettingsPreview(this,\''+cat+'\')" id="slider_'+cat+'">';
+    html+='</div>';
+  });
+  document.getElementById('settingsSliders').innerHTML=html;
+  document.getElementById('settingsTotal').textContent='今日总计: '+total+' 个';
+  document.getElementById('syncCodeText').textContent=getUID();
+}
+
+function updateSettingsPreview(slider,cat){
+  var val=parseInt(slider.value);
+  document.getElementById('slider_'+cat).parentElement.querySelector('.settings-label-value').textContent=val;
+  var total=0;
+  ['idioms','vocab','knowledge'].forEach(function(c){
+    var s=document.getElementById('slider_'+c);
+    total+=parseInt(s?s.value:(srsState.settings.dailyLimits[c]||5));
+  });
+  document.getElementById('settingsTotal').textContent='今日总计: '+total+' 个';
+}
+
+function saveSettings(){
+  ['idioms','vocab','knowledge'].forEach(function(cat){
+    var s=document.getElementById('slider_'+cat);
+    if(s)srsState.settings.dailyLimits[cat]=parseInt(s.value);
+  });
+  srsState.updatedAt=Date.now();
+  saveSRSState();
+  syncData();
+  closeSettings();
+}
+
+function resetSettings(){
+  srsState.settings.dailyLimits={idioms:10,vocab:6,knowledge:5};
+  srsState.updatedAt=Date.now();
+  saveSRSState();
+  renderSettingsPanel();
+}
+
+function copySyncCode(){
+  var code=getUID();
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(code).then(function(){
+      alert('同步码已复制：'+code+'\n把此码粘贴到另一台设备设置中即可同步');
+    });
+  }else{
+    prompt('复制此同步码，在新设备的设置中输入：',code);
+  }
+}
+
+async function bindSyncCode(){
+  var input=document.getElementById('bindCodeInput');
+  var msg=document.getElementById('bindMsg');
+  var code=input.value.trim();
+  if(!code||code.length<5){
+    msg.style.display='block';
+    msg.style.color='var(--rating-again)';
+    msg.textContent='请粘贴有效的同步码';
+    return;
+  }
+  if(code===getUID()){
+    msg.style.display='block';
+    msg.style.color='var(--ink-muted)';
+    msg.textContent='这就是当前设备的同步码，无需绑定';
+    return;
+  }
+  localStorage.setItem('kaogong_uid',code);
+  msg.style.display='block';
+  msg.style.color='var(--ink-muted)';
+  msg.textContent='正在同步...';
+  try{
+    var resp=await fetch('https://shanganbujizhan.top/sync?uid='+encodeURIComponent(code),{signal:AbortSignal.timeout(5000)});
+    if(!resp.ok)throw new Error('network');
+    var remote=await resp.json();
+    if(remote&&remote.items&&Object.keys(remote.items).length>0){
+      srsState=remote;
+      saveSRSState();
+      document.getElementById('syncCodeText').textContent=code;
+      updateHubDueCounts();
+      updateLandingSRSStats();
+      msg.style.color='var(--rating-good)';
+      msg.textContent='已绑定！同步了 '+Object.keys(remote.items).length+' 条学习记录';
+    }else{
+      document.getElementById('syncCodeText').textContent=code;
+      msg.style.color='var(--rating-good)';
+      msg.textContent='已绑定，云端暂无数据，先开始学习吧';
+    }
+    input.value='';
+  }catch(e){
+    document.getElementById('syncCodeText').textContent=code;
+    msg.style.color='var(--ink-muted)';
+    msg.textContent='已绑定（离线同步将在联网后自动完成）';
+    input.value='';
+  }
+}
+
+/* ── Landing Stats ── */
+
+function updateLandingSRSStats(){
+  if(!srsState||!ITEM_POOLS)return;
+  var due=countDueToday();
+  var el=document.getElementById('landingSRS');
+  if(el){
+    el.style.display='flex';
+    document.getElementById('landingDue').textContent=due.total;
+    document.getElementById('landingLearned').textContent=srsState.stats.totalLearned;
+  }
+}
+
+async function init(){
+  try {
+    var today=new Date().toISOString().slice(0,10);
+
+    // Version check: detect new deployment
+    checkVersion();
+
+    // Fetch data.json + items.json in parallel
+    var results=await Promise.allSettled([
+      fetch('data.json?v='+today+'-v15'),
+      fetch('items.json?v='+today+'-v1')
+    ]);
+
+    // --- data.json (required for daily browse) ---
+    if(results[0].status==='fulfilled'&&results[0].value.ok){
+      reportsData=await results[0].value.json();
+      allDates=Object.keys(reportsData.reports).sort().reverse();
+      if(allDates.length>0)currentDate=allDates[0];
+    }else{
+      console.warn('data.json load failed, browse mode degraded');
+    }
+
+    // --- items.json (enables SRS learning) ---
+    if(results[1].status==='fulfilled'&&results[1].value.ok){
+      ITEM_POOLS=await results[1].value.json();
+    }else{
+      console.warn('items.json load failed, SRS mode degraded');
+    }
+
+    // --- SRS Init ---
+    initSRSState();
+    if(ITEM_POOLS)syncData().then(function(){updateHubDueCounts();updateLandingSRSStats();});
+
+    // Restore saved browse state
+    var saved=loadState();
+    if(saved&&saved.d&&allDates.indexOf(saved.d)>=0){
+      currentDate=saved.d;
+      if(saved.c)currentCategory=saved.c;
+      if(typeof saved.n==='number')displayCount=saved.n;
+      if(typeof saved.i==='number')currentIndex=saved.i;
+    }
+
+    refreshLandingStats();
+    updateHubCounts();
+    if(ITEM_POOLS)updateLandingSRSStats();
+    populateSelect();
+    renderCategoryContent();
+  } catch(err) {
+    console.error('加载失败:',err);
+    document.getElementById('landingStreak').textContent='加载失败，请刷新重试';
+    var btn=document.querySelector('.landing-btn');
+    if(btn){btn.textContent='重新加载';btn.onclick=function(){location.reload();};}
+  }
+}
+
+// Keyboard support: hub cards + flashcard arrows + SRS rating
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&e.target.classList.contains('hub-card')){
+    e.target.click();
+    return;
+  }
+  // SRS Learning mode: 1=Again, 2=Hard, 3=Good
+  var lv=document.getElementById('learnView');
+  if(lv&&lv.classList.contains('view-visible')&&learnSession){
+    if(e.key==='1'){e.preventDefault();rateCard(1);}
+    else if(e.key==='2'){e.preventDefault();rateCard(3);}
+    else if(e.key==='3'){e.preventDefault();rateCard(5);}
+    else if(e.key==='ArrowRight'){e.preventDefault();if(!cardRevealed)revealCard();}
+    else if(e.key==='ArrowLeft'){e.preventDefault();}
+    else if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(!cardRevealed)revealCard();else rateCard(5);}
+    return;
+  }
+  // Daily browse mode: arrow keys
+  var cv=document.getElementById('contentView');
+  if(cv&&cv.classList.contains('view-visible')){
+    if(e.key==='ArrowRight'){e.preventDefault();nextCard();}
+    else if(e.key==='ArrowLeft'){e.preventDefault();prevCard();}
+  }
+  // Settings: Escape to close
+  var sv=document.getElementById('settingsView');
+  if(e.key==='Escape'&&sv&&sv.classList.contains('view-visible')){
+    closeSettings();
+  }
+});
+
+// Touch swipe support for flashcard navigation
+document.addEventListener('touchstart',function(e){touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;touchStartTime=Date.now();},{passive:true});
+document.addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-touchStartX;
+  var dy=e.changedTouches[0].clientY-touchStartY;
+  var dt=Date.now()-touchStartTime;
+  if(dt<50)return;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>60){
+    var cv=document.getElementById('contentView');
+    if(cv&&cv.classList.contains('view-visible')){
+      if(dx<0)nextCard();
+      else prevCard();
+    }
+  }
+},{passive:true});
+
+// Service Worker — listen for update notifications from SW
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(function(){});
+  navigator.serviceWorker.addEventListener('message',function(e){
+    if(e.data&&e.data.type==='SW_UPDATED')showUpdateBanner();
+  });
+}
+
+init();
