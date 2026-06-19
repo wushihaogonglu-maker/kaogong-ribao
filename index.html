@@ -1282,6 +1282,16 @@ function getCurrentItems(){
   return report.knowledge||[];
 }
 
+// Find most recent date with at least one content category (idioms/vocab/knowledge)
+function getLatestCompleteDate(){
+  if(!allDates.length)return'';
+  for(var i=0;i<allDates.length;i++){
+    var r=reportsData.reports[allDates[i]];
+    if(r&&(r.idioms||r.vocab||r.knowledge))return allDates[i];
+  }
+  return allDates[0];
+}
+
 function renderCategoryContent(){
   var cfg=CATEGORY_CONFIG[currentCategory];
   document.getElementById('topbarDate').textContent=currentDate?reportsData.reports[currentDate].date:'—';
@@ -1965,13 +1975,13 @@ function updateHubDueCounts(){
     }
     if(cat==='politics'){
       if(reportsData&&allDates.length>0){
-        var r=reportsData.reports[allDates[0]];
+        var r=reportsData.reports[getLatestCompleteDate()];
         desc.textContent='时政热点 · '+((r.politics||[]).length||0)+'条';
       }
       return;
     }
     if(currentMode==='browse'&&reportsData&&allDates.length>0){
-      var r=reportsData.reports[allDates[0]];
+      var r=reportsData.reports[getLatestCompleteDate()];
       var labels={idioms:'每日积累 · ',vocab:'言语理解 · ',knowledge:'百科知识 · '};
       var units={idioms:'个',vocab:'组',knowledge:'条'};
       desc.textContent=labels[cat]+((r[cat]||[]).length)+units[cat];
@@ -1982,7 +1992,7 @@ function updateHubDueCounts(){
   });
 }
 
-function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?allDates[0]:'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;var btn=document.getElementById('contentCheckinBtn');if(btn){if(isCheckedIn(cat)){btn.textContent='✓ 已签到';btn.disabled=true;btn.style.opacity='0.6';}else{btn.textContent='签到';btn.disabled=false;btn.style.opacity='1';}btn.style.display='';}renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
+function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?getLatestCompleteDate():'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;var btn=document.getElementById('contentCheckinBtn');if(btn){if(isCheckedIn(cat)){btn.textContent='✓ 已签到';btn.disabled=true;btn.style.opacity='0.6';}else{btn.textContent='签到';btn.disabled=false;btn.style.opacity='1';}btn.style.display='';}renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
 
 function handleHubCardClick(cat){
   if(currentMode==='learn'&&isCheckedIn(cat)){
@@ -2139,7 +2149,7 @@ async function init(){
     if(results[0].status==='fulfilled'&&results[0].value.ok){
       reportsData=await results[0].value.json();
       allDates=Object.keys(reportsData.reports).sort().reverse();
-      if(allDates.length>0)currentDate=allDates[0];
+      if(allDates.length>0)currentDate=getLatestCompleteDate();
     }else{
       console.warn('data.json load failed, browse mode degraded');
     }
