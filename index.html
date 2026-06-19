@@ -828,19 +828,225 @@
 .learn-empty-text { font-size: 1.1rem; font-weight: 600; color: var(--ink-700); margin-bottom: 6px; }
 .learn-empty-hint { font-size: 0.85rem; color: var(--ink-500); }
 
-/* ===== Content Browse View ===== */
-.content-wrap { max-width: 640px; margin: 0 auto; padding: 24px 20px; }
-.content-item { background: var(--bg-card); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; border: 1px solid var(--ink-200); box-shadow: var(--shadow-xs); }
-.content-item .ci-title { font-family: 'Noto Serif SC', serif; font-size: 1.2rem; font-weight: 700; color: var(--ink-900); margin-bottom: 12px; }
-.content-item .ci-body { font-size: 0.9rem; line-height: 1.8; color: var(--ink-700); }
-.content-item .ci-focus { margin-top: 10px; padding: 8px 14px; background: var(--brand-50); border-radius: 6px; font-size: 0.8rem; color: var(--brand-dark); }
-.content-item .ci-tag { display: inline-block; padding: 4px 10px; background: var(--bg-soft); border-radius: 4px; font-size: 0.72rem; color: var(--ink-500); margin-bottom: 8px; }
-.bottombar { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 20px 0; flex-wrap: wrap; }
-.nav-btn { padding: 10px 18px; background: var(--bg-card); border: 1px solid var(--ink-200); border-radius: 8px; font-size: 0.82rem; font-weight: 500; color: var(--ink-700); cursor: pointer; transition: all 0.2s; font-family: inherit; }
-.nav-btn:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-50); }
-.nav-btn.nav-today { background: var(--ink-900); color: #fff; border-color: var(--ink-900); }
-.nav-select { padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--ink-200); border-radius: 8px; font-size: 0.82rem; color: var(--ink-700); cursor: pointer; font-family: inherit; }
+	/* ===== Content Browse View (v46 redesign) ===== */
+	.content-wrap { max-width: 780px; margin: 0 auto; padding: 24px 20px 100px; }
 
+	/* Content topbar */
+	.browse-topbar {
+	  position: sticky; top: 64px; z-index: 10;
+	  display: flex; align-items: center; justify-content: space-between;
+	  padding: 16px 0; margin-bottom: 28px;
+	  background: rgba(250,248,245,0.9);
+	  backdrop-filter: blur(12px);
+	  -webkit-backdrop-filter: blur(12px);
+	  border-bottom: 1px solid var(--ink-200);
+	}
+	.browse-back-btn {
+	  display: inline-flex; align-items: center; gap: 6px;
+	  background: none; border: 1px solid var(--ink-200);
+	  padding: 8px 16px; border-radius: var(--radius-sm);
+	  font-size: 0.84rem; font-weight: 500; color: var(--ink-700);
+	  cursor: pointer; font-family: inherit;
+	  transition: all 0.2s;
+	}
+	.browse-back-btn:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-50); }
+	.browse-page-title {
+	  font-family: 'Noto Serif SC', serif;
+	  font-size: 1.4rem; font-weight: 700; color: var(--ink-900);
+	}
+	.browse-page-meta {
+	  font-size: 0.78rem; color: var(--ink-500); font-family: 'DM Mono', monospace;
+	}
+
+	/* Section heading */
+	.browse-section-head {
+	  display: flex; align-items: center; justify-content: space-between;
+	  margin-bottom: 20px; padding-bottom: 14px;
+	  border-bottom: 1px solid var(--ink-200);
+	}
+	.browse-section-head-l { display: flex; align-items: baseline; gap: 10px; }
+	.browse-section-title {
+	  font-size: 1.1rem; font-weight: 700; color: var(--ink-900); letter-spacing: 0.04em;
+	}
+	.browse-section-count {
+	  font-size: 0.78rem; color: var(--ink-500); font-family: 'DM Mono', monospace;
+	}
+
+	/* Idiom browse grid */
+	.idiom-browse-grid {
+	  display: grid;
+	  grid-template-columns: repeat(2, 1fr);
+	  gap: 16px;
+	}
+	.idiom-browse-card {
+	  background: var(--bg-card);
+	  border: 1px solid var(--ink-200);
+	  border-radius: var(--radius);
+	  padding: 22px 20px;
+	  box-shadow: var(--shadow-xs);
+	  transition: all 0.25s;
+	}
+	.idiom-browse-card:hover {
+	  box-shadow: var(--shadow-md);
+	  transform: translateY(-2px);
+	  border-color: transparent;
+	}
+	.idiom-browse-tag {
+	  display: inline-block; font-size: 0.66rem; font-weight: 600;
+	  letter-spacing: 0.06em; color: var(--brand);
+	  background: var(--brand-50); padding: 2px 10px; border-radius: 100px;
+	  margin-bottom: 8px;
+	}
+	.idiom-browse-word {
+	  font-family: 'Noto Serif SC', serif;
+	  font-size: 1.15rem; font-weight: 700; color: var(--ink-900);
+	  margin-bottom: 8px; letter-spacing: 0.06em;
+	}
+	.idiom-browse-explain {
+	  font-size: 0.82rem; color: var(--ink-700); line-height: 1.7;
+	  margin-bottom: 8px;
+	}
+	.idiom-browse-focus {
+	  font-size: 0.76rem; color: var(--ink-500); line-height: 1.65;
+	  padding: 8px 12px; background: var(--bg-soft); border-radius: var(--radius-sm);
+	  border-left: 3px solid var(--brand);
+	}
+
+	/* Vocab browse grid */
+	.vocab-browse-grid {
+	  display: grid;
+	  grid-template-columns: repeat(2, 1fr);
+	  gap: 16px;
+	}
+	.vocab-browse-card {
+	  background: var(--bg-card);
+	  border: 1px solid var(--ink-200);
+	  border-radius: var(--radius);
+	  padding: 22px 20px;
+	  box-shadow: var(--shadow-xs);
+	  transition: all 0.25s;
+	  border-top: 3px solid var(--blue);
+	}
+	.vocab-browse-card:hover {
+	  box-shadow: var(--shadow-md); transform: translateY(-2px);
+	  border-top-color: var(--brand-light);
+	}
+	.vocab-browse-word {
+	  font-size: 1.05rem; font-weight: 700; color: var(--ink-900);
+	  margin-bottom: 6px; letter-spacing: 0.04em;
+	}
+	.vocab-browse-body {
+	  font-size: 0.82rem; color: var(--ink-700); line-height: 1.7;
+	}
+
+	/* Knowledge browse list */
+	.knowledge-browse-list { display: flex; flex-direction: column; gap: 14px; }
+	.knowledge-browse-card {
+	  background: var(--bg-card);
+	  border: 1px solid var(--ink-200);
+	  border-radius: var(--radius);
+	  padding: 24px 22px;
+	  box-shadow: var(--shadow-xs);
+	  transition: all 0.25s;
+	}
+	.knowledge-browse-card:hover {
+	  box-shadow: var(--shadow-md); border-color: transparent;
+	}
+	.knowledge-browse-tag {
+	  display: inline-block; font-size: 0.66rem; font-weight: 600;
+	  letter-spacing: 0.08em;
+	  padding: 2px 10px; border-radius: 100px;
+	  margin-bottom: 8px;
+	}
+	.knowledge-browse-card:nth-child(odd) .knowledge-browse-tag
+	  { color: var(--blue); background: rgba(44,108,176,0.08); }
+	.knowledge-browse-card:nth-child(even) .knowledge-browse-tag
+	  { color: var(--purple); background: rgba(123,79,168,0.08); }
+	.knowledge-browse-title {
+	  font-size: 0.95rem; font-weight: 700; color: var(--ink-900);
+	  margin-bottom: 8px; line-height: 1.6;
+	}
+	.knowledge-browse-body {
+	  font-size: 0.82rem; color: var(--ink-700); line-height: 1.75;
+	}
+
+	/* Politics browse list */
+	.politics-browse-list { display: flex; flex-direction: column; gap: 14px; }
+	.politics-browse-card {
+	  background: var(--bg-card);
+	  border: 1px solid var(--ink-200);
+	  border-radius: var(--radius);
+	  padding: 24px 22px;
+	  box-shadow: var(--shadow-xs);
+	  transition: all 0.25s;
+	  border-left: 4px solid var(--purple);
+	}
+	.politics-browse-card:hover { box-shadow: var(--shadow-md); border-color: var(--purple); }
+	.politics-browse-date {
+	  font-size: 0.7rem; font-weight: 600; color: var(--purple);
+	  font-family: 'DM Mono', monospace; letter-spacing: 0.04em;
+	  margin-bottom: 6px;
+	}
+	.politics-browse-tag {
+	  display: inline-block; font-size: 0.64rem; font-weight: 600;
+	  letter-spacing: 0.06em; color: var(--purple);
+	  background: rgba(123,79,168,0.08); padding: 2px 10px; border-radius: 100px;
+	  margin-bottom: 8px;
+	}
+	.politics-browse-title {
+	  font-size: 0.95rem; font-weight: 700; color: var(--ink-900);
+	  margin-bottom: 8px; line-height: 1.6;
+	}
+	.politics-browse-summary {
+	  font-size: 0.82rem; color: var(--ink-700); line-height: 1.75;
+	}
+	.politics-browse-exam {
+	  margin-top: 10px; padding: 8px 14px; background: #FFF4E6;
+	  border-radius: var(--radius-sm); font-size: 0.76rem; color: #B86E10;
+	}
+	.politics-browse-source-row {
+	  display: flex; align-items: center; gap: 12px;
+	  margin-top: 12px; padding-top: 10px;
+	  border-top: 1px solid var(--ink-200);
+	  font-size: 0.72rem; color: var(--ink-500);
+	}
+	.politics-browse-source-row a {
+	  color: var(--purple); font-weight: 500;
+	  text-decoration: none; transition: color 0.2s;
+	}
+	.politics-browse-source-row a:hover { color: var(--brand); text-decoration: underline; }
+
+	/* Knowledge exam point */
+	.browse-exam-point {
+	  margin-top: 10px; padding: 8px 14px; background: #FFF4E6;
+	  border-radius: var(--radius-sm); font-size: 0.76rem; color: #B86E10;
+	  line-height: 1.5;
+	}
+
+	/* Browse pagination */
+	.browse-pagination {
+	  display: flex; align-items: center; justify-content: center;
+	  gap: 12px; padding: 32px 0 16px;
+	}
+	.browse-page-btn {
+	  padding: 10px 20px; background: var(--bg-card);
+	  border: 1px solid var(--ink-200); border-radius: var(--radius-sm);
+	  font-size: 0.84rem; font-weight: 500; color: var(--ink-700);
+	  cursor: pointer; transition: all 0.2s; font-family: inherit;
+	}
+	.browse-page-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); background: var(--brand-50); }
+	.browse-page-btn:disabled { opacity: 0.4; cursor: default; }
+	.browse-page-info {
+	  font-size: 0.84rem; color: var(--ink-500); font-family: 'DM Mono', monospace;
+	  min-width: 80px; text-align: center;
+	}
+
+	/* Responsive */
+	@media (max-width: 640px) {
+	  .idiom-browse-grid { grid-template-columns: 1fr; }
+	  .vocab-browse-grid { grid-template-columns: 1fr; }
+	  .browse-topbar { flex-wrap: wrap; gap: 8px; }
+	}
 /* ===== Settings Overlay ===== */
 .settings-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(28,28,40,0.4); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
 .view.settings-overlay.view-visible { display: flex; }
@@ -1083,21 +1289,14 @@
 
 <div class="view" id="contentView" role="region" aria-label="学习内容" tabindex="-1">
   <div class="content-wrap">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-bottom:20px;border-bottom:1px solid var(--ink-200);">
-      <button onclick="backToHub()" style="background:none;border:none;font-size:0.85rem;color:var(--ink-500);cursor:pointer;padding:8px 0;font-family:inherit;">← 返回</button>
-      <span style="font-weight:600;font-size:0.9rem;color:var(--ink-900);" id="contentTitle">—</span>
-      <span style="font-size:0.8rem;color:var(--ink-500);" id="topbarDate">—</span>
-      <button id="contentCheckinBtn" onclick="checkIn(currentCategory);this.textContent='✓ 已签到';this.disabled=true;this.style.opacity='0.6';setTimeout(function(){backToHub();},600);" style="display:none;padding:6px 14px;background:var(--brand);color:#fff;border:none;border-radius:8px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:inherit;">签到</button>
+    <div class="browse-topbar">
+      <button class="browse-back-btn" onclick="backToHub()">← 返回</button>
+      <span class="browse-page-title" id="contentTitle">—</span>
+      <span class="browse-page-meta" id="topbarDate">—</span>
+      <button id="contentCheckinBtn" onclick="checkIn(currentCategory);updateBrowseCheckinBtn();" style="display:none;padding:6px 14px;background:var(--brand);color:#fff;border:none;border-radius:8px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:inherit;">签到</button>
     </div>
 
     <main id="content"><div class="loading">—</div></main>
-
-    <nav class="bottombar">
-      <button class="nav-btn" onclick="prevDay()">前一天</button>
-      <select class="nav-select" id="dateSelect" aria-label="选择日期" onchange="jumpTo(this.value)"></select>
-      <button class="nav-btn" onclick="nextDay()">后一天</button>
-      <button class="nav-btn nav-today" onclick="goToday()">今天</button>
-    </nav>
 
     <footer class="site-footer">考公补给站</footer>
   </div>
@@ -1177,6 +1376,9 @@ var srsState=null;                 // full kaogong_srs state object
 var learnSession=null;             // {category, queue:[], idx, reviewCount, newCount}
 var currentMode='browse';          // 'browse' | 'learn'
 var cardRevealed=false;            // whether current card back is showing
+	var allBrowseItems=[];             // all items for current category (across all dates)
+	var browsePage=0;                  // current page index
+	var itemsPerPage=10;               // items per page in browse mode
 
 const CATEGORY_CONFIG={
   idioms:{title:'成语',emptyIcon:'一',emptyText:'成语内容准备中',emptyHint:'每日成语即将上线'},
@@ -1292,118 +1494,129 @@ function getLatestCompleteDate(){
   return allDates[0];
 }
 
-function renderCategoryContent(){
-  var cfg=CATEGORY_CONFIG[currentCategory];
-  document.getElementById('topbarDate').textContent=currentDate?reportsData.reports[currentDate].date:'—';
-  populateSelect();
-  var allItems=getCurrentItems();
-  var total=allItems.length;
-  var html='';
+	function renderCategoryContent(){
+		var cfg=CATEGORY_CONFIG[currentCategory];
+		var total=allBrowseItems.length;
 
-  function buildCounts(total){
-    var a=COUNT_OPTIONS.filter(function(n){return n<total;});
-    a.push(0);
-    return a.filter(function(v,i,s){return s.indexOf(v)===i;});
-  }
+		// --- Empty state ---
+		if(total===0){
+			var emptyHtml='<div class="learn-empty">';
+			emptyHtml+='<span class="learn-empty-icon">'+cfg.emptyIcon+'</span>';
+			emptyHtml+='<div class="learn-empty-text">'+cfg.emptyText+'</div>';
+			emptyHtml+='<div class="learn-empty-hint">'+cfg.emptyHint+'</div>';
+			emptyHtml+='</div>';
+			document.getElementById('content').innerHTML=emptyHtml;
+			var cv=document.getElementById('contentView');if(cv)cv.scrollTop=0;
+			return;
+		}
 
-  function pillsHTML(counts){
-    var labels={3:'3个',5:'5个',10:'10个',0:'全部'};
-    var h='<div class="count-selector">';
-    counts.forEach(function(c){
-      h+='<button class="count-pill'+(c===displayCount?' active':'')+'" onclick="setCount('+c+')">'+labels[c]+'</button>';
-    });
-    h+='</div>';
-    return h;
-  }
+		// Clamp page
+		var totalPages=Math.ceil(total/itemsPerPage);
+		if(browsePage>=totalPages)browsePage=totalPages-1;
+		if(browsePage<0)browsePage=0;
 
-  // --- Empty ---
-  if(total===0){
-    html+='<div class="empty-state">';
-    html+='<span class="empty-icon">'+cfg.emptyIcon+'</span>';
-    html+='<div class="empty-text">'+cfg.emptyText+'</div>';
-    html+='<div class="empty-hint">'+cfg.emptyHint+'</div>';
-    html+='</div>';
-    document.getElementById('content').innerHTML=html;
-    var cv=document.getElementById('contentView');if(cv)cv.scrollTop=0;
-    return;
-  }
+		var start=browsePage*itemsPerPage;
+		var end=Math.min(start+itemsPerPage,total);
+		var pageItems=allBrowseItems.slice(start,end);
+		var isIdiom=currentCategory==='idioms';
+		var isVocab=currentCategory==='vocab';
+		var isKnowledge=currentCategory==='knowledge';
+		var isPolitics=currentCategory==='politics';
 
-  var counts=buildCounts(total);
-  if(displayCount===0||displayCount>total)displayCount=0;
-  var items=displayCount===0?allItems:allItems.slice(0,displayCount);
-  var actualTotal=items.length;
+		// Update topbar
+		document.getElementById('contentTitle').textContent=cfg.title;
+		document.getElementById('topbarDate').textContent='共 '+total+' 条 · 第 '+(browsePage+1)+'/'+totalPages+' 页';
+		updateBrowseCheckinBtn();
 
-  // Clamp index
-  if(currentIndex>=actualTotal)currentIndex=actualTotal-1;
-  if(currentIndex<0)currentIndex=0;
+		var html='';
 
-  var isIdiom=currentCategory==='idioms';
-  var isVocab=currentCategory==='vocab';
-  var unit=isIdiom?'个':'条';
-  var sectionLabel=isIdiom?'Idioms':(isVocab?'Vocab':'Knowledge');
+		// Section heading
+		html+='<div class="browse-section-head">';
+		html+='<div class="browse-section-head-l">';
+		html+='<span class="browse-section-title">'+cfg.title+'</span>';
+		html+='<span class="browse-section-count">共 '+total+' 条</span>';
+		html+='</div>';
+		html+='<div class="view-toggle">';
+		var sizes=[5,10,20];
+		for(var si=0;si<sizes.length;si++){
+				var ac=itemsPerPage===sizes[si]?' active':'';
+				html+='<button class="view-toggle-btn'+ac+'" onclick="setBrowsePageSize('+sizes[si]+')">'+sizes[si]+'条/页</button>';
+		}
+		html+='</div>';
+		html+='</div>';
 
-  html+='<section class="section">';
-  html+='<div class="section-label">'+sectionLabel+'</div>';
-  html+='<div class="section-header">';
-  html+='<h2 class="section-title">'+cfg.title+' <span class="count">'+actualTotal+'/'+total+unit+'</span></h2>';
-  html+=pillsHTML(counts);
-  html+='</div>';
+		// Cards
+		if(isIdiom){
+			html+='<div class="idiom-browse-grid">';
+			for(var i=0;i<pageItems.length;i++){
+				var item=pageItems[i];
+				html+='<div class="idiom-browse-card">';
+				if(item.focus)html+='<div class="idiom-browse-tag">'+esc(item.focus)+'</div>';
+				html+='<div class="idiom-browse-word">'+esc(item.idiom)+'</div>';
+				html+='<div class="idiom-browse-explain">'+esc(item.explanation||'')+'</div>';
+				if(item.focus)html+='<div class="idiom-browse-focus">💡 考点: '+esc(item.focus)+'</div>';
+				html+='</div>';
+			}
+			html+='</div>';
+		}else if(isVocab){
+			html+='<div class="vocab-browse-grid">';
+			for(var i=0;i<pageItems.length;i++){
+				var item=pageItems[i];
+				html+='<div class="vocab-browse-card">';
+				html+='<div class="vocab-browse-word">'+esc(item.title)+'</div>';
+				html+='<div class="vocab-browse-body">'+esc(item.body||'')+'</div>';
+				html+='</div>';
+			}
+			html+='</div>';
+		}else if(isPolitics){
+			html+='<div class="politics-browse-list">';
+			for(var i=0;i<pageItems.length;i++){
+				var item=pageItems[i];
+				html+='<div class="politics-browse-card">';
+				if(item._dateFormatted)html+='<div class="politics-browse-date">'+esc(item._dateFormatted)+'</div>';
+				if(item.category)html+='<div class="politics-browse-tag">🔥 '+esc(item.category)+'</div>';
+				html+='<div class="politics-browse-title">'+esc(item.title)+'</div>';
+				html+='<div class="politics-browse-summary">'+esc(item.body||'')+'</div>';
+				if(item.exam_point)html+='<div class="politics-browse-exam">💡 考点关联: '+esc(item.exam_point)+'</div>';
+				if(item.source||item.url){
+					html+='<div class="politics-browse-source-row">';
+					if(item.source)html+='<span>📎 来源: '+esc(item.source)+'</span>';
+					if(item.url)html+='<a href="'+esc(item.url)+'" target="_blank" rel="noopener">查看原文 →</a>';
+					html+='</div>';
+				}
+				html+='</div>';
+			}
+			html+='</div>';
+		}else{
+			// Knowledge
+			html+='<div class="knowledge-browse-list">';
+			for(var i=0;i<pageItems.length;i++){
+				var item=pageItems[i];
+				html+='<div class="knowledge-browse-card">';
+				if(item.category)html+='<div class="knowledge-browse-tag">📜 '+esc(item.category)+'</div>';
+				html+='<div class="knowledge-browse-title">'+esc(item.title)+'</div>';
+				html+='<div class="knowledge-browse-body">'+esc(item.body||'')+'</div>';
+				if(item.exam_point)html+='<div class="browse-exam-point">💡 考点提示: '+esc(item.exam_point)+'</div>';
+				html+='</div>';
+			}
+			html+='</div>';
+		}
 
-  // --- Flashcard ---
-  if(currentIndex<actualTotal){
-    var item=items[currentIndex];
-    html+='<div class="flashcard-wrap">';
-    html+='<div class="flashcard-progress">第 '+(currentIndex+1)+'/'+actualTotal+unit+'</div>';
-    html+='<div class="flashcard">';
-    if(isIdiom){
-      html+='<div class="fc-idiom-word">'+esc(item.idiom)+'</div>';
-      html+='<div class="fc-idiom-explain">'+esc(item.explanation||'')+'</div>';
-      if(item.focus)html+='<div class="fc-idiom-focus">'+esc(item.focus)+'</div>';
-    } else {
-      html+='<div class="fc-k-tag">'+esc(item.category)+'</div>';
-      html+='<div class="fc-k-title">'+esc(item.title)+'</div>';
-      html+='<div class="fc-k-body">'+esc(item.body)+'</div>';
-      if(item.exam_point)html+='<div class="fc-exam-point">'+esc(item.exam_point)+'</div>';
-    }
-    html+='</div>';
+		// Pagination
+		html+='<div class="browse-pagination">';
+		html+='<button class="browse-page-btn" onclick="prevPage()"'+(browsePage<=0?' disabled':'')+'>← 上一页</button>';
+		html+='<span class="browse-page-info">'+(browsePage+1)+' / '+totalPages+'</span>';
+		html+='<button class="browse-page-btn" onclick="nextPage()"'+(browsePage>=totalPages-1?' disabled':'')+'>下一页 →</button>';
+		html+='</div>';
 
-    // Navigation
-    html+='<div class="flashcard-nav">';
-    html+='<button class="fc-nav-btn" onclick="prevCard()"'+(currentIndex===0?' disabled':'')+'>← 上一个</button>';
-    if(currentIndex<actualTotal-1){
-      html+='<button class="fc-nav-btn fc-nav-primary" onclick="nextCard()">记住了 →</button>';
-    } else {
-      html+='<button class="fc-nav-btn fc-nav-primary" onclick="finishSession()">✓ 完成</button>';
-    }
-    html+='</div>';
-    html+='</div>';
-  } else {
-    // Completion
-    html+='<div class="flashcard-done">';
-    html+='<span class="fc-done-icon">✓</span>';
-    html+='<div class="fc-done-text">全部完成</div>';
-    html+='<div class="fc-done-hint">今天又进步了一点</div>';
-    html+='<button class="fc-nav-btn fc-nav-primary" style="margin-top:28px" onclick="currentIndex=0;renderCategoryContent();">再来一遍</button>';
-    html+='</div>';
-  }
+		document.getElementById('content').innerHTML=html;
+		var cv=document.getElementById('contentView');if(cv)cv.scrollTop=0;
+	}
+function nextCard(){nextPage();}
+function prevCard(){prevPage();}
+function finishSession(){nextPage();}
 
-  html+='</section>';
-
-  document.getElementById('content').innerHTML=html;
-  var cv=document.getElementById('contentView');if(cv)cv.scrollTop=0;
-  // Update bottom nav disabled states
-  var idx=allDates.indexOf(currentDate);
-  var prevBtn=document.querySelector('button[onclick*="prevDay"]');
-  var nextBtn=document.querySelector('button[onclick*="nextDay"]');
-  if(prevBtn)prevBtn.disabled=idx>=allDates.length-1;
-  if(nextBtn)nextBtn.disabled=idx<=0;
-}
-
-function nextCard(){currentIndex++;renderCategoryContent();saveState();}
-function prevCard(){if(currentIndex>0){currentIndex--;renderCategoryContent();saveState();}}
-function finishSession(){var items=getCurrentItems();var n=displayCount===0?items.length:Math.min(displayCount,items.length);currentIndex=n;renderCategoryContent();saveState();}
-
-function setCount(n){displayCount=n;currentIndex=0;renderCategoryContent();saveState();}
+function setCount(n){itemsPerPage=n===0?allBrowseItems.length:n;browsePage=0;renderCategoryContent();saveState();}
 
 function populateSelect(){
   var sel=document.getElementById('dateSelect');
@@ -1411,10 +1624,10 @@ function populateSelect(){
   sel.innerHTML=allDates.map(function(d){return '<option value="'+d+'"'+(d===currentDate?' selected':'')+'>'+d.slice(5)+'</option>';}).join('');
 }
 
-function prevDay(){var i=allDates.indexOf(currentDate);if(i<allDates.length-1){currentDate=allDates[i+1];currentIndex=0;renderCategoryContent();saveState();}}
-function nextDay(){var i=allDates.indexOf(currentDate);if(i>0){currentDate=allDates[i-1];currentIndex=0;renderCategoryContent();saveState();}}
-function jumpTo(d){currentDate=d;currentIndex=0;renderCategoryContent();saveState();}
-function goToday(){if(allDates.length>0){currentDate=allDates[0];currentIndex=0;renderCategoryContent();saveState();}}
+function prevDay(){prevPage();}
+function nextDay(){nextPage();}
+function jumpTo(d){}
+function goToday(){browsePage=0;renderCategoryContent();saveState();}
 
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
@@ -1992,7 +2205,60 @@ function updateHubDueCounts(){
   });
 }
 
-function openContent(cat){currentCategory=cat;displayCount=0;currentIndex=0;currentDate=allDates.length>0?getLatestCompleteDate():'';document.getElementById('contentTitle').textContent=CATEGORY_CONFIG[cat].title;var btn=document.getElementById('contentCheckinBtn');if(btn){if(isCheckedIn(cat)){btn.textContent='✓ 已签到';btn.disabled=true;btn.style.opacity='0.6';}else{btn.textContent='签到';btn.disabled=false;btn.style.opacity='1';}btn.style.display='';}renderCategoryContent();saveState();switchView(document.getElementById('hubView'),document.getElementById('contentView'));}
+	function openContent(cat){
+		currentCategory=cat;
+		currentIndex=0;
+		browsePage=0;
+
+		// Collect ALL items from ALL dates for this category
+		allBrowseItems=[];
+		for(var i=0;i<allDates.length;i++){
+			var report=reportsData.reports[allDates[i]];
+			if(!report)continue;
+			var items=cat==='idioms'?(report.idioms||[]):cat==='vocab'?(report.vocab||[]):cat==='politics'?(report.politics||[]):(report.knowledge||[]);
+			for(var j=0;j<items.length;j++){
+				var item={};
+				var src=items[j];
+				for(var k in src)item[k]=src[k];
+				item._date=allDates[i];
+				item._dateFormatted=report.date;
+				allBrowseItems.push(item);
+			}
+		}
+
+		updateBrowseCheckinBtn();
+		renderCategoryContent();
+		saveState();
+		switchView(document.getElementById('hubView'),document.getElementById('contentView'));
+	}
+	function updateBrowseCheckinBtn(){
+		var btn=document.getElementById('contentCheckinBtn');
+		if(!btn)return;
+		if(isCheckedIn(currentCategory)){
+			btn.textContent='✓ 已签到';
+			btn.disabled=true;
+			btn.style.opacity='0.6';
+		}else{
+			btn.textContent='签到';
+			btn.disabled=false;
+			btn.style.opacity='1';
+		}
+		btn.style.display='';
+	}
+
+	function prevPage(){
+		if(browsePage>0){browsePage--;renderCategoryContent();saveState();}
+	}
+	function nextPage(){
+		var totalPages=Math.ceil(allBrowseItems.length/itemsPerPage);
+		if(browsePage<totalPages-1){browsePage++;renderCategoryContent();saveState();}
+	}
+	function setBrowsePageSize(n){
+		itemsPerPage=n;
+		browsePage=0;
+		renderCategoryContent();
+		saveState();
+	}
 
 function handleHubCardClick(cat){
   if(currentMode==='learn'&&isCheckedIn(cat)){
@@ -2204,11 +2470,11 @@ document.addEventListener('keydown',function(e){
     else if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(!cardRevealed)revealCard();else rateCard(5);}
     return;
   }
-  // Daily browse mode: arrow keys
+  // Browse mode: page navigation with arrow keys
   var cv=document.getElementById('contentView');
   if(cv&&cv.classList.contains('view-visible')){
-    if(e.key==='ArrowRight'){e.preventDefault();nextCard();}
-    else if(e.key==='ArrowLeft'){e.preventDefault();prevCard();}
+    if(e.key==='ArrowRight'){e.preventDefault();nextPage();}
+    else if(e.key==='ArrowLeft'){e.preventDefault();prevPage();}
   }
   // Settings: Escape to close
   var sv=document.getElementById('settingsView');
@@ -2227,8 +2493,8 @@ document.addEventListener('touchend',function(e){
   if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>60){
     var cv=document.getElementById('contentView');
     if(cv&&cv.classList.contains('view-visible')){
-      if(dx<0)nextCard();
-      else prevCard();
+      if(dx<0)nextPage();
+      else prevPage();
     }
   }
 },{passive:true});
