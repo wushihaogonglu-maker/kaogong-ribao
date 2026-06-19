@@ -2262,8 +2262,13 @@ function updateHubDueCounts(){
 
 function handleHubCardClick(cat){
   if(currentMode==='learn'&&isCheckedIn(cat)){
-    // Already completed today → show completion screen
-    showCategoryComplete(cat);
+    // Rebuild queue — if user increased daily limit, more items may be available
+    var q=buildQueue(cat);
+    if(q&&q.queue.length>0){
+      startSRSLearning(cat);
+    }else{
+      showCategoryComplete(cat);
+    }
   }else if(cat==='politics'){
     openContent(cat);
   }else if(currentMode==='learn'){
