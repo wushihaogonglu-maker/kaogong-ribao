@@ -1762,12 +1762,12 @@ function getItemKey(cat,item){
   return cat+':'+(item.title||item.id);
 }
 
-function buildQueue(category){
+function buildQueue(category,cap){
   if(!ITEM_POOLS)return null;
   var pool=ITEM_POOLS[category];
   if(!pool||!pool.length)return null;
 
-  var limit=srsState.settings.dailyLimits[category]||5;
+  var limit=cap!==undefined?cap:(srsState.settings.dailyLimits[category]||5);
   var today=toDateStr(new Date());
   var dueReviews=[],newItems=[];
 
@@ -1908,12 +1908,12 @@ async function syncData(){
    SRS: Learning Flow
    ══════════════════════════════════════════ */
 
-function startSRSLearning(category){
+function startSRSLearning(category,cap){
   if(!ITEM_POOLS){
     alert('数据加载中，请稍后重试');
     return;
   }
-  learnSession=buildQueue(category);
+  learnSession=buildQueue(category,cap);
   if(!learnSession||learnSession.queue.length===0){
     renderLearnEmpty(category);
     document.getElementById('learnTitle').textContent=CATEGORY_CONFIG[category].title+' · 学习';
@@ -2041,10 +2041,10 @@ function rateCard(rating){
   if(learnSession.idx>=learnSession.queue.length){
     // Session complete
     recomputeStats();
-    learnSession=null;
     syncData();
     saveSRSState();
     renderLearnDone();
+    learnSession=null;
   }else{
     saveSRSState();
     renderLearnCard();
@@ -2273,7 +2273,7 @@ function handleHubCardClick(cat){
     if(currentLimit>checkinLimit){
       // User increased limit — clear old checkin, continue learning
       clearCheckin(cat);
-      startSRSLearning(cat);
+      startSRSLearning(cat,currentLimit-checkinLimit);
     }else{
       showCategoryComplete(cat);
     }
@@ -2332,9 +2332,6 @@ function saveSettings(){
     var s=document.getElementById('slider_'+cat);
     if(s){
       var newLimit=parseInt(s.value);
-      if(newLimit>(srsState.settings.dailyLimits[cat]||5)&&isCheckedIn(cat)){
-        clearCheckin(cat);
-      }
       srsState.settings.dailyLimits[cat]=newLimit;
     }
   });
