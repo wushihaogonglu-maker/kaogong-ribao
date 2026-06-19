@@ -2062,7 +2062,7 @@ function renderLearnDone(){
   html+='<span class="learn-done-icon">✓</span>';
   html+='<div class="learn-done-title">今日学习完成</div>';
   html+='<div class="learn-done-stats">复习: '+(learnSession?learnSession.reviewCount:0)+' 个 &nbsp; 新学: '+(learnSession?learnSession.newCount:0)+' 个</div>';
-  html+='<button class="learn-done-btn primary" onclick="exitSRS('+learnSession.category+')">返回首页</button>';
+  html+='<button class="learn-done-btn primary" onclick="exitSRS(\x27'+learnSession.category+'\x27)">返回首页</button>';
   html+='</div>';
   document.getElementById('learnContent').innerHTML=html;
   document.getElementById('learnProgress').textContent='完成';
