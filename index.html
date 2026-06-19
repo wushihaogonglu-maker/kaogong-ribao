@@ -882,7 +882,7 @@
 	  background: var(--bg-card);
 	  border: 1px solid var(--ink-200);
 	  border-radius: var(--radius);
-	  padding: 22px 20px;
+	  padding: 24px 22px;
 	  box-shadow: var(--shadow-xs);
 	  transition: all 0.25s;
 	}
@@ -903,8 +903,8 @@
 	  margin-bottom: 8px; letter-spacing: 0.06em;
 	}
 	.idiom-browse-explain {
-	  font-size: 0.82rem; color: var(--ink-700); line-height: 1.7;
-	  margin-bottom: 8px;
+	  font-size: 0.85rem; color: var(--ink-700); line-height: 1.9;
+	  margin-bottom: 10px;
 	}
 	.idiom-browse-focus {
 	  font-size: 0.76rem; color: var(--ink-500); line-height: 1.65;
@@ -933,10 +933,10 @@
 	}
 	.vocab-browse-word {
 	  font-size: 1.05rem; font-weight: 700; color: var(--ink-900);
-	  margin-bottom: 6px; letter-spacing: 0.04em;
+	  margin-bottom: 12px; letter-spacing: 0.04em; line-height: 1.5;
 	}
 	.vocab-browse-body {
-	  font-size: 0.82rem; color: var(--ink-700); line-height: 1.7;
+	  font-size: 0.85rem; color: var(--ink-700); line-height: 1.9;
 	}
 
 	/* Knowledge browse list */
@@ -1043,10 +1043,14 @@
 
 	/* Responsive */
 	@media (max-width: 640px) {
-	  .idiom-browse-grid { grid-template-columns: 1fr; }
+	  .idiom-browse-grid, .vocab-browse-grid { grid-template-columns: 1fr; gap: 12px; }
 	  .vocab-browse-grid { grid-template-columns: 1fr; }
-	  .browse-topbar { flex-wrap: wrap; gap: 8px; }
-	}
+	  .browse-topbar { flex-wrap: wrap; gap: 8px; padding: 12px 0; }
+	
+		  .idiom-browse-card, .vocab-browse-card { padding: 18px 16px; }
+		  .idiom-browse-word { font-size: 1.05rem; }
+		  .browse-page-title { font-size: 1.15rem; }
+		  .content-wrap { padding: 16px 12px 80px; }}
 /* ===== Settings Overlay ===== */
 .settings-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(28,28,40,0.4); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
 .view.settings-overlay.view-visible { display: flex; }
@@ -1400,10 +1404,12 @@ function loadCheckins(){try{var raw=localStorage.getItem(CHECKIN_KEY);return raw
 function saveCheckins(d){try{localStorage.setItem(CHECKIN_KEY,JSON.stringify(d));}catch(e){}}
 function checkIn(cat){
   var c=loadCheckins();var today=toDateStr(new Date());
-  if(!c[today])c[today]={};c[today][cat]=true;saveCheckins(c);
+  if(!c[today])c[today]={};c[today][cat]=srsState.settings.dailyLimits[cat]||5;saveCheckins(c);
   updateHubCardStates();refreshLandingStats();
 }
 function isCheckedIn(cat){var c=loadCheckins();var today=toDateStr(new Date());return !!(c[today]&&c[today][cat]);}
+function getCheckinLimit(cat){var c=loadCheckins();var today=toDateStr(new Date());var v=c[today]&&c[today][cat];return typeof v==='number'?v:0;}
+function clearCheckin(cat){var c=loadCheckins();var today=toDateStr(new Date());if(c[today]){delete c[today][cat];saveCheckins(c);}updateHubCardStates();refreshLandingStats();}
 function getCheckinCount(){var c=loadCheckins();var today=toDateStr(new Date());var cats=['idioms','vocab','knowledge','politics'];var n=0;for(var i=0;i<cats.length;i++){if(c[today]&&c[today][cats[i]])n++;}return n;}
 function allCheckedIn(){return getCheckinCount()>=4;}
 function updateHubCardStates(){
@@ -1554,7 +1560,6 @@ function getLatestCompleteDate(){
 				if(item.focus)html+='<div class="idiom-browse-tag">'+esc(item.focus)+'</div>';
 				html+='<div class="idiom-browse-word">'+esc(item.idiom)+'</div>';
 				html+='<div class="idiom-browse-explain">'+esc(item.explanation||'')+'</div>';
-				if(item.focus)html+='<div class="idiom-browse-focus">💡 考点: '+esc(item.focus)+'</div>';
 				html+='</div>';
 			}
 			html+='</div>';
@@ -2262,9 +2267,12 @@ function updateHubDueCounts(){
 
 function handleHubCardClick(cat){
   if(currentMode==='learn'&&isCheckedIn(cat)){
-    // Rebuild queue — if user increased daily limit, more items may be available
-    var q=buildQueue(cat);
-    if(q&&q.queue.length>0){
+    // Compare current daily limit vs limit at checkin time
+    var checkinLimit=getCheckinLimit(cat);
+    var currentLimit=srsState.settings.dailyLimits[cat]||5;
+    if(currentLimit>checkinLimit){
+      // User increased limit — clear old checkin, continue learning
+      clearCheckin(cat);
       startSRSLearning(cat);
     }else{
       showCategoryComplete(cat);
@@ -2322,7 +2330,13 @@ function updateSettingsPreview(slider,cat){
 function saveSettings(){
   ['idioms','vocab','knowledge'].forEach(function(cat){
     var s=document.getElementById('slider_'+cat);
-    if(s)srsState.settings.dailyLimits[cat]=parseInt(s.value);
+    if(s){
+      var newLimit=parseInt(s.value);
+      if(newLimit>(srsState.settings.dailyLimits[cat]||5)&&isCheckedIn(cat)){
+        clearCheckin(cat);
+      }
+      srsState.settings.dailyLimits[cat]=newLimit;
+    }
   });
   srsState.updatedAt=Date.now();
   saveSRSState();
