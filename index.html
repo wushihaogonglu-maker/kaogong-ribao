@@ -2149,7 +2149,7 @@ function forceLearnCategory(category){
 }
 
 function exitSRS(cat){
-  if(cat||(learnSession&&learnSession.category))checkIn(cat||learnSession.category);
+  if(cat)checkIn(cat);
   learnSession=null;
   cardRevealed=false;
   updateHubDueCounts();
