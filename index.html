@@ -1496,7 +1496,11 @@ function switchView(from,to){var all=document.querySelectorAll('.view-visible');
 function goToHub(){updateHubCardStates();switchView(activeView(),document.getElementById('hubView'));}
 function backToHub(){
   if(currentCategory==='knowledge' && kbState.p>=0){
-    if(kbState.s>=0){renderKBSections(kbState.p,kbState.c);}
+    if(kbState.s>=0){
+      var ch=kbData[kbState.p].chapters[kbState.c];
+      if(ch&&ch.sections&&ch.sections.length<=1&&kbState.c>=0){renderKBChapters(kbState.p);}
+      else{renderKBSections(kbState.p,kbState.c);}
+    }
     else if(kbState.c>=0){renderKBChapters(kbState.p);}
     else{renderKBParts();}
     return;
