@@ -1026,6 +1026,26 @@
 	  line-height: 1.5;
 	}
 
+	/* ── Knowledge 3-Level Navigation ── */
+	.kb-breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0 0 20px; font-size: 0.82rem; color: var(--ink-500); }
+	.kb-breadcrumb span { color: var(--ink-400); }
+	.kb-breadcrumb a { color: var(--brand); text-decoration: none; cursor: pointer; }
+	.kb-breadcrumb a:hover { text-decoration: underline; }
+	.kb-breadcrumb .current { color: var(--ink-700); font-weight: 600; }
+
+	.kb-level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+	.kb-level-card { background: var(--bg-card); border-radius: var(--radius); padding: 24px 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--ink-200); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 8px; }
+	.kb-level-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--brand-light); }
+	.kb-level-card .kb-card-icon { font-size: 1.6rem; }
+	.kb-level-card .kb-card-title { font-size: 1rem; font-weight: 700; color: var(--ink-900); }
+	.kb-level-card .kb-card-sub { font-size: 0.78rem; color: var(--ink-500); }
+	.kb-level-card .kb-card-count { font-size: 0.72rem; color: var(--brand); font-weight: 600; }
+
+	.kb-section-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+	.kb-section-card { background: var(--bg-card); border-radius: var(--radius-sm); padding: 16px 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--ink-200); cursor: pointer; transition: all 0.2s; }
+	.kb-section-card:hover { border-color: var(--brand-light); background: var(--brand-50); }
+	.kb-section-card .kb-card-title { font-size: 0.9rem; font-weight: 600; color: var(--ink-900); }
+
 	/* Browse pagination */
 	.browse-pagination {
 	  display: flex; align-items: center; justify-content: center;
@@ -1637,6 +1657,163 @@ function nextDay(){nextPage();}
 function jumpTo(d){}
 function goToday(){browsePage=0;renderCategoryContent();saveState();}
 
+/* ══════════════════════════════════════════
+   Knowledge 3-Level Hierarchy Navigation
+   ══════════════════════════════════════════ */
+var kbData=null;       // loaded knowledge_base.json
+var kbState={p:-1,c:-1,s:-1,page:0}; // part, chapter, section indices
+
+function loadKBData(){
+  if(kbData){renderKBParts();return;}
+  var content=document.getElementById('content');
+  content.innerHTML='<div class=\"loading\">加载常识数据中...</div>';
+  fetch('knowledge_base.json').then(function(r){return r.json();}).then(function(d){
+    kbData=d; renderKBParts();
+  }).catch(function(){
+    content.innerHTML='<div class=\"learn-empty\"><span class=\"learn-empty-icon\">!</span><div class=\"learn-empty-text\">常识数据加载失败</div></div>';
+  });
+}
+
+function renderKBParts(){
+  kbState={p:-1,c:-1,s:-1,page:0};
+  var html='';
+  html+=renderKBBreadcrumb();
+  html+='<div class=\"kb-level-grid\">';
+  var icons=['','','','',''];
+  for(var i=0;i<kbData.length;i++){
+    var part=kbData[i];
+    var total=0;
+    for(var ci=0;ci<part.chapters.length;ci++){
+      var ch=part.chapters[ci];
+      for(var si=0;si<(ch.sections||[]).length;si++){
+        total+=(ch.sections[si].items||[]).length;
+      }
+    }
+    html+='<div class=\"kb-level-card\" onclick=\"renderKBChapters('+i+')\">';
+    html+='<div class=\"kb-card-icon\"></div>';
+    html+='<div class=\"kb-card-title\">'+esc(part.category)+'</div>';
+    html+='<div class=\"kb-card-sub\">'+part.chapters.length+'章 · '+total+'条</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  document.getElementById('content').innerHTML=html;
+}
+
+function renderKBChapters(p){
+  kbState={p:p,c:-1,s:-1,page:0};
+  var part=kbData[p];
+  var html=renderKBBreadcrumb();
+  html+='<div class=\"kb-level-grid\">';
+  for(var i=0;i<part.chapters.length;i++){
+    var ch=part.chapters[i];
+    var sections=ch.sections||[];
+    var total=0;
+    for(var si=0;si<sections.length;si++){total+=sections[si].items.length;}
+    html+='<div class=\"kb-level-card\" onclick=\"renderKBSections('+p+','+i+')\">';
+    html+='<div class=\"kb-card-title\">'+esc(ch.title)+'</div>';
+    html+='<div class=\"kb-card-sub\">'+sections.length+'节 · '+total+'条</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  document.getElementById('content').innerHTML=html;
+}
+
+function renderKBSections(p,c){
+  kbState={p:p,c:c,s:-1,page:0};
+  var ch=kbData[p].chapters[c];
+  var sections=ch.sections||[];
+  var html=renderKBBreadcrumb();
+  if(sections.length===1){
+    // Only one section — skip to items
+    renderKBItems(p,c,0);
+    return;
+  }
+  html+='<div class=\"kb-section-grid\">';
+  for(var i=0;i<sections.length;i++){
+    var sec=sections[i];
+    html+='<div class=\"kb-section-card\" onclick=\"renderKBItems('+p+','+c+','+i+')\">';
+    html+='<div class=\"kb-card-title\">'+esc(sec.title)+'</div>';
+    html+='<div class=\"kb-card-count\">'+(sec.items||[]).length+'条</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  document.getElementById('content').innerHTML=html;
+}
+
+function renderKBItems(p,c,s){
+  kbState={p:p,c:c,s:s,page:0};
+  var sec=kbData[p].chapters[c].sections[s];
+  var items=sec.items||[];
+  renderKBItemsPage(items);
+}
+
+function renderKBItemsPage(items){
+  var ITEMS_PER_PAGE=20;
+  var totalPages=Math.ceil(items.length/ITEMS_PER_PAGE);
+  var page=kbState.page;
+  if(page>=totalPages)page=totalPages-1;
+  if(page<0)page=0;
+  kbState.page=page;
+  var start=page*ITEMS_PER_PAGE;
+  var end=Math.min(start+ITEMS_PER_PAGE,items.length);
+  var pageItems=items.slice(start,end);
+
+  var html=renderKBBreadcrumb();
+  html+='<div class=\"knowledge-browse-list\">';
+  for(var i=0;i<pageItems.length;i++){
+    var item=pageItems[i];
+    var title=typeof item==='string'?item:item.title||'';
+    var body=typeof item==='string'?item:item.body||'';
+    html+='<div class=\"knowledge-browse-card\">';
+    html+='<div class=\"knowledge-browse-title\">'+esc(title)+'</div>';
+    html+='<div class=\"knowledge-browse-body\">'+esc(body)+'</div>';
+    if(item.exam_point)html+='<div class=\"browse-exam-point\"> 考点提示: '+esc(item.exam_point)+'</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+
+  // Pagination
+  if(totalPages>1){
+    html+='<div class=\"browse-pagination\">';
+    html+='<button class=\"browse-page-btn\" onclick=\"kbPrevPage('+items.length+')\"'+(page<=0?' disabled':'')+'> 上一页</button>';
+    html+='<span class=\"browse-page-info\">'+(page+1)+' / '+totalPages+'</span>';
+    html+='<button class=\"browse-page-btn\" onclick=\"kbNextPage('+items.length+')\"'+(page>=totalPages-1?' disabled':'')+'>下一页 </button>';
+    html+='</div>';
+  }
+  document.getElementById('content').innerHTML=html;
+  document.getElementById('contentView').scrollTop=0;
+}
+
+function kbPrevPage(total){if(kbState.page>0){kbState.page--;renderKBItemsPage(null);}}
+function kbNextPage(total){
+  var ITEMS_PER_PAGE=20;
+  var totalPages=Math.ceil(total/ITEMS_PER_PAGE);
+  if(kbState.page<totalPages-1){kbState.page++;renderKBItemsPage(null);}
+}
+// Reload items page using current kbState
+function kbReloadItems(){
+  var sec=kbData[kbState.p].chapters[kbState.c].sections[kbState.s];
+  renderKBItemsPage(sec.items||[]);
+}
+
+function renderKBBreadcrumb(){
+  var html='<div class=\"kb-breadcrumb\">';
+  html+='<a onclick=\"renderKBParts()\"> 常识</a>';
+  if(kbState.p>=0){
+    html+='<span>  </span><a onclick=\"renderKBChapters('+kbState.p+')\">'+esc(kbData[kbState.p].category)+'</a>';
+  }
+  if(kbState.c>=0){
+    var ch=kbData[kbState.p].chapters[kbState.c];
+    html+='<span>  </span><a onclick=\"renderKBSections('+kbState.p+','+kbState.c+')\">'+esc(ch.title)+'</a>';
+  }
+  if(kbState.s>=0){
+    var sec=kbData[kbState.p].chapters[kbState.c].sections[kbState.s];
+    html+='<span>  </span><span class=\"current\">'+esc(sec.title)+'</span>';
+  }
+  html+='</div>';
+  return html;
+}
+
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
 /* ══════════════════════════════════════════
@@ -2218,6 +2395,13 @@ function updateHubDueCounts(){
 		currentCategory=cat;
 		currentIndex=0;
 		browsePage=0;
+
+		if(cat==='knowledge'){
+			// 3-level hierarchy navigation
+			switchView(document.getElementById('hubView'),document.getElementById('contentView'));
+			loadKBData();
+			return;
+		}
 
 		// Collect ALL items from ALL dates for this category
 		allBrowseItems=[];
