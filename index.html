@@ -1494,7 +1494,15 @@ function updateHubCounts(){updateHubDueCounts();}
 
 function switchView(from,to){var all=document.querySelectorAll('.view-visible');for(var i=0;i<all.length;i++){all[i].classList.remove('view-visible');all[i].setAttribute('aria-hidden','true');}to.classList.add('view-visible');to.setAttribute('aria-hidden','false');setTimeout(function(){to.scrollTop=0;if(to.focus)to.focus();},60);}
 function goToHub(){updateHubCardStates();switchView(activeView(),document.getElementById('hubView'));}
-function backToHub(){switchView(document.getElementById('contentView'),document.getElementById('hubView'));}
+function backToHub(){
+  if(currentCategory==='knowledge' && kbState.p>=0){
+    if(kbState.s>=0){renderKBSections(kbState.p,kbState.c);}
+    else if(kbState.c>=0){renderKBChapters(kbState.p);}
+    else{renderKBParts();}
+    return;
+  }
+  switchView(document.getElementById('contentView'),document.getElementById('hubView'));
+}
 function goToLanding(){refreshLandingStats();switchView(activeView(),document.getElementById('landingView'));}
 
 function refreshLandingStats(){
@@ -1784,11 +1792,11 @@ function renderKBItemsPage(items){
   document.getElementById('contentView').scrollTop=0;
 }
 
-function kbPrevPage(total){if(kbState.page>0){kbState.page--;renderKBItemsPage(null);}}
+function kbPrevPage(total){if(kbState.page>0){kbState.page--;kbReloadItems();}}
 function kbNextPage(total){
   var ITEMS_PER_PAGE=20;
   var totalPages=Math.ceil(total/ITEMS_PER_PAGE);
-  if(kbState.page<totalPages-1){kbState.page++;renderKBItemsPage(null);}
+  if(kbState.page<totalPages-1){kbState.page++;kbReloadItems();}
 }
 // Reload items page using current kbState
 function kbReloadItems(){
