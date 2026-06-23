@@ -1,5 +1,5 @@
 /* 考公补给站 Service Worker — 离线缓存 */
-const CACHE_NAME='kaogong-v59';
+const CACHE_NAME='kaogong-v60';
 const CORE_FILES=[
   '/',
   '/index.html',
@@ -30,7 +30,7 @@ self.addEventListener('activate',function(e){
       // Notify all open clients about the update
       return self.clients.matchAll({type:'window'}).then(function(clients){
         clients.forEach(function(client){
-          client.postMessage({type:'SW_UPDATED',version:'v59'});
+          client.postMessage({type:'SW_UPDATED',version:'v60'});
         });
       });
     })

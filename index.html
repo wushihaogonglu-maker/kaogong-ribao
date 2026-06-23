@@ -326,6 +326,10 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
+  .hc-stats-row-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
   .stats-divider {
     height: 1px;
     background: var(--ink-200);
@@ -1198,8 +1202,11 @@
         </div>
       </div>
       <div class="hero-card-stats">
-        <div class="stats-section-label">今日学习</div>
-        <div class="hc-stats-row">
+        <div class="hc-stats-row hc-stats-row-3">
+          <div class="hc-stat">
+            <div class="icon-row"><span class="emoji">🆕</span> 今日已学习</div>
+            <div class="value"><span id="landingTodayLearned">0</span><span class="unit"> 个</span></div>
+          </div>
           <div class="hc-stat">
             <div class="icon-row"><span class="emoji">✅</span> 今日已复习</div>
             <div class="value"><span id="landingTodayDone">0</span><span class="unit"> 个</span></div>
@@ -2264,7 +2271,7 @@ function rateCard(rating){
   srsState.stats.totalReviews=(srsState.stats.totalReviews||0)+1;
   var td=toDateStr(new Date());
   srsState.stats.reviewHistory[td]=(srsState.stats.reviewHistory[td]||0)+1;
-  if(isNew&&rating!==1)learnSession.newCount=Math.max(0,(learnSession.newCount||0)-1);
+  if(isNew&&rating!==1){srsState.stats.newLearnedHistory=srsState.stats.newLearnedHistory||{};srsState.stats.newLearnedHistory[td]=(srsState.stats.newLearnedHistory[td]||0)+1;learnSession.newCount=Math.max(0,(learnSession.newCount||0)-1);}
 
   learnSession.idx++;
 
@@ -2648,7 +2655,9 @@ function updateLandingSRSStats(){
   if(!srsState||!ITEM_POOLS)return;
   var today=toDateStr(new Date());
   var due=countDueToday();
+  var todayLearned=(srsState.stats.newLearnedHistory&&srsState.stats.newLearnedHistory[today])||0;
   var todayDone=(srsState.stats.reviewHistory&&srsState.stats.reviewHistory[today])||0;
+  document.getElementById("landingTodayLearned").textContent=todayLearned;
   document.getElementById("landingTodayDone").textContent=todayDone;
   document.getElementById("landingDue").textContent=due.total;
   document.getElementById("landingLearned").textContent=srsState.stats.totalLearned;
