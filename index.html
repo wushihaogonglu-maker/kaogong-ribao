@@ -2064,6 +2064,12 @@ function recomputeStats(){
   srsState.stats.reviewHistory[today]=(srsState.stats.reviewHistory[today]||0);
   var keys=Object.keys(srsState.stats.reviewHistory).sort();
   while(keys.length>365){delete srsState.stats.reviewHistory[keys.shift()];}
+  // Also cap newLearnedHistory
+  if(srsState.stats.newLearnedHistory){
+    srsState.stats.newLearnedHistory[today]=(srsState.stats.newLearnedHistory[today]||0);
+    var nlKeys=Object.keys(srsState.stats.newLearnedHistory).sort();
+    while(nlKeys.length>365){delete srsState.stats.newLearnedHistory[nlKeys.shift()];}
+  }
 
   srsState.updatedAt=Date.now();
   saveSRSState();
@@ -2648,8 +2654,13 @@ function updateLandingSRSStats(){
   if(!srsState||!ITEM_POOLS)return;
   var today=toDateStr(new Date());
   var due=countDueToday();
-  var todayLearned=(srsState.stats.newLearnedHistory&&srsState.stats.newLearnedHistory[today])||0;
-  var todayDone=(srsState.stats.reviewHistory&&srsState.stats.reviewHistory[today])||0;
+  // Compute today stats directly from item data (more robust than history counters)
+  var todayLearned=0,todayDone=0;
+  for(var k in srsState.items){
+    var c=srsState.items[k];
+    if(c.firstLearned===today)todayLearned++;
+    if(c.lastReview===today)todayDone++;
+  }
   document.getElementById("landingTodayLearned").textContent=todayLearned;
   document.getElementById("landingTodayDone").textContent=todayDone;
   document.getElementById("landingDue").textContent=due.total;
