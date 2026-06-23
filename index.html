@@ -283,17 +283,7 @@
     font-weight: 500;
     margin-bottom: 4px;
   }
-  .hero-card-header .date {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--ink-900);
-  }
-  .hero-card-header .date .week {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--ink-500);
-    margin-left: 8px;
-  }
+
   .checkin-ring {
     width: 64px; height: 64px;
     position: relative;
@@ -1188,7 +1178,6 @@
       <div class="hero-card-header">
         <div>
           <div class="label">今日学习概览</div>
-          <div class="date" id="heroDate">— <span class="week" id="heroWeekday">—</span></div>
         </div>
         <div class="checkin-ring">
           <svg width="64" height="64">
@@ -2699,7 +2688,7 @@ async function init(){
 
     // --- SRS Init ---
     initSRSState();
-    if(ITEM_POOLS)syncData().then(function(){updateHubDueCounts();updateLandingSRSStats();});
+    if(ITEM_POOLS){updateLandingSRSStats();syncData().then(function(){updateHubDueCounts();updateLandingSRSStats();});}
 
     // Restore saved browse state
     var saved=loadState();
