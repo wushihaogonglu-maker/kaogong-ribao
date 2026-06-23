@@ -275,7 +275,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 24px;
+    margin-bottom: 4px;
   }
   .hero-card-header .label {
     font-size: 13px;
@@ -307,11 +307,14 @@
     font-weight: 700;
     color: var(--brand);
   }
+  .today-stats-inline {
+    padding: 2px 0 14px;
+  }
   .hero-card-stats {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-top: 16px;
+    padding-top: 14px;
     border-top: 1px solid var(--ink-200);
   }
   .stats-section-label {
@@ -1201,7 +1204,7 @@
           <div class="ring-text" id="landingCheckinCount">0/4</div>
         </div>
       </div>
-      <div class="hero-card-stats">
+      <div class="today-stats-inline">
         <div class="hc-stats-row hc-stats-row-3">
           <div class="hc-stat">
             <div class="icon-row"><span class="emoji">🆕</span> 今日已学习</div>
@@ -1216,7 +1219,8 @@
             <div class="value"><span id="landingDue">0</span><span class="unit"> 个</span></div>
           </div>
         </div>
-        <div class="stats-divider"></div>
+      </div>
+      <div class="hero-card-stats">
         <div class="stats-section-label">总体学习</div>
         <div class="hc-stats-row">
           <div class="hc-stat">
