@@ -308,33 +308,50 @@
     color: var(--brand);
   }
   .hero-card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ink-200);
+  }
+  .stats-section-label {
+    font-size: 11px;
+    color: var(--ink-400);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .hc-stats-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    padding-top: 20px;
-    border-top: 1px solid var(--ink-200);
+    gap: 12px;
+  }
+  .stats-divider {
+    height: 1px;
+    background: var(--ink-200);
+    margin: 4px 0;
   }
   .hc-stat {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
   .hc-stat .icon-row {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--ink-500);
     font-weight: 500;
   }
-  .hc-stat .icon-row .emoji { font-size: 14px; }
+  .hc-stat .icon-row .emoji { font-size: 13px; }
   .hc-stat .value {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     color: var(--ink-900);
     line-height: 1;
   }
-  .hc-stat .value .unit { font-size: 13px; font-weight: 400; color: var(--ink-500); margin-left: 2px; }
+  .hc-stat .value .unit { font-size: 12px; font-weight: 400; color: var(--ink-500); margin-left: 2px; }
 
   /* Hero-card as navbar dropdown */
   .hero-card-dropdown {
@@ -1181,13 +1198,30 @@
         </div>
       </div>
       <div class="hero-card-stats">
-        <div class="hc-stat">
-          <div class="icon-row"><span class="emoji">📋</span> 待复习</div>
-          <div class="value"><span id="landingDue">0</span><span class="unit"> 个</span></div>
+        <div class="stats-section-label">今日学习</div>
+        <div class="hc-stats-row">
+          <div class="hc-stat">
+            <div class="icon-row"><span class="emoji">✅</span> 今日已复习</div>
+            <div class="value"><span id="landingTodayDone">0</span><span class="unit"> 个</span></div>
+          </div>
+          <div class="hc-stat">
+            <div class="icon-row"><span class="emoji">📋</span> 今日待复习</div>
+            <div class="value"><span id="landingDue">0</span><span class="unit"> 个</span></div>
+          </div>
         </div>
-        <div class="hc-stat">
-          <div class="icon-row"><span class="emoji">📚</span> 已学习</div>
-          <div class="value"><span id="landingLearned">0</span><span class="unit"> 个</span></div>
+        <div class="stats-divider"></div>
+        <div class="stats-section-label">总体学习</div>
+        <div class="hc-stats-row">
+          <div class="hc-stat">
+            <div class="icon-row"><span class="emoji">📚</span> 累计已学习</div>
+            <div class="value"><span id="landingLearned">0</span><span class="unit"> 个</span></div>
+          </div>
+          <div class="hc-stat">
+            <div class="icon-row"><span class="emoji">⭐</span> 累计已掌握</div>
+            <div class="value"><span id="landingMastered">0</span><span class="unit"> 个</span></div>
+          </div>
+        </div>
+      </div>
         </div>
       </div>
     </div>
@@ -1510,10 +1544,11 @@ function backToHub(){
 function goToLanding(){refreshLandingStats();switchView(activeView(),document.getElementById('landingView'));}
 
 function refreshLandingStats(){
-  document.getElementById('navStreakNum').textContent=computeStreak();
-  document.getElementById('landingDate').textContent=allDates.length>0?reportsData.reports[allDates[0]].date:'—';
-  document.getElementById('landingQuote').textContent=pickQuote();
-  document.getElementById('landingCheckinCount').textContent=getCheckinCount();
+  document.getElementById("navStreakNum").textContent=computeStreak();
+  document.getElementById("landingDate").textContent=allDates.length>0?reportsData.reports[allDates[0]].date:"—";
+  document.getElementById("landingQuote").textContent=pickQuote();
+  document.getElementById("landingCheckinCount").textContent=getCheckinCount();
+  updateLandingSRSStats();
 }
 
 function getCurrentItems(){
@@ -2227,6 +2262,8 @@ function rateCard(rating){
 
   srsState.items[key]=sm2(card,rating);
   srsState.stats.totalReviews=(srsState.stats.totalReviews||0)+1;
+  var td=toDateStr(new Date());
+  srsState.stats.reviewHistory[td]=(srsState.stats.reviewHistory[td]||0)+1;
   if(isNew&&rating!==1)learnSession.newCount=Math.max(0,(learnSession.newCount||0)-1);
 
   learnSession.idx++;
@@ -2609,9 +2646,13 @@ async function bindSyncCode(){
 
 function updateLandingSRSStats(){
   if(!srsState||!ITEM_POOLS)return;
+  var today=toDateStr(new Date());
   var due=countDueToday();
-  document.getElementById('landingDue').textContent=due.total;
-  document.getElementById('landingLearned').textContent=srsState.stats.totalLearned;
+  var todayDone=(srsState.stats.reviewHistory&&srsState.stats.reviewHistory[today])||0;
+  document.getElementById("landingTodayDone").textContent=todayDone;
+  document.getElementById("landingDue").textContent=due.total;
+  document.getElementById("landingLearned").textContent=srsState.stats.totalLearned;
+  document.getElementById("landingMastered").textContent=srsState.stats.totalMastered||0;
 }
 
 async function init(){
