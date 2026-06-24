@@ -1,5 +1,5 @@
 /* 考公补给站 Service Worker — 离线缓存 */
-const CACHE_NAME='kaogong-v63';
+const CACHE_NAME='kaogong-v64';
 const CORE_FILES=[
   '/',
   '/index.html',
