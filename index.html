@@ -1105,6 +1105,233 @@
 .settings-btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
 .settings-btn.primary:hover { background: var(--brand-dark); }
 
+/* ===== Settings Tabs ===== */
+.settings-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--ink-200);
+  padding: 0 28px;
+  gap: 0;
+}
+.settings-tab {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-500);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.settings-tab:hover { color: var(--ink-700); }
+.settings-tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+.settings-tab-panel { display: none; }
+.settings-tab-panel.active { display: block; }
+.settings-body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+/* ===== Upload Form ===== */
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.upload-row {
+  display: flex;
+  gap: 12px;
+}
+.upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.upload-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.upload-field input,
+.upload-field textarea,
+.upload-field select {
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--ink-200);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ink-900);
+  font-family: inherit;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.upload-field input:focus,
+.upload-field textarea:focus,
+.upload-field select:focus {
+  border-color: var(--brand);
+}
+.upload-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.upload-field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+.upload-submit {
+  align-self: flex-end;
+  padding: 10px 24px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.upload-submit:hover { background: var(--brand-dark); }
+.upload-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.upload-msg {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: none;
+}
+.upload-msg.success {
+  display: block;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.upload-msg.error {
+  display: block;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ===== User Items List ===== */
+.user-items-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.user-items-header h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ink-500);
+  font-weight: 600;
+}
+.user-items-count {
+  font-size: 12px;
+  color: var(--ink-500);
+  font-family: 'DM Mono', monospace;
+}
+.user-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--ink-200);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+.user-item:hover { border-color: var(--ink-300); }
+.user-item-info { flex: 1; min-width: 0; }
+.user-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-item-meta {
+  font-size: 12px;
+  color: var(--ink-500);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-item-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--brand-light);
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.user-item-delete {
+  padding: 6px;
+  background: none;
+  border: none;
+  color: var(--ink-400);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.user-item-delete:hover { background: #fef2f2; color: #ef4444; }
+.user-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--ink-400);
+  font-size: 14px;
+}
+.user-empty svg { margin: 0 auto 8px; display: block; opacity: 0.4; }
+
+/* ===== User Badge on SRS Cards ===== */
+.user-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--brand-light);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* ===== Upload Section Divider ===== */
+.upload-section-divider {
+  border: none;
+  border-top: 1px solid var(--ink-200);
+  margin: 20px 0;
+}
+
 /* ===== Update Banner ===== */
 .update-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 300; background: var(--ink-900); color: #fff; padding: 12px 24px; border-radius: 100px; font-size: 0.85rem; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 8px; animation: fadeUp 0.3s ease; }
 .update-banner:hover { background: #2A2A3C; }
@@ -1386,34 +1613,92 @@
       </h3>
       <button class="settings-close" onclick="closeSettings()" aria-label="关闭">✕</button>
     </div>
-    <div class="settings-body">
-      <div class="setting-group">
-        <h4>每日学习量</h4>
-        <div id="settingsSliders"></div>
-        <div class="setting-row" style="margin-top:8px;">
-          <span class="label" style="font-weight:600;color:var(--ink-900);">今日总计</span>
-          <span class="value" style="color:var(--brand);" id="settingsTotal">21 个</span>
+    <div class="settings-tabs">
+      <button class="settings-tab active" onclick="switchSettingsTab('settings',this)">学习设置</button>
+      <button class="settings-tab" onclick="switchSettingsTab('upload',this)">我的内容</button>
+      <button class="settings-tab" onclick="switchSettingsTab('sync',this)">跨设备同步</button>
+    </div>
+
+    <!-- Tab 1: 学习设置 -->
+    <div class="settings-tab-panel active" id="tabPanelSettings">
+      <div class="settings-body settings-body-grid">
+        <div class="setting-group">
+          <h4>每日学习量</h4>
+          <div id="settingsSliders"></div>
+          <div class="setting-row" style="margin-top:8px;">
+            <span class="label" style="font-weight:600;color:var(--ink-900);">今日总计</span>
+            <span class="value" style="color:var(--brand);" id="settingsTotal">21 个</span>
+          </div>
         </div>
       </div>
-      <div class="setting-group">
-        <h4>跨设备同步</h4>
-        <p style="font-size:13px;color:var(--ink-500);line-height:1.6;margin-bottom:8px;">
-          将同步码复制到另一台设备绑定，即可同步学习进度。
-        </p>
-        <div class="sync-code-box">
-          <div class="sync-code" id="syncCodeText">— — — —</div>
-          <button class="copy-btn" onclick="copySyncCode()">复制</button>
-        </div>
-        <div class="sync-code-box" style="margin-top:12px;">
-          <input id="bindCodeInput" placeholder="粘贴另一台设备的同步码" style="flex:1;padding:10px 16px;background:var(--bg);border:1px dashed var(--ink-300);border-radius:8px;font-size:13px;color:var(--ink-700);font-family:inherit;">
-          <button class="bind-btn" onclick="bindSyncCode()">绑定</button>
-        </div>
-        <div id="bindMsg" style="font-size:12px;color:var(--ink-500);margin-top:8px;display:none;"></div>
+      <div class="settings-actions">
+        <button class="btn-restore" onclick="resetSettings()">恢复默认</button>
+        <button class="btn-save" onclick="saveSettings()">保存设置</button>
       </div>
     </div>
-    <div class="settings-actions">
-      <button class="btn-restore" onclick="resetSettings()">恢复默认</button>
-      <button class="btn-save" onclick="saveSettings()">保存设置</button>
+
+    <!-- Tab 2: 我的内容 -->
+    <div class="settings-tab-panel" id="tabPanelUpload">
+      <div style="padding:24px 28px;">
+        <div class="upload-form" id="uploadForm">
+          <div class="upload-row">
+            <div class="upload-field">
+              <label>类型</label>
+              <select id="uploadType" onchange="onUploadTypeChange()">
+                <option value="idioms">成语</option>
+                <option value="vocab">实词</option>
+                <option value="knowledge">常识</option>
+              </select>
+            </div>
+            <div class="upload-field">
+              <label>分类标签 <span style="font-weight:400;text-transform:none;letter-spacing:0;">(可选)</span></label>
+              <input id="uploadCategory" placeholder="如：易错成语 / 高频实词" maxlength="30">
+            </div>
+          </div>
+          <div class="upload-field">
+            <label id="uploadTitleLabel">成语</label>
+            <input id="uploadTitle" placeholder="如：安居乐业" maxlength="50">
+          </div>
+          <div class="upload-field">
+            <label id="uploadContentLabel">释义</label>
+            <textarea id="uploadContent" placeholder="如：生活安定，工作愉快。形容社会治理得好。" maxlength="500"></textarea>
+          </div>
+          <div id="uploadMsg" class="upload-msg"></div>
+          <button class="upload-submit" id="uploadSubmitBtn" onclick="submitUserItem()">添加到学习库</button>
+        </div>
+        <hr class="upload-section-divider">
+        <div class="user-items-header">
+          <h4>已添加的内容</h4>
+          <span class="user-items-count" id="userItemsCount">0 条</span>
+        </div>
+        <div class="user-items-list" id="userItemsList">
+          <div class="user-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+            还没有添加自定义内容
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: 跨设备同步 -->
+    <div class="settings-tab-panel" id="tabPanelSync">
+      <div class="settings-body">
+        <div class="setting-group">
+          <h4>跨设备同步</h4>
+          <p style="font-size:13px;color:var(--ink-500);line-height:1.6;margin-bottom:8px;">
+            将同步码复制到另一台设备绑定，即可同步学习进度和自定义内容。
+          </p>
+          <div class="sync-code-box">
+            <div class="sync-code" id="syncCodeText">— — — —</div>
+            <button class="copy-btn" onclick="copySyncCode()">复制</button>
+          </div>
+          <div class="sync-code-box" style="margin-top:12px;">
+            <input id="bindCodeInput" placeholder="粘贴另一台设备的同步码" style="flex:1;padding:10px 16px;background:var(--bg);border:1px dashed var(--ink-300);border-radius:8px;font-size:13px;color:var(--ink-700);font-family:inherit;">
+            <button class="bind-btn" onclick="bindSyncCode()">绑定</button>
+          </div>
+          <div id="bindMsg" style="font-size:12px;color:var(--ink-500);margin-top:8px;display:none;"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1423,6 +1708,8 @@
 let allDates=[],currentDate='',currentCategory='idioms',reportsData=null;
 let displayCount=0;
 let currentIndex=0;
+let userPools={idioms:[],vocab:[],knowledge:[]}; // 用户自定义数据
+let userPoolsLoaded=false; // 用户数据是否已加载完成
 const COUNT_OPTIONS=[3,5,10];
 const STORAGE_KEY='kaogong_state';
 const SRS_KEY='kaogong_srs_v2';
@@ -2144,6 +2431,16 @@ function startSRSLearning(category,cap){
     alert('数据加载中，请稍后重试');
     return;
   }
+  // If user pools not loaded yet, wait and retry
+  if(!userPoolsLoaded){
+    loadUserPools().then(function(){
+      mergeUserPoolsIntoItemPools();
+      userPoolsLoaded=true;
+      updateHubDueCounts();
+      startSRSLearning(category,cap); // retry after load
+    });
+    return;
+  }
   learnSession=buildQueue(category,cap);
   if(!learnSession||learnSession.queue.length===0){
     renderLearnEmpty(category);
@@ -2204,21 +2501,21 @@ function renderLearnCard(){
   // Card front
   html+='<div class="learn-card" id="learnCard" onclick="revealCard()">';
   html+='<div class="learn-card-front">';
-  html+='<div class="lc-word">'+esc(word)+'</div>';
+  html+='<div class="lc-word">'+esc(word)+(isUserItem(key)?'<span class="user-badge">自定义</span>':'')+'</div>';
   html+='<div class="lc-hint">点击卡片查看释义</div>';
   html+='</div>';
 
   // Card back (hidden until reveal)
   html+='<div class="learn-card-back" style="display:none;">';
   if(isIdiom){
-    html+='<div class="lc-word">'+esc(item.idiom)+'</div>';
+    html+='<div class="lc-word">'+esc(item.idiom)+(isUserItem(key)?'<span class="user-badge">自定义</span>':'')+'</div>';
     html+='<div class="lc-divider"></div>';
     html+='<div class="lc-body">'+esc(item.explanation||'')+'</div>';
     if(item.focus)html+='<div class="lc-focus">'+esc(item.focus)+'</div>';
   }else{
     html+='<div class="lc-tag">'+esc(tag)+'</div>';
-    html+='<div class="lc-word" style="font-size:1.4rem;letter-spacing:0.04em;">'+esc(item.title||'')+'</div>';
-    html+='<div class="lc-body">'+esc(item.body||'')+'</div>';
+    html+='<div class="lc-word" style="font-size:1.4rem;letter-spacing:0.04em;">'+esc(item.title||'')+(isUserItem(key)?'<span class="user-badge">自定义</span>':'')+'</div>';
+    html+='<div class="lc-body">'+esc(item.body||item.content||'')+'</div>';
     if(item.exam_point)html+='<div class="lc-exam-point">'+esc(item.exam_point)+'</div>';
   }
   html+='</div>';
@@ -2354,12 +2651,17 @@ function renderLearnEmpty(category){
 
 function forceLearnCategory(category){
   // Build queue with only due reviews (no daily limit)
-  if(!ITEM_POOLS)return;
-  var pool=ITEM_POOLS[category];
+  // Search both system pools and user pools
+  var pool=[];
+  if(ITEM_POOLS&&ITEM_POOLS[category])pool=pool.concat(ITEM_POOLS[category]);
+  if(userPools[category])pool=pool.concat(userPools[category]);
+  if(!pool.length)return;
   var today=toDateStr(new Date());
+  var seen={};
   var dueReviews=[];
   pool.forEach(function(item){
     var key=getItemKey(category,item);
+    if(seen[key])return;seen[key]=true;
     var card=srsState.items[key];
     if(card&&card.nextReview&&card.nextReview<=today&&card.status!=='mastered'){
       dueReviews.push(key);
@@ -2388,10 +2690,18 @@ function exitSRS(cat){
 }
 
 function findItemByKey(cat,key){
-  if(!ITEM_POOLS||!ITEM_POOLS[cat])return null;
-  var pool=ITEM_POOLS[cat];
-  for(var i=0;i<pool.length;i++){
-    if(getItemKey(cat,pool[i])===key)return pool[i];
+  // Search system pools
+  if(ITEM_POOLS&&ITEM_POOLS[cat]){
+    var pool=ITEM_POOLS[cat];
+    for(var i=0;i<pool.length;i++){
+      if(getItemKey(cat,pool[i])===key)return pool[i];
+    }
+  }
+  // Search user pools
+  if(userPools[cat]){
+    for(var i=0;i<userPools[cat].length;i++){
+      if(getItemKey(cat,userPools[cat][i])===key)return userPools[cat][i];
+    }
   }
   return null;
 }
@@ -2646,6 +2956,184 @@ async function bindSyncCode(){
   }
 }
 
+/* ══════════════════════════════════════════
+   User Custom Data: API + UI
+   ══════════════════════════════════════════ */
+
+var USER_API='https://shanganbujizhan.top/api/user/data';
+
+function loadUserPools(){
+  var uid=getUID();
+  if(!uid)return Promise.resolve();
+  return Promise.all(['idioms','vocab','knowledge'].map(function(type){
+    return fetch(USER_API+'?type='+type+'&uid='+encodeURIComponent(uid),{signal:AbortSignal.timeout(5000)})
+      .then(function(r){return r.json();})
+      .then(function(resp){userPools[type]=resp.data||[];})
+      .catch(function(){/* offline — keep empty */});
+  }));
+}
+
+function mergeUserPoolsIntoItemPools(){
+  if(!ITEM_POOLS)return;
+  var userKeySet={};
+  ['idioms','vocab','knowledge'].forEach(function(cat){
+    var items=userPools[cat]||[];
+    items.forEach(function(u){
+      var key=getItemKey(cat,u);
+      userKeySet[key]=true;
+    });
+    if(!ITEM_POOLS[cat])ITEM_POOLS[cat]=[];
+    // Remove old user items (in case of reload) then append
+    ITEM_POOLS[cat]=ITEM_POOLS[cat].filter(function(it){
+      return !userKeySet[getItemKey(cat,it)];
+    }).concat(items);
+  });
+  // Store for badge detection
+  window._userItemKeys=userKeySet;
+}
+
+function isUserItem(key){
+  return window._userItemKeys&&window._userItemKeys[key];
+}
+
+/* ── Settings Tab Switching ── */
+
+function switchSettingsTab(tab,btn){
+  var tabs=document.querySelectorAll('.settings-tab');
+  for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');
+  if(btn)btn.classList.add('active');
+  var panels=document.querySelectorAll('.settings-tab-panel');
+  for(var i=0;i<panels.length;i++)panels[i].classList.remove('active');
+  var panelId=tab==='settings'?'tabPanelSettings':tab==='upload'?'tabPanelUpload':'tabPanelSync';
+  document.getElementById(panelId).classList.add('active');
+  if(tab==='upload')renderUserItemsList();
+  if(tab==='sync'&&document.getElementById('syncCodeText'))document.getElementById('syncCodeText').textContent=getUID();
+}
+
+/* ── Upload Form ── */
+
+var UPLOAD_LABELS={
+  idioms:{title:'成语',titlePh:'如：安居乐业',content:'释义',contentPh:'如：生活安定，工作愉快。形容社会治理得好。'},
+  vocab:{title:'实词',titlePh:'如：遏制',content:'释义与辨析',contentPh:'如：遏制 vs 遏止。遏制：控制、制止。遏止：使停止。'},
+  knowledge:{title:'知识点',titlePh:'如：中国古代选官制度',content:'内容',contentPh:'如：科举制始于隋朝大业年间，完善于唐宋……'}
+};
+
+function onUploadTypeChange(){
+  var type=document.getElementById('uploadType').value;
+  var l=UPLOAD_LABELS[type];
+  document.getElementById('uploadTitleLabel').textContent=l.title;
+  document.getElementById('uploadTitle').placeholder=l.titlePh;
+  document.getElementById('uploadContentLabel').textContent=l.content;
+  document.getElementById('uploadContent').placeholder=l.contentPh;
+}
+
+function submitUserItem(){
+  var type=document.getElementById('uploadType').value;
+  var title=document.getElementById('uploadTitle').value.trim();
+  var content=document.getElementById('uploadContent').value.trim();
+  var category=document.getElementById('uploadCategory').value.trim();
+  var msgEl=document.getElementById('uploadMsg');
+  var btn=document.getElementById('uploadSubmitBtn');
+
+  if(!title){showUploadMsg('error','请输入'+UPLOAD_LABELS[type].title);return;}
+  if(!content){showUploadMsg('error','请输入'+UPLOAD_LABELS[type].content);return;}
+
+  btn.disabled=true;btn.textContent='提交中…';
+  msgEl.className='upload-msg';msgEl.style.display='none';
+
+  fetch(USER_API,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({uid:getUID(),type:type,title:title,content:content,category:category||null}),
+    signal:AbortSignal.timeout(8000)
+  }).then(function(r){return r.json();})
+  .then(function(resp){
+    if(resp.ok){
+      // Update local pools
+      userPools[type].unshift(resp.data);
+      mergeUserPoolsIntoItemPools();
+      // Clear form
+      document.getElementById('uploadTitle').value='';
+      document.getElementById('uploadContent').value='';
+      document.getElementById('uploadCategory').value='';
+      showUploadMsg('success','添加成功！已加入学习库');
+      renderUserItemsList();
+    }else{
+      showUploadMsg('error','上传失败：'+(resp.error||'未知错误'));
+    }
+  }).catch(function(){
+    showUploadMsg('error','网络错误，请检查连接后重试');
+  }).finally(function(){
+    btn.disabled=false;btn.textContent='添加到学习库';
+  });
+}
+
+function showUploadMsg(type,text){
+  var el=document.getElementById('uploadMsg');
+  el.className='upload-msg '+type;
+  el.textContent=text;
+  el.style.display='block';
+  if(type==='success')setTimeout(function(){el.style.display='none';},3000);
+}
+
+/* ── User Items List ── */
+
+function renderUserItemsList(){
+  var type=document.getElementById('uploadType').value;
+  var items=userPools[type]||[];
+  var listEl=document.getElementById('userItemsList');
+  var countEl=document.getElementById('userItemsCount');
+  countEl.textContent=items.length+' 条';
+
+  if(items.length===0){
+    listEl.innerHTML='<div class="user-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>还没有添加自定义内容</div>';
+    return;
+  }
+  var catLabel={idioms:'成语',vocab:'实词',knowledge:'常识'}[type]||type;
+  var html='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    html+='<div class="user-item">';
+    html+='<div class="user-item-info">';
+    html+='<div class="user-item-title">'+esc(it.title)+'</div>';
+    html+='<div class="user-item-meta">'+esc(it.content).substring(0,60)+(it.content.length>60?'…':'')+'</div>';
+    html+='</div>';
+    if(it.category)html+='<span class="user-item-badge">'+esc(it.category)+'</span>';
+    html+='<span class="user-item-badge">'+catLabel+'</span>';
+    html+='<button class="user-item-delete" onclick="deleteUserItem(\''+type+'\',\''+it.id+'\')" title="删除">';
+    html+='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+    html+='</button>';
+    html+='</div>';
+  }
+  listEl.innerHTML=html;
+}
+
+function deleteUserItem(type,id){
+  if(!confirm('确定删除这条自定义内容？\n删除后对应的 SRS 学习记录也会清除。'))return;
+
+  fetch(USER_API,{
+    method:'DELETE',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({uid:getUID(),type:type,id:id}),
+    signal:AbortSignal.timeout(8000)
+  }).then(function(r){return r.json();})
+  .then(function(resp){
+    if(resp.ok){
+      // Remove from local pools
+      userPools[type]=userPools[type].filter(function(it){return it.id!==id;});
+      // Clear SRS state for this item
+      var key=type+':user-'+id;
+      if(srsState.items[key]){delete srsState.items[key];saveSRSState();}
+      mergeUserPoolsIntoItemPools();
+      renderUserItemsList();
+    }else{
+      alert('删除失败：'+(resp.error||'未知错误'));
+    }
+  }).catch(function(){
+    alert('网络错误，请检查连接后重试');
+  });
+}
+
 /* ── Landing Stats ── */
 
 function updateLandingSRSStats(){
@@ -2697,7 +3185,12 @@ async function init(){
 
     // --- SRS Init ---
     initSRSState();
-    if(ITEM_POOLS){updateLandingSRSStats();syncData().then(function(){updateHubDueCounts();updateLandingSRSStats();});}
+    if(ITEM_POOLS){
+      updateLandingSRSStats();
+      syncData().then(function(){updateHubDueCounts();updateLandingSRSStats();});
+      // Load user custom data (async, non-blocking)
+      loadUserPools().then(function(){mergeUserPoolsIntoItemPools();userPoolsLoaded=true;updateHubDueCounts();});
+    }
 
     // Restore saved browse state
     var saved=loadState();
