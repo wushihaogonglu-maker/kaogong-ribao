@@ -3041,10 +3041,15 @@ function submitUserItem(){
   btn.disabled=true;btn.textContent='提交中…';
   msgEl.className='upload-msg';msgEl.style.display='none';
 
+  // Use base64 encoding to preserve UTF-8 characters
+  var data={uid:getUID(),type:type,title:title,content:content,category:category||null};
+  var jsonStr=JSON.stringify(data);
+  var b64=btoa(unescape(encodeURIComponent(jsonStr)));
+
   fetch(USER_API,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({uid:getUID(),type:type,title:title,content:content,category:category||null}),
+    headers:{'Content-Type':'text/plain','X-Base64':'true'},
+    body:b64,
     signal:AbortSignal.timeout(8000)
   }).then(function(r){return r.json();})
   .then(function(resp){
@@ -3111,10 +3116,15 @@ function renderUserItemsList(){
 function deleteUserItem(type,id){
   if(!confirm('确定删除这条自定义内容？\n删除后对应的 SRS 学习记录也会清除。'))return;
 
+  // Use base64 encoding to preserve UTF-8 characters
+  var data={uid:getUID(),type:type,id:id};
+  var jsonStr=JSON.stringify(data);
+  var b64=btoa(unescape(encodeURIComponent(jsonStr)));
+
   fetch(USER_API,{
     method:'DELETE',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({uid:getUID(),type:type,id:id}),
+    headers:{'Content-Type':'text/plain','X-Base64':'true'},
+    body:b64,
     signal:AbortSignal.timeout(8000)
   }).then(function(r){return r.json();})
   .then(function(resp){
