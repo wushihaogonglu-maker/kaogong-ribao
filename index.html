@@ -3046,21 +3046,41 @@ function renderAllRecords(body){
 }
 
 function renderTodayRecords(body){
-  var tr=srsState&&srsState.stats?srsState.stats.todayRatings:null;
   var td=toDateStr(new Date());
-  var trDate=srsState&&srsState.stats?srsState.stats.todayRatingsDate:null;
-
-  if(!tr||trDate!==td||Object.keys(tr).length===0){
-    body.innerHTML='<div class="records-empty">今天还没有学习记录，去学习吧！</div>';
-    return;
-  }
-
+  var tr=srsState&&srsState.stats&&srsState.stats.todayRatingsDate===td?srsState.stats.todayRatings:null;
   var ratingNames={1:'忘记',3:'模糊',5:'记得'};
   var ratingClasses={1:'again',3:'hard',5:'good'};
   var catNames={idioms:'成语',vocab:'实词',knowledge:'常识',politics:'时政'};
 
+  // Build entries from todayRatings (tracked since v74)
   var entries=[];
-  for(var k in tr){entries.push({key:k,rating:tr[k].rating,isNew:tr[k].isNew,cat:tr[k].cat,title:tr[k].title});}
+  var seenKeys={};
+  if(tr){
+    for(var k in tr){
+      entries.push({key:k,rating:tr[k].rating,isNew:tr[k].isNew,cat:tr[k].cat,title:tr[k].title});
+      seenKeys[k]=true;
+    }
+  }
+
+  // Supplement from srsState.items where lastReview===today
+  if(srsState&&srsState.items){
+    for(var key in srsState.items){
+      if(seenKeys[key])continue;
+      var card=srsState.items[key];
+      if(card.lastReview===td){
+        var cat=key.split(':')[0];
+        var title=key.split(':').slice(1).join(':');
+        var isNew=card.firstLearned===td;
+        entries.push({key:key,rating:null,isNew:isNew,cat:cat,title:title});
+        seenKeys[key]=true;
+      }
+    }
+  }
+
+  if(entries.length===0){
+    body.innerHTML='<div class="records-empty">今天还没有学习记录，去学习吧！</div>';
+    return;
+  }
 
   var newCount=0;entries.forEach(function(e){if(e.isNew)newCount++;});
 
@@ -3075,7 +3095,9 @@ function renderTodayRecords(body){
     html+='<span class="records-today-tag '+(e.isNew?'new':'review')+'">'+(e.isNew?'新学':'复习')+'</span>';
     html+='<span class="records-item-title">'+esc(e.title)+'</span>';
     html+='</span>';
-    html+='<span class="records-today-rating '+(ratingClasses[e.rating]||'good')+'">'+(ratingNames[e.rating]||'记得')+'</span>';
+    if(e.rating!==null){
+      html+='<span class="records-today-rating '+(ratingClasses[e.rating]||'good')+'">'+(ratingNames[e.rating]||'记得')+'</span>';
+    }
     html+='</div>';
     html+='<div class="records-item-meta">'+(catNames[e.cat]||e.cat)+'</div>';
     html+='<div class="records-item-detail">'+esc(content)+'</div>';
