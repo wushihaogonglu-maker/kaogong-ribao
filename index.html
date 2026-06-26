@@ -1138,6 +1138,46 @@
   gap: 32px;
 }
 
+/* ===== Learning Records ===== */
+.records-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(28,28,40,0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px; }
+.view.records-overlay.view-visible { display: flex; }
+.records-panel { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto; }
+.records-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 28px 12px; }
+.records-header h3 { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 700; color: var(--ink-900); margin: 0; }
+.records-close { background: none; border: none; font-size: 1.2rem; color: var(--ink-500); cursor: pointer; padding: 4px; }
+.records-tabs { display: flex; border-bottom: 1px solid var(--ink-200); padding: 0 28px; }
+.records-tab { padding: 12px 20px; background: none; border: none; border-bottom: 2px solid transparent; font-size: 13px; font-weight: 600; color: var(--ink-500); cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; }
+.records-tab:hover { color: var(--ink-700); }
+.records-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+.records-body { padding: 16px 28px 24px; }
+.records-summary { font-size: 0.85rem; color: var(--ink-500); margin-bottom: 16px; }
+.records-summary strong { color: var(--ink-900); }
+.records-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.records-filter { padding: 5px 14px; background: var(--bg); border: 1px solid var(--ink-200); border-radius: 20px; font-size: 0.78rem; font-weight: 500; color: var(--ink-600); cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.records-filter:hover { border-color: var(--ink-400); }
+.records-filter.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+.records-list { display: flex; flex-direction: column; gap: 2px; }
+.records-item { padding: 14px 16px; border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+.records-item:hover { background: var(--bg); }
+.records-item-head { display: flex; justify-content: space-between; align-items: center; }
+.records-item-title { font-size: 0.92rem; font-weight: 600; color: var(--ink-900); }
+.records-item-status { font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
+.records-item-status.mastered { background: #EDF7EE; color: #2D6A4F; }
+.records-item-status.graduate { background: #FFF8F0; color: #D48A1A; }
+.records-item-status.learning { background: #F0F4FF; color: #3B5998; }
+.records-item-meta { font-size: 0.78rem; color: var(--ink-400); margin-top: 4px; }
+.records-item-detail { display: none; margin-top: 10px; padding: 12px 14px; background: var(--bg); border-radius: 8px; font-size: 0.85rem; color: var(--ink-700); line-height: 1.7; }
+.records-item.expanded .records-item-detail { display: block; }
+.records-today-tag { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+.records-today-tag.new { background: #E8F5E9; color: #2E7D32; }
+.records-today-tag.review { background: #FFF3E0; color: #E65100; }
+.records-today-rating { font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
+.records-today-rating.again { background: #FFF0ED; color: #D94A4A; }
+.records-today-rating.hard { background: #FFF8F0; color: #D48A1A; }
+.records-today-rating.good { background: #EDF7EE; color: #2D6A4F; }
+.records-empty { text-align: center; padding: 40px 0; color: var(--ink-400); font-size: 0.9rem; }
+@media (max-width: 640px) { .records-panel { max-height: 92vh; } .records-body { padding: 12px 16px 20px; } }
+
 /* ===== Upload Form ===== */
 .upload-form {
   display: flex;
@@ -1564,6 +1604,10 @@
       <div class="feature-icon">🔗</div>
       <div><h3>跨设备同步</h3><p>同步码绑定多台设备，进度实时同步。</p></div>
     </div>
+    <div class="feature" role="button" tabindex="0" onclick="openRecords()" style="cursor:pointer;">
+      <div class="feature-icon">📖</div>
+      <div><h3>学习记录</h3><p>查看总学习进度和今日学习内容。</p></div>
+    </div>
   </div>
 
   <div style="text-align:center;margin-top:24px;">
@@ -1703,6 +1747,20 @@
   </div>
 </div>
 
+<!-- 学习记录 -->
+<div class="records-overlay view" id="recordsView" role="dialog" aria-label="学习记录">
+  <div class="records-panel">
+    <div class="records-header">
+      <h3>📖 学习记录</h3>
+      <button class="records-close" onclick="closeRecords()" aria-label="关闭">✕</button>
+    </div>
+    <div class="records-tabs">
+      <button class="records-tab active" onclick="switchRecordsTab('all',this)">📋 总记录</button>
+      <button class="records-tab" onclick="switchRecordsTab('today',this)">📅 今日记录</button>
+    </div>
+    <div class="records-body" id="recordsBody"></div>
+  </div>
+</div>
 
 <script>
 let allDates=[],currentDate='',currentCategory='idioms',reportsData=null;
@@ -1775,36 +1833,22 @@ function updateHubCardStates(){
 }
 
 function computeStreak(){
-  /* Priority: check-in based (4 categories all done = one day) */
   var checkins=loadCheckins();
+  // 只计算四个模块全部签到的日期
   var dates=Object.keys(checkins).filter(function(d){var c=checkins[d];return c.idioms&&c.vocab&&c.knowledge&&c.politics;}).sort().reverse();
-  if(dates.length>0){
-    var today=toDateStr(new Date());var yesterday=toDateStr(new Date(Date.now()-864e5));
-    var mostRecent=dates[0];
-    if(mostRecent===today||mostRecent===yesterday){
-      var streak=1;
-      for(var i=1;i<dates.length;i++){var d=(new Date(dates[i-1])-new Date(dates[i]))/864e5;if(Math.abs(d-1)<0.1)streak++;else break;}
-      return streak;
-    }
+  if(dates.length===0)return 0;
+  var today=toDateStr(new Date());
+  var yesterday=toDateStr(new Date(Date.now()-864e5));
+  var mostRecent=dates[0];
+  // 最近一次全签到必须是今天或昨天，否则归零
+  if(mostRecent!==today&&mostRecent!==yesterday)return 0;
+  var streak=1;
+  for(var i=1;i<dates.length;i++){
+    var diff=(new Date(dates[i-1])-new Date(dates[i]))/864e5;
+    if(Math.abs(diff-1)<0.1)streak++;
+    else break;
   }
-  /* fallback: SRS review history */
-  if(srsState&&srsState.stats&&srsState.stats.reviewHistory){
-    var studiedDates=Object.keys(srsState.stats.reviewHistory).sort().reverse();
-    if(studiedDates.length>0){
-      var t2=toDateStr(new Date());var y2=toDateStr(new Date(Date.now()-864e5));
-      var mr=studiedDates[0];
-      if(mr===t2||mr===y2){
-        var s2=1;
-        for(var j=1;j<studiedDates.length;j++){var d2=(new Date(studiedDates[j-1])-new Date(studiedDates[j]))/864e5;if(Math.abs(d2-1)<0.1)s2++;else break;}
-        return s2;
-      }
-    }
-    return 0;
-  }
-  /* last resort: data dates */
-  if(allDates.length===0)return 0;var s3=1;
-  for(var k=1;k<allDates.length;k++){var d3=(new Date(allDates[k-1])-new Date(allDates[k]))/864e5;if(Math.abs(d3-1)<0.1)s3++;else break;}
-  return s3;
+  return streak;
 }
 
 function saveState(){try{var s={d:currentDate,c:currentCategory,n:displayCount,i:currentIndex};localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}catch(e){}}
@@ -2400,23 +2444,36 @@ async function syncData(){
     if(resp.ok){
       var remote=await resp.json();
       if(remote&&remote.updatedAt){
-        // Merge: take the newer one
+        // Merge SRS: take the newer one
         if(remote.updatedAt>(srsState.updatedAt||0)){
-          // Remote is newer — use remote
           srsState=remote;
           saveSRSState();
         }
-        // else: local is newer or equal, keep local
+      }
+      // Merge user pools: remote wins if present
+      if(remote&&remote.userPools){
+        ['idioms','vocab','knowledge'].forEach(function(cat){
+          if(remote.userPools[cat]&&remote.userPools[cat].length){
+            userPools[cat]=remote.userPools[cat];
+          }
+        });
+        mergeUserPoolsIntoItemPools();
       }
     }
   }catch(e){/* offline — silently skip */}
 
-  // POST: push local state
+  // POST: push local state + user pools
   try{
+    var payload={
+      items:srsState.items,
+      updatedAt:srsState.updatedAt,
+      userPools:userPools
+    };
+    var b64=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
     await fetch(syncUrl,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(srsState),
+      headers:{'Content-Type':'text/plain','X-Base64':'true'},
+      body:b64,
       signal:AbortSignal.timeout(5000)
     });
   }catch(e){/* offline — silently skip */}
@@ -2566,6 +2623,14 @@ function rateCard(rating){
   var td=toDateStr(new Date());
   srsState.stats.reviewHistory[td]=(srsState.stats.reviewHistory[td]||0)+1;
   if(isNew&&rating!==1){srsState.stats.newLearnedHistory=srsState.stats.newLearnedHistory||{};srsState.stats.newLearnedHistory[td]=(srsState.stats.newLearnedHistory[td]||0)+1;learnSession.newCount=Math.max(0,(learnSession.newCount||0)-1);}
+  // Track today's rating for learning records
+  if(!srsState.stats.todayRatings)srsState.stats.todayRatings={};
+  if(!srsState.stats.todayRatingsDate||srsState.stats.todayRatingsDate!==td){srsState.stats.todayRatings={};srsState.stats.todayRatingsDate=td;}
+  var cat=learnSession.category;
+  var itemData=findItemByKey(cat,key);
+  var title='';
+  if(itemData){title=cat==='idioms'?(itemData.idiom||''):(itemData.title||'');}
+  srsState.stats.todayRatings[key]={rating:rating,isNew:isNew,cat:cat,title:title};
 
   learnSession.idx++;
 
@@ -2899,6 +2964,135 @@ function resetSettings(){
   renderSettingsPanel();
 }
 
+/* ── Learning Records ── */
+
+var recordsTab='all';
+var recordsCatFilter='all';
+
+function openRecords(){
+  recordsTab='all';recordsCatFilter='all';
+  renderRecords();
+  switchView(activeView(),document.getElementById('recordsView'));
+}
+function closeRecords(){
+  switchView(document.getElementById('recordsView'),document.getElementById('hubView'));
+}
+function switchRecordsTab(tab,btn){
+  recordsTab=tab;recordsCatFilter='all';
+  var tabs=document.querySelectorAll('.records-tab');
+  for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');
+  if(btn)btn.classList.add('active');
+  renderRecords();
+}
+function renderRecords(){
+  var body=document.getElementById('recordsBody');
+  if(recordsTab==='all')renderAllRecords(body);
+  else renderTodayRecords(body);
+}
+
+function renderAllRecords(body){
+  var items=srsState?srsState.items:{};
+  var groups={idioms:[],vocab:[],knowledge:[],politics:[]};
+  var catNames={idioms:'成语',vocab:'实词',knowledge:'常识',politics:'时政'};
+  var statusLabels={mastered:'✅ 已掌握',graduate:'🔄 已记住',learning:'📝 学习中'};
+  var statusClasses={mastered:'mastered',graduate:'graduate',learning:'learning'};
+
+  for(var k in items){
+    var c=items[k];
+    var cat=k.split(':')[0];
+    var title=k.split(':').slice(1).join(':');
+    if(!groups[cat])groups[cat]=[];
+    groups[cat].push({key:k,title:title,cat:cat,status:c.status||'learning',reps:c.reps||0});
+  }
+
+  var total=0,masterCount=0;
+  for(var g in groups){total+=groups[g].length;groups[g].forEach(function(it){if(it.status==='mastered')masterCount++;});}
+
+  var cats=['all','idioms','vocab','knowledge','politics'];
+  var html='<div class="records-summary">共学过 <strong>'+total+'</strong> 条 · 已掌握 <strong>'+masterCount+'</strong> 条</div>';
+  html+='<div class="records-filters">';
+  html+='<button class="records-filter'+(recordsCatFilter==='all'?' active':'')+'" onclick="recordsCatFilter=\'all\';renderRecords();">全部</button>';
+  ['idioms','vocab','knowledge','politics'].forEach(function(c){
+    html+='<button class="records-filter'+(recordsCatFilter===c?' active':'')+'" onclick="recordsCatFilter=\''+c+'\';renderRecords();">'+catNames[c]+'</button>';
+  });
+  html+='</div><div class="records-list">';
+
+  var shown=0;
+  var order=['idioms','vocab','knowledge','politics'];
+  order.forEach(function(cat){
+    if(recordsCatFilter!=='all'&&recordsCatFilter!==cat)return;
+    var arr=groups[cat];
+    if(!arr.length)return;
+    // Sort: learning first, then graduate, then mastered; within same status, more reps first
+    var rank={learning:0,graduate:1,mastered:2};
+    arr.sort(function(a,b){return (rank[a.status]||0)-(rank[b.status]||0)||b.reps-a.reps;});
+    arr.forEach(function(it){
+      var content=getItemContentForRecords(it.cat,it.key);
+      html+='<div class="records-item" onclick="this.classList.toggle(\'expanded\')">';
+      html+='<div class="records-item-head">';
+      html+='<span class="records-item-title">'+esc(it.title)+'</span>';
+      html+='<span class="records-item-status '+(statusClasses[it.status]||'learning')+'">'+(statusLabels[it.status]||'📝 学习中')+'</span>';
+      html+='</div>';
+      html+='<div class="records-item-meta">复习 '+it.reps+' 次</div>';
+      html+='<div class="records-item-detail">'+esc(content)+'</div>';
+      html+='</div>';
+      shown++;
+    });
+  });
+
+  if(!shown)html+='<div class="records-empty">还没有学习记录，去学习吧！</div>';
+  html+='</div>';
+  body.innerHTML=html;
+}
+
+function renderTodayRecords(body){
+  var tr=srsState&&srsState.stats?srsState.stats.todayRatings:null;
+  var td=toDateStr(new Date());
+  var trDate=srsState&&srsState.stats?srsState.stats.todayRatingsDate:null;
+
+  if(!tr||trDate!==td||Object.keys(tr).length===0){
+    body.innerHTML='<div class="records-empty">今天还没有学习记录，去学习吧！</div>';
+    return;
+  }
+
+  var ratingNames={1:'忘记',3:'模糊',5:'记得'};
+  var ratingClasses={1:'again',3:'hard',5:'good'};
+  var catNames={idioms:'成语',vocab:'实词',knowledge:'常识',politics:'时政'};
+
+  var entries=[];
+  for(var k in tr){entries.push({key:k,rating:tr[k].rating,isNew:tr[k].isNew,cat:tr[k].cat,title:tr[k].title});}
+
+  var newCount=0;entries.forEach(function(e){if(e.isNew)newCount++;});
+
+  var html='<div class="records-summary">今日学习 <strong>'+entries.length+'</strong> 条 · 新学 <strong>'+newCount+'</strong> 条</div>';
+  html+='<div class="records-list">';
+
+  entries.forEach(function(e){
+    var content=getItemContentForRecords(e.cat,e.key);
+    html+='<div class="records-item" onclick="this.classList.toggle(\'expanded\')">';
+    html+='<div class="records-item-head">';
+    html+='<span>';
+    html+='<span class="records-today-tag '+(e.isNew?'new':'review')+'">'+(e.isNew?'新学':'复习')+'</span>';
+    html+='<span class="records-item-title">'+esc(e.title)+'</span>';
+    html+='</span>';
+    html+='<span class="records-today-rating '+(ratingClasses[e.rating]||'good')+'">'+(ratingNames[e.rating]||'记得')+'</span>';
+    html+='</div>';
+    html+='<div class="records-item-meta">'+(catNames[e.cat]||e.cat)+'</div>';
+    html+='<div class="records-item-detail">'+esc(content)+'</div>';
+    html+='</div>';
+  });
+
+  html+='</div>';
+  body.innerHTML=html;
+}
+
+function getItemContentForRecords(cat,key){
+  var item=findItemByKey(cat,key);
+  if(!item)return '内容加载失败';
+  if(cat==='idioms')return (item.explanation||'')+(item.focus?' 【辨析】'+item.focus:'');
+  return (item.body||item.content||'')+(item.exam_point?' 【考点】'+item.exam_point:'');
+}
+
 function copySyncCode(){
   var code=getUID();
   if(navigator.clipboard){
@@ -2937,11 +3131,23 @@ async function bindSyncCode(){
     if(remote&&remote.items&&Object.keys(remote.items).length>0){
       srsState=remote;
       saveSRSState();
+      // Sync user pools
+      if(remote.userPools){
+        ['idioms','vocab','knowledge'].forEach(function(cat){
+          if(remote.userPools[cat]&&remote.userPools[cat].length){
+            userPools[cat]=remote.userPools[cat];
+          }
+        });
+        mergeUserPoolsIntoItemPools();
+      }
       document.getElementById('syncCodeText').textContent=code;
       updateHubDueCounts();
       updateLandingSRSStats();
       msg.style.color='var(--rating-good)';
-      msg.textContent='已绑定！同步了 '+Object.keys(remote.items).length+' 条学习记录';
+      var count=Object.keys(remote.items).length;
+      var poolCount=0;
+      ['idioms','vocab','knowledge'].forEach(function(c){poolCount+=(userPools[c]||[]).length;});
+      msg.textContent='已绑定！同步了 '+count+' 条学习记录'+(poolCount>0?'、'+poolCount+' 条自定义内容':'');
     }else{
       document.getElementById('syncCodeText').textContent=code;
       msg.style.color='var(--rating-good)';
@@ -3037,6 +3243,25 @@ function submitUserItem(){
 
   if(!title){showUploadMsg('error','请输入'+UPLOAD_LABELS[type].title);return;}
   if(!content){showUploadMsg('error','请输入'+UPLOAD_LABELS[type].content);return;}
+
+  // 查重：检查系统库和已上传内容
+  var dupSource=null;
+  var titleKey=type==='idioms'?title:title; // idioms 用 idiom 字段，其他用 title
+  if(ITEM_POOLS&&ITEM_POOLS[type]){
+    ITEM_POOLS[type].forEach(function(item){
+      var existing=type==='idioms'?item.idiom:item.title;
+      if(existing&&existing===title)dupSource='系统库';
+    });
+  }
+  if(!dupSource&&userPools[type]){
+    userPools[type].forEach(function(item){
+      var existing=type==='idioms'?item.idiom:item.title;
+      if(existing&&existing===title)dupSource='已上传的内容';
+    });
+  }
+  if(dupSource){
+    if(!confirm('"'+title+'" 在'+dupSource+'中已存在，确定要重复添加吗？'))return;
+  }
 
   btn.disabled=true;btn.textContent='提交中…';
   msgEl.className='upload-msg';msgEl.style.display='none';
@@ -3251,6 +3476,11 @@ document.addEventListener('keydown',function(e){
   var sv=document.getElementById('settingsView');
   if(e.key==='Escape'&&sv&&sv.classList.contains('view-visible')){
     closeSettings();
+  }
+  // Records: Escape to close
+  var rv=document.getElementById('recordsView');
+  if(e.key==='Escape'&&rv&&rv.classList.contains('view-visible')){
+    closeRecords();
   }
 });
 
