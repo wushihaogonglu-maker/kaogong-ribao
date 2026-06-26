@@ -1,5 +1,5 @@
 /* 考公补给站 Service Worker — 离线缓存 */
-const CACHE_NAME='kaogong-v75';
+const CACHE_NAME='kaogong-v76';
 const CORE_FILES=[
   '/',
   '/index.html',
@@ -30,7 +30,7 @@ self.addEventListener('activate',function(e){
       // Notify all open clients about the update
       return self.clients.matchAll({type:'window'}).then(function(clients){
         clients.forEach(function(client){
-          client.postMessage({type:'SW_UPDATED',version:'v75'});
+          client.postMessage({type:'SW_UPDATED',version:'v76'});
         });
       });
     })
@@ -48,6 +48,8 @@ self.addEventListener('message',function(e){
 self.addEventListener('fetch',function(e){
   var url=new URL(e.request.url);
   if(e.request.method!=='GET')return;
+  // Skip external requests — only handle same-origin
+  if(url.origin!==self.location.origin)return;
 
   // HTML & data.json: stale-while-revalidate (instant from cache, update in background)
   var isHTML=url.pathname==='/'||url.pathname.endsWith('.html');
