@@ -1,0 +1,5 @@
+中国历史: total=166, <50chars=38, <40chars=15
+文学常识: total=91, <50chars=25, <40chars=12
+文化知识: total=253, <50chars=86, <40chars=51
+科技常识: total=199, <50chars=127, <40chars=81
+地理常识: total=101, <50chars=50, <40chars=31
