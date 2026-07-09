@@ -1787,6 +1787,43 @@ var cardRevealed=false;            // whether current card back is showing
 	var browsePage=0;                  // current page index
 	var itemsPerPage=10;               // items per page in browse mode
 
+/* ══════════════════════════════════════════
+   PAYWALL — 试用期 + VIP暗号（默认关闭，改 enabled 即可启用）
+   ══════════════════════════════════════════ */
+var PAYWALL={
+  enabled:false,               // ← 主开关：false=全站免费(现状不受任何影响)；true=启用试用/付费
+  trialDays:7,                 // 新用户完整体验天数
+  freeItems:10,                // 试用期结束后每板块仍免费的最新条数
+  vipCode:'xzhg2026',          // 好友VIP暗号：链接 ?vip=xzhg2026 或连点Logo手动输入
+  adminCode:'kaogongadmin',    // 你自己的管理暗号：?admin=kaogongadmin
+  supportUrl:'https://afdian.com/a/你的主页'  // 解锁/赞赏跳转(去爱发电改成你的主页地址)
+};
+var PW_TRIAL_KEY='kaogong_trial_start';
+var PW_VIP_KEY='kaogong_vip_pass';
+function pwIsVip(){try{var v=localStorage.getItem(PW_VIP_KEY);return v===PAYWALL.vipCode||v===PAYWALL.adminCode;}catch(e){return false;}}
+function pwTrialStart(){try{var t=localStorage.getItem(PW_TRIAL_KEY);if(!t){t=String(Date.now());localStorage.setItem(PW_TRIAL_KEY,t);}return parseInt(t,10);}catch(e){return Date.now();}}
+function pwTrialDaysLeft(){var elapsed=(Date.now()-pwTrialStart())/86400000;return Math.max(0,Math.ceil(PAYWALL.trialDays-elapsed));}
+function pwFullAccess(){return !PAYWALL.enabled||pwIsVip()||pwTrialDaysLeft()>0;}
+function pwUnlock(code){code=(code||'').trim();if(code===PAYWALL.vipCode||code===PAYWALL.adminCode){try{localStorage.setItem(PW_VIP_KEY,code);}catch(e){}return true;}return false;}
+function pwLockCardHtml(){var s=PAYWALL.supportUrl;return '<div style="margin:16px 0;padding:24px 20px;border:1px dashed var(--brand-light);border-radius:14px;background:var(--brand-50);text-align:center;">'
+  +'<div style="font-size:32px;">🔒</div>'
+  +'<div style="font-size:1rem;font-weight:700;color:var(--ink-900);margin:8px 0 4px;">完整历史库已锁定</div>'
+  +'<div style="font-size:0.82rem;color:var(--ink-500);line-height:1.6;margin-bottom:14px;">免费试用已结束 · 仅展示最新 '+PAYWALL.freeItems+' 条<br>开通支持即可解锁全部历史内容，每日持续更新</div>'
+  +'<a href="'+esc(s)+'" target="_blank" rel="noopener" style="display:inline-block;padding:10px 22px;background:var(--brand);color:#fff;border-radius:10px;font-size:0.85rem;font-weight:600;text-decoration:none;">解锁完整版 →</a>'
+  +'<div style="font-size:0.72rem;color:var(--ink-500);margin-top:12px;">已购买或好友？连点左上角 Logo 5 次输入暗号永久解锁</div>'
+  +'</div>';}
+function pwInit(){
+  try{var qs=new URLSearchParams(location.search);var code=qs.get('vip')||qs.get('admin');
+    if(code&&pwUnlock(code)){try{history.replaceState(null,'',location.pathname);}catch(e){}}}catch(e){}
+  if(PAYWALL.enabled)pwTrialStart();
+  var logo=document.querySelector('.logo');
+  if(logo){var taps=0,timer=null;logo.addEventListener('click',function(){
+    taps++;if(timer)clearTimeout(timer);timer=setTimeout(function(){taps=0;},1500);
+    if(taps>=5){taps=0;var c=prompt('请输入解锁暗号：');
+      if(c!==null){if(pwUnlock(c)){alert('解锁成功，已永久免限制 ✓');location.reload();}else if(c)alert('暗号不正确');}}
+  });}
+}
+
 const CATEGORY_CONFIG={
   idioms:{title:'成语',emptyIcon:'一',emptyText:'成语内容准备中',emptyHint:'每日成语即将上线'},
   vocab:{title:'实词',emptyIcon:'字',emptyText:'实词内容准备中',emptyHint:'言语理解专项即将上线'},
@@ -1904,6 +1941,12 @@ function getLatestCompleteDate(){
 
 	function renderCategoryContent(){
 		var cfg=CATEGORY_CONFIG[currentCategory];
+		// PAYWALL: 试用期结束且非VIP，仅保留最新 freeItems 条
+		var pwLocked=false;
+		if(PAYWALL.enabled&&!pwFullAccess()&&allBrowseItems.length>PAYWALL.freeItems){
+			allBrowseItems=allBrowseItems.slice(0,PAYWALL.freeItems);
+			pwLocked=true;
+		}
 		var total=allBrowseItems.length;
 
 		// --- Empty state ---
@@ -2008,6 +2051,9 @@ function getLatestCompleteDate(){
 			}
 			html+='</div>';
 		}
+
+		// PAYWALL: 锁定提示卡
+		if(pwLocked)html+=pwLockCardHtml();
 
 		// Pagination
 		html+='<div class="browse-pagination">';
@@ -3533,6 +3579,7 @@ if('serviceWorker'in navigator){
   });
 }
 
+pwInit();
 init();
 </script>
 </body>
