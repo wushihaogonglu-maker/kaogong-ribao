@@ -1781,6 +1781,9 @@ var touchStartX=0,touchStartY=0,touchStartTime=0;
 var ITEM_POOLS=null;               // {idioms:[], vocab:[], knowledge:[], politics:[]}
 var srsState=null;                 // full kaogong_srs state object
 var learnSession=null;             // {category, queue:[], idx, reviewCount, newCount}
+var quizSession=null;              // {category, questions:[{q,opts:[{text,correct}],chosen,explain}], idx, correct, wrong}
+var lastLearnQueue=null;           // saved queue from completed learn session for quiz entry
+var lastLearnCategory=null;
 var currentMode='browse';          // 'browse' | 'learn'
 var cardRevealed=false;            // whether current card back is showing
 	var allBrowseItems=[];             // all items for current category (across all dates)
@@ -2684,7 +2687,9 @@ function rateCard(rating){
   learnSession.idx++;
 
   if(learnSession.idx>=learnSession.queue.length){
-    // Session complete
+    // Session complete — save for quiz entry
+    lastLearnQueue=learnSession.queue.slice();
+    lastLearnCategory=learnSession.category;
     recomputeStats();
     syncData();
     saveSRSState();
@@ -2707,7 +2712,11 @@ function renderLearnDone(){
   html+='<span class="learn-done-icon">✓</span>';
   html+='<div class="learn-done-title">今日学习完成</div>';
   html+='<div class="learn-done-stats">复习: '+(learnSession?learnSession.reviewCount:0)+' 个 &nbsp; 新学: '+(learnSession?learnSession.newCount:0)+' 个</div>';
-  html+='<button class="learn-done-btn primary" onclick="exitSRS(\x27'+learnSession.category+'\x27)">返回首页</button>';
+  var lc=(lastLearnCategory||'');
+  if(lastLearnQueue&&lastLearnQueue.length>0){
+    html+='<button class="learn-done-btn primary" style="background:var(--brand);margin-bottom:10px" onclick="startQuiz(\x27'+lc+'\x27)">🎯 刷题巩固（'+lastLearnQueue.length+' 题）</button>';
+  }
+  html+='<button class="learn-done-btn" onclick="exitSRS(\x27'+lc+'\x27)">返回首页</button>';
   html+='</div>';
   document.getElementById('learnContent').innerHTML=html;
   document.getElementById('learnProgress').textContent='完成';
@@ -2818,6 +2827,182 @@ function findItemByKey(cat,key){
     }
   }
   return null;
+}
+
+/* ══════════════════════════════════════════
+   SRS: Quiz Mode — 学完即练
+   ══════════════════════════════════════════ */
+
+function buildQuiz(category, itemKeys){
+  // Auto-generate multiple-choice questions from studied items
+  var pool=ITEM_POOLS[category]||[];
+  var questions=[];
+  for(var i=0;i<itemKeys.length;i++){
+    var key=itemKeys[i];
+    var item=findItemByKey(category,key);
+    if(!item)continue;
+    var q=null;
+    if(category==='idioms'){
+      // Q: which idiom matches this explanation?
+      var correct=item.idiom||'';
+      var distractors=[];
+      for(var d=0;d<pool.length&&distractors.length<3;d++){
+        var di=pool[d]; var dk=getItemKey(category,di);
+        if(dk!==key&&(di.idiom||'')!==correct&&distractors.indexOf(di.idiom)<0)
+          distractors.push(di.idiom);
+      }
+      var opts=shuffle([{text:correct,correct:true}].concat(distractors.map(function(t){return {text:t,correct:false};})));
+      q={q:'以下哪个成语的意思是：'+esc(item.explanation||''),opts:opts,explain:esc(item.idiom)+'：'+esc(item.explanation||'')};
+    }else if(category==='vocab'){
+      // Q: pick the correct word pair for this context
+      var correct=item.title||'';
+      var distractors=[];
+      for(var d=0;d<pool.length&&distractors.length<3;d++){
+        var di=pool[d]; var dk=getItemKey(category,di);
+        if(dk!==key&&(di.title||'')!==correct&&distractors.indexOf(di.title)<0)
+          distractors.push(di.title);
+      }
+      var opts=shuffle([{text:correct,correct:true}].concat(distractors.map(function(t){return {text:t,correct:false};})));
+      q={q:'选择正确的词语填入语境：'+esc(item.body||''),opts:opts,explain:esc(correct)+'：'+esc(item.body||'')};
+    }else{
+      // knowledge/politics: Q about the body/title
+      var correct=item.title||'';
+      var distractors=[];
+      for(var d=0;d<pool.length&&distractors.length<3;d++){
+        var di=pool[d]; var dk=getItemKey(category,di);
+        if(dk!==key&&(di.title||'')!==correct&&distractors.indexOf(di.title)<0)
+          distractors.push(di.title);
+      }
+      if(distractors.length<3){
+        // fallback: use category-mates
+        for(var dd=0;dd<pool.length&&distractors.length<3;dd++){
+          var di2=pool[dd]; var dk2=getItemKey(category,di2);
+          if(dk2!==key&&(di2.title||'')!==correct&&distractors.indexOf(di2.title)<0)
+            distractors.push(di2.title);
+        }
+      }
+      var opts=shuffle([{text:correct,correct:true}].concat(distractors.map(function(t){return {text:t,correct:false};})));
+      q={q:'以下哪项描述最准确：'+esc(item.body||item.title||''),opts:opts,explain:esc(correct)+'：'+esc(item.body||item.exam_point||'')};
+    }
+    if(q&&q.opts.length>=2)questions.push(q);
+  }
+  return questions;
+}
+
+function startQuiz(category){
+  if(!lastLearnQueue||lastLearnQueue.length===0)return;
+  var qs=buildQuiz(category,lastLearnQueue);
+  if(qs.length===0){alert('暂无可用题目');return;}
+  quizSession={category:category,questions:qs,idx:0,correct:0,wrong:0};
+  document.getElementById('learnProgress').textContent='刷题 1/'+qs.length;
+  document.getElementById('learnProgressFill').style.width='0%';
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion(){
+  if(!quizSession||quizSession.idx>=quizSession.questions.length){
+    renderQuizResult();return;
+  }
+  var q=quizSession.questions[quizSession.idx];
+  var total=quizSession.questions.length;
+  var idx=quizSession.idx;
+  document.getElementById('learnProgress').textContent='刷题 '+(idx+1)+'/'+total;
+  document.getElementById('learnProgressFill').style.width=(idx/total*100)+'%';
+
+  var html='';
+  html+='<div class="quiz-card-wrap">';
+  html+='<div class="quiz-progress">第 '+(idx+1)+'/'+total+' 题 · 已对 '+quizSession.correct+' 错 '+quizSession.wrong+'</div>';
+  html+='<div class="quiz-question">'+q.q+'</div>';
+  html+='<div class="quiz-options">';
+  for(var i=0;i<q.opts.length;i++){
+    var o=q.opts[i];
+    var cls='quiz-option';
+    if(q.chosen!==undefined){
+      if(o.correct)cls+=' quiz-correct';
+      else if(q.chosen===i)cls+=' quiz-wrong';
+      else cls+=' quiz-dimmed';
+    }
+    var prefix='';
+    if(q.chosen!==undefined){
+      if(o.correct)prefix='✓ ';
+      else if(q.chosen===i)prefix='✗ ';
+    }
+    html+='<button class="'+cls+'" onclick="answerQuiz('+i+')"'+((q.chosen!==undefined)?' disabled':'')+'>'+prefix+esc(o.text)+'</button>';
+  }
+  html+='</div>';
+  if(q.chosen!==undefined){
+    html+='<div class="quiz-explain">'+q.explain+'</div>';
+    html+='<button class="learn-done-btn primary" style="margin-top:12px" onclick="quizNext()">'+(quizSession.idx+1>=quizSession.questions.length?'查看结果':'下一题 →')+'</button>';
+  }
+  html+='</div>';
+  document.getElementById('learnContent').innerHTML=html;
+}
+
+function answerQuiz(optIdx){
+  if(!quizSession||quizSession.questions[quizSession.idx].chosen!==undefined)return;
+  var q=quizSession.questions[quizSession.idx];
+  q.chosen=optIdx;
+  if(q.opts[optIdx].correct)quizSession.correct++;
+  else quizSession.wrong++;
+  renderQuizQuestion();
+}
+
+function quizNext(){
+  if(!quizSession)return;
+  quizSession.idx++;
+  if(quizSession.idx>=quizSession.questions.length){
+    renderQuizResult();
+  }else{
+    renderQuizQuestion();
+  }
+}
+
+function renderQuizResult(){
+  if(!quizSession)return;
+  var total=quizSession.questions.length;
+  var correct=quizSession.correct;
+  var pct=total>0?Math.round(correct/total*100):0;
+  document.getElementById('learnProgress').textContent='刷题完成';
+  document.getElementById('learnProgressFill').style.width='100%';
+  var emoji=pct>=90?'🎉':pct>=70?'👍':pct>=50?'📖':'💪';
+  var html='';
+  html+='<div class="learn-done">';
+  html+='<span class="learn-done-icon">'+emoji+'</span>';
+  html+='<div class="learn-done-title">刷题完成</div>';
+  html+='<div class="learn-done-stats">正确 '+correct+' / '+total+' · 正确率 '+pct+'%</div>';
+  // show wrong answers for review
+  var wrongs=[];
+  for(var i=0;i<quizSession.questions.length;i++){
+    var q=quizSession.questions[i];
+    if(q.chosen!==undefined&&!q.opts[q.chosen].correct)wrongs.push(q);
+  }
+  if(wrongs.length>0){
+    html+='<div style="margin-top:16px;text-align:left;max-width:500px;margin-left:auto;margin-right:auto;">';
+    html+='<div style="font-weight:700;color:var(--ink-900);margin-bottom:8px;">📝 错题回顾</div>';
+    for(var w=0;w<wrongs.length;w++){
+      var wq=wrongs[w];
+      var chosenText=wq.opts[wq.chosen]?wq.opts[wq.chosen].text:'';
+      var correctOpt=null;
+      for(var oi=0;oi<wq.opts.length;oi++){if(wq.opts[oi].correct){correctOpt=wq.opts[oi];break;}}
+      html+='<div style="background:#FFF5F5;border-left:3px solid #E53E3E;padding:10px 12px;margin:8px 0;border-radius:6px;font-size:0.82rem;">';
+      html+='<div style="color:var(--ink-900);font-weight:600;margin-bottom:4px;">'+wq.q+'</div>';
+      html+='<div style="color:#E53E3E;">✗ 你选了：'+esc(chosenText)+'</div>';
+      html+='<div style="color:#2D6A4F;">✓ 正确答案：'+esc(correctOpt?correctOpt.text:'')+'</div>';
+      html+='<div style="color:var(--ink-muted);margin-top:4px;">'+wq.explain+'</div>';
+      html+='</div>';
+    }
+    html+='</div>';
+  }
+  html+='<button class="learn-done-btn primary" style="margin-top:16px" onclick="exitQuiz()">返回首页</button>';
+  html+='</div>';
+  document.getElementById('learnContent').innerHTML=html;
+}
+
+function exitQuiz(){
+  quizSession=null;
+  lastLearnQueue=null;
+  lastLearnCategory=null;
+  exitSRS('');
 }
 
 /* ══════════════════════════════════════════
