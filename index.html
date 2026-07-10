@@ -2687,9 +2687,7 @@ function rateCard(rating){
   learnSession.idx++;
 
   if(learnSession.idx>=learnSession.queue.length){
-    // Session complete — save for quiz entry
-    lastLearnQueue=learnSession.queue.slice();
-    lastLearnCategory=learnSession.category;
+    // Session complete — quiz queue saved in renderLearnDone
     recomputeStats();
     syncData();
     saveSRSState();
@@ -2702,6 +2700,11 @@ function rateCard(rating){
 }
 
 function renderLearnDone(){
+  // Save queue for quiz entry BEFORE learnSession may be nulled
+  if(learnSession&&learnSession.queue&&learnSession.queue.length>0){
+    lastLearnQueue=learnSession.queue.slice();
+    lastLearnCategory=learnSession.category;
+  }
   var stats={
     review:learnSession?learnSession.reviewCount:0,
     newc:learnSession?learnSession.newCount:0,
