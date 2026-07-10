@@ -3146,10 +3146,11 @@ function renderQuizResult(){
 }
 
 function exitQuiz(){
+  var cat=quizSession?quizSession.category:'';
   quizSession=null;
   lastLearnQueue=null;
   lastLearnCategory=null;
-  exitSRS('');
+  exitSRS(cat);
 }
 
 
