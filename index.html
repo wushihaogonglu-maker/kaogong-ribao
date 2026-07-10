@@ -1820,6 +1820,7 @@ var touchStartX=0,touchStartY=0,touchStartTime=0;
 
 /* ── SRS Globals ── */
 var ITEM_POOLS=null;               // {idioms:[], vocab:[], knowledge:[], politics:[]}
+var QUIZ_BANK=null;                // [{category, key, sentence, stem, correct, distractors, explain}]
 var srsState=null;                 // full kaogong_srs state object
 var learnSession=null;             // {category, queue:[], idx, reviewCount, newCount}
 var quizSession=null;              // {category, questions:[{q,opts:[{text,correct}],chosen,explain}], idx, correct, wrong}
@@ -2927,63 +2928,88 @@ function buildQuiz(category, itemKeys){
 
     if(category==='idioms'){
       correctText=item.idiom||'';
-      // Exam-style: show explanation as context, pick the matching idiom
-      sentence='“'+esc(item.explanation||'')+'”';
-      stemText='下列成语中，最符合上述释义的一项是：';
-      explainText=esc(item.idiom)+'：'+esc(item.explanation||'');
       distractorField='idiom';
     }else if(category==='vocab'){
       correctText=item.title||'';
-      // Try to extract a real sentence with blank
-      var extracted=extractSentence(item.body||'',correctText);
-      if(extracted&&extracted.sentence.indexOf('______')>=0){
-        sentence=esc(extracted.sentence);
-        stemText='填入画横线部分最恰当的一项是：';
-      }else{
-        // Fallback: show the body as context
-        sentence='语境：'+esc(item.body||'');
-        stemText='填入横线处最恰当的词语是：';
-      }
-      explainText=esc(correctText)+'：'+esc(item.body||'');
       distractorField='title';
     }else{
-      // knowledge / politics
       correctText=item.title||'';
-      sentence=esc(item.body||item.title||'');
-      stemText='下列选项中，描述最准确的是：';
-      explainText=esc(correctText)+'：'+esc(item.body||item.exam_point||'');
       distractorField='title';
     }
 
-    // Build distractors
-    var distractors=[];
-    var seenDistractor={};seenDistractor[correctText]=true;
-    for(var d=0;d<pool.length&&distractors.length<3;d++){
-      var di=pool[d]; var dk=getItemKey(category,di);
-      if(dk===key)continue;
-      var dt=distractorField==='idiom'?(di.idiom||''):(di.title||'');
-      if(!dt||dt===correctText||seenDistractor[dt])continue;
-      seenDistractor[dt]=true;
-      distractors.push(dt);
-    }
-    // If not enough, try harder
-    if(distractors.length<3){
-      for(var dd=0;dd<pool.length&&distractors.length<3;dd++){
-        var di2=pool[dd]; var dk2=getItemKey(category,di2);
-        if(dk2===key)continue;
-        var dt2=distractorField==='idiom'?(di2.idiom||''):(di2.title||'');
-        if(!dt2||seenDistractor[dt2])continue;
-        seenDistractor[dt2]=true;
-        distractors.push(dt2);
+    // ── Check curated quiz_bank first ──
+    var bankEntry=null;
+    if(QUIZ_BANK){
+      for(var bi=0;bi<QUIZ_BANK.length;bi++){
+        if(QUIZ_BANK[bi].category===category&&QUIZ_BANK[bi].key===correctText){
+          bankEntry=QUIZ_BANK[bi];break;
+        }
       }
     }
 
-    var allTexts=[correctText].concat(distractors);
-    var shuffled=shuffle([0,1,2,3].slice(0,allTexts.length));
-    var opts=[];
-    for(var si=0;si<shuffled.length;si++){
-      var idx2=shuffled[si];
-      opts.push({text:allTexts[idx2],correct:idx2===0,label:labels[si]});
+    if(bankEntry){
+      // Use curated exam question
+      sentence=esc(bankEntry.sentence);
+      stemText=bankEntry.stem||'填入画横线部分最恰当的一项是：';
+      explainText=bankEntry.explain||esc(correctText)+'：'+esc(item.body||'');
+      var allTexts=[bankEntry.correct].concat(bankEntry.distractors||[]);
+      var shuffled=shuffle([0,1,2,3].slice(0,allTexts.length));
+      var opts=[];
+      for(var si=0;si<shuffled.length;si++){
+        var idx2=shuffled[si];
+        opts.push({text:allTexts[idx2],correct:idx2===0,label:labels[si]});
+      }
+    }else{
+      // Auto-generate question from item data
+      if(category==='idioms'){
+        sentence='“'+esc(item.explanation||'')+'”';
+        stemText='下列成语中，最符合上述释义的一项是：';
+        explainText=esc(item.idiom)+'：'+esc(item.explanation||'');
+      }else if(category==='vocab'){
+        var extracted=extractSentence(item.body||'',correctText);
+        if(extracted&&extracted.sentence.indexOf('______')>=0){
+          sentence=esc(extracted.sentence);
+          stemText='填入画横线部分最恰当的一项是：';
+        }else{
+          sentence='语境：'+esc(item.body||'');
+          stemText='填入横线处最恰当的词语是：';
+        }
+        explainText=esc(correctText)+'：'+esc(item.body||'');
+      }else{
+        sentence=esc(item.body||item.title||'');
+        stemText='下列选项中，描述最准确的是：';
+        explainText=esc(correctText)+'：'+esc(item.body||item.exam_point||'');
+      }
+
+      // Build distractors from pool
+      var distractors=[];
+      var seenDistractor={};seenDistractor[correctText]=true;
+      for(var d=0;d<pool.length&&distractors.length<3;d++){
+        var di=pool[d]; var dk=getItemKey(category,di);
+        if(dk===key)continue;
+        var dt=distractorField==='idiom'?(di.idiom||''):(di.title||'');
+        if(!dt||dt===correctText||seenDistractor[dt])continue;
+        seenDistractor[dt]=true;
+        distractors.push(dt);
+      }
+      if(distractors.length<3){
+        for(var dd=0;dd<pool.length&&distractors.length<3;dd++){
+          var di2=pool[dd]; var dk2=getItemKey(category,di2);
+          if(dk2===key)continue;
+          var dt2=distractorField==='idiom'?(di2.idiom||''):(di2.title||'');
+          if(!dt2||seenDistractor[dt2])continue;
+          seenDistractor[dt2]=true;
+          distractors.push(dt2);
+        }
+      }
+
+      var opts=[];
+      var allTexts=[correctText].concat(distractors);
+      var shuffled=shuffle([0,1,2,3].slice(0,allTexts.length));
+      for(var si=0;si<shuffled.length;si++){
+        var idx2=shuffled[si];
+        opts.push({text:allTexts[idx2],correct:idx2===0,label:labels[si]});
+      }
     }
 
     // Highlight blank in sentence
@@ -3801,10 +3827,11 @@ async function init(){
     // Version check: detect new deployment
     checkVersion();
 
-    // Fetch data.json + items.json in parallel
+    // Fetch data.json + items.json + quiz_bank.json in parallel
     var results=await Promise.allSettled([
       fetch('data.json?v='+today+'-v15'),
-      fetch('items.json?v='+today+'-v1')
+      fetch('items.json?v='+today+'-v1'),
+      fetch('quiz_bank.json?v='+today+'-v1')
     ]);
 
     // --- data.json (required for daily browse) ---
@@ -3821,6 +3848,13 @@ async function init(){
       ITEM_POOLS=await results[1].value.json();
     }else{
       console.warn('items.json load failed, SRS mode degraded');
+    }
+
+    // --- quiz_bank.json (curated exam-style questions) ---
+    if(results[2]&&results[2].status==='fulfilled'&&results[2].value.ok){
+      QUIZ_BANK=await results[2].value.json();
+    }else{
+      console.warn('quiz_bank.json load failed, using auto-generated questions');
     }
 
     // --- SRS Init ---
