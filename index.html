@@ -459,6 +459,7 @@
   .module[data-theme="blue"] .module-icon { background: linear-gradient(135deg, #1A56C4, #4FC3F7); }
   .module[data-theme="amber"] .module-icon { background: linear-gradient(135deg, #D4691A, #FFB74D); }
   .module[data-theme="purple"] .module-icon { background: linear-gradient(135deg, #6A1B9A, #BA68C8); }
+  .module[data-theme="rose"] .module-icon { background: linear-gradient(135deg, #C0392B, #E87A8A); }
 
   .module-check {
     width: 28px; height: 28px;
@@ -772,6 +773,7 @@
   .modules .module:nth-child(2) { animation: fadeUp 0.5s ease 0.2s both; }
   .modules .module:nth-child(3) { animation: fadeUp 0.5s ease 0.3s both; }
   .modules .module:nth-child(4) { animation: fadeUp 0.5s ease 0.4s both; }
+  .modules .module:nth-child(5) { animation: fadeUp 0.5s ease 0.5s both; }
 
   /* ============ RESPONSIVE ============ */
   @media (max-width: 960px) {
@@ -844,6 +846,56 @@
 .learn-empty-icon { font-size: 2.5rem; display: block; margin-bottom: 12px; }
 .learn-empty-text { font-size: 1.1rem; font-weight: 600; color: var(--ink-700); margin-bottom: 6px; }
 .learn-empty-hint { font-size: 0.85rem; color: var(--ink-500); }
+
+/* ===== 错题本 ===== */
+.mistake-wrap { max-width: 680px; margin: 0 auto; padding: 20px 20px 48px; }
+.mistake-review-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 18px 22px; margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-light));
+  color: #fff; border: none; border-radius: 14px; cursor: pointer;
+  font-family: inherit; box-shadow: 0 6px 20px rgba(45,106,79,0.25);
+  transition: all 0.2s;
+}
+.mistake-review-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(45,106,79,0.35); }
+.mistake-review-label { font-size: 1.05rem; font-weight: 700; }
+.mistake-review-sub { font-size: 0.8rem; font-weight: 500; opacity: 0.85; }
+.mistake-tabs { display: flex; gap: 10px; margin-bottom: 16px; }
+.mistake-tab {
+  flex: 1; padding: 10px 8px; border: 1px solid var(--ink-200); border-radius: 10px;
+  background: var(--bg-card); color: var(--ink-600); font-family: inherit; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.mistake-tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.mistake-tab .mistake-tab-count { font-weight: 700; margin-left: 4px; opacity: 0.85; }
+.mistake-item {
+  background: var(--bg-card); border: 1px solid var(--ink-200); border-radius: 14px;
+  padding: 16px 18px; margin-bottom: 12px; box-shadow: var(--shadow-sm);
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.mistake-item-main { flex: 1; min-width: 0; }
+.mistake-item-word { font-family: 'Noto Serif SC', serif; font-weight: 900; font-size: 1.05rem; color: var(--ink-900); line-height: 1.5; }
+.mistake-item-note { font-size: 0.85rem; color: var(--ink-600); line-height: 1.7; margin-top: 6px; white-space: pre-wrap; word-break: break-word; }
+.mistake-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 600; margin-left: 8px; vertical-align: 2px; }
+.mistake-badge.new { background: #EDF2FF; color: #3B5BDB; }
+.mistake-badge.learning { background: #FFF4E6; color: #D48A1A; }
+.mistake-badge.mastered { background: #EDF7EE; color: #2D6A4F; }
+.mistake-badge.due { background: #FFF0ED; color: #D94A4A; }
+.mistake-item-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.mistake-act {
+  padding: 6px 12px; border: 1px solid var(--ink-200); border-radius: 8px; background: #fff;
+  color: var(--ink-600); font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.mistake-act:hover { border-color: var(--brand); color: var(--brand); }
+.mistake-act.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+.mistake-act.primary:hover { background: var(--brand-dark); color: #fff; }
+.mistake-act.danger:hover { border-color: #D94A4A; color: #D94A4A; }
+.mistake-empty { text-align: center; padding: 48px 20px; color: var(--ink-500); }
+.mistake-empty-icon { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+.mistake-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(28,28,40,0.4); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; display: none; }
+.mistake-overlay.open { display: flex; }
+.mistake-overlay .settings-panel { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto; }
+.mistake-form-body { padding: 22px 28px; display: flex; flex-direction: column; gap: 14px; }
 
 	/* ===== Quiz Mode (exam-style) ===== */
 	.quiz-wrap { max-width: 600px; margin: 0 auto; padding: 20px 16px 80px; }
@@ -1633,6 +1685,20 @@
         </div>
       </div>
     </div>
+
+    <div class="module" data-theme="rose" role="button" tabindex="0" onclick="openMistakes()" id="hubCardMistakes">
+      <div class="module-top">
+        <div class="module-icon">错</div>
+      </div>
+      <div class="module-name">错题本</div>
+      <div class="module-tag" id="hubDescMistakes">待复习 0</div>
+      <div class="module-progress">
+        <span class="count" id="hubCountMistakes"><span class="done">—</span></span>
+        <div class="arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="features">
@@ -1688,6 +1754,29 @@
   <div class="learn-progress-bar"><div class="learn-progress-fill" id="learnProgressFill" style="width:0%"></div></div>
   <div class="learn-wrap">
     <main id="learnContent"><div class="loading">准备中...</div></main>
+  </div>
+</div>
+
+
+<div class="view" id="mistakeView" role="region" aria-label="错题本" tabindex="-1">
+  <div class="topbar" style="position:sticky;top:0;z-index:100;">
+    <div class="topbar-inner" style="justify-content:space-between;">
+      <button onclick="mistakeBack()" style="background:none;border:none;font-size:0.85rem;color:var(--ink-500);cursor:pointer;padding:8px 0;font-family:inherit;">← 返回</button>
+      <span style="font-weight:600;font-size:0.9rem;color:var(--ink-900);">错题本</span>
+      <button onclick="showMistakeForm()" style="background:none;border:none;font-size:0.85rem;color:var(--brand);cursor:pointer;padding:8px 0;font-family:inherit;font-weight:600;">＋ 添加</button>
+    </div>
+  </div>
+  <div class="mistake-wrap">
+    <button class="mistake-review-btn" onclick="startMistakeReview()">
+      <span class="mistake-review-label">📚 今日复习</span>
+      <span class="mistake-review-sub" id="mistakeReviewSub">待复习 0 条</span>
+    </button>
+    <div class="mistake-tabs">
+      <button class="mistake-tab active" data-cat="idioms" onclick="setMistakeTab('idioms',this)">成语<span class="mistake-tab-count" id="mistTabIdioms">0</span></button>
+      <button class="mistake-tab" data-cat="vocab" onclick="setMistakeTab('vocab',this)">实词<span class="mistake-tab-count" id="mistTabVocab">0</span></button>
+      <button class="mistake-tab" data-cat="knowledge" onclick="setMistakeTab('knowledge',this)">常识<span class="mistake-tab-count" id="mistTabKnowledge">0</span></button>
+    </div>
+    <main id="mistakeContent"><div class="loading">准备中...</div></main>
   </div>
 </div>
 
@@ -1791,6 +1880,39 @@
   </div>
 </div>
 
+<!-- 错题本添加/编辑弹窗 -->
+<div class="mistake-overlay" id="mistakeFormOverlay" role="dialog" aria-label="添加错题">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h3 id="mistakeFormTitle">添加错题</h3>
+      <button class="settings-close" onclick="closeMistakeForm()" aria-label="关闭">✕</button>
+    </div>
+    <div class="mistake-form-body">
+      <div class="upload-field">
+        <label>分类</label>
+        <select id="mistakeFormCat">
+          <option value="idioms">成语</option>
+          <option value="vocab">实词</option>
+          <option value="knowledge">常识</option>
+        </select>
+      </div>
+      <div class="upload-field">
+        <label>词条 / 标题</label>
+        <input id="mistakeFormWord" placeholder="如：南辕北辙" maxlength="50">
+      </div>
+      <div class="upload-field">
+        <label>我的笔记</label>
+        <textarea id="mistakeFormNote" rows="4" maxlength="500" placeholder="释义、易错点、或你的理解…"></textarea>
+      </div>
+      <div id="mistakeFormMsg" class="upload-msg"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="settings-btn" onclick="closeMistakeForm()">取消</button>
+        <button class="settings-btn primary" onclick="saveMistakeForm()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 学习记录 -->
 <div class="records-overlay view" id="recordsView" role="dialog" aria-label="学习记录">
   <div class="records-panel">
@@ -1817,6 +1939,16 @@ const STORAGE_KEY='kaogong_state';
 const SRS_KEY='kaogong_srs_v2';
 const SRS_VERSION=2;
 var touchStartX=0,touchStartY=0,touchStartTime=0;
+
+/* ── 错题本 Globals ── */
+const MISTAKE_KEY='kaogong_mistakes_v1';
+const MISTAKE_VERSION=1;
+const MISTAKE_LABELS={idioms:'成语',vocab:'实词',knowledge:'常识'};
+const MISTAKE_ORDER=['idioms','vocab','knowledge'];
+var mistakeStore=null;    // {version, entries:{id:entry}, updatedAt}
+var mistakeReview=null;   // {queue:[ids], idx, done}
+var mistakeTab='idioms';  // current list tab
+var mistakeEditId=null;   // id being edited (null = add mode)
 
 /* ── SRS Globals ── */
 var ITEM_POOLS=null;               // {idioms:[], vocab:[], knowledge:[], politics:[]}
@@ -2530,6 +2662,7 @@ function getUID(){
 
 async function syncData(){
   if(!srsState)return;
+  if(!mistakeStore)initMistakes();
   var uid=getUID();
   var syncUrl='https://shanganbujizhan.top/sync?uid='+encodeURIComponent(uid);
   try{
@@ -2544,11 +2677,16 @@ async function syncData(){
           saveSRSState();
         }
       }
+      // Merge mistakes: take the newer one
+      if(remote&&remote.mistakes&&remote.mistakes.entries&&remote.mistakes.updatedAt>(mistakeStore.updatedAt||0)){
+        mistakeStore=remote.mistakes;
+        saveMistakes();
+      }
       // Merge user pools: remote wins if present
       if(remote&&remote.userPools){
         ['idioms','vocab','knowledge'].forEach(function(cat){
           if(remote.userPools[cat]&&remote.userPools[cat].length){
-            userPools[cat]=remote.userPools[cat];
+            userPools[cat]=remote.userPools[cat].map(function(it){return normalizeUserItem(cat,it);});
           }
         });
         mergeUserPoolsIntoItemPools();
@@ -2561,7 +2699,8 @@ async function syncData(){
     var payload={
       items:srsState.items,
       updatedAt:srsState.updatedAt,
-      userPools:userPools
+      userPools:userPools,
+      mistakes:mistakeStore
     };
     var b64=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
     await fetch(syncUrl,{
@@ -3566,7 +3705,7 @@ async function bindSyncCode(){
       if(remote.userPools){
         ['idioms','vocab','knowledge'].forEach(function(cat){
           if(remote.userPools[cat]&&remote.userPools[cat].length){
-            userPools[cat]=remote.userPools[cat];
+            userPools[cat]=remote.userPools[cat].map(function(it){return normalizeUserItem(cat,it);});
           }
         });
         mergeUserPoolsIntoItemPools();
@@ -3599,13 +3738,25 @@ async function bindSyncCode(){
 
 var USER_API='https://shanganbujizhan.top/api/user/data';
 
+// Normalize a user custom item to match the field names each render path expects.
+// Custom idioms are stored as {title, content} (see worker) but idiom cards render
+// item.idiom / item.explanation. Without mapping these, a custom idiom card renders empty.
+function normalizeUserItem(type,item){
+  if(!item)return item;
+  if(type==='idioms'){
+    if(item.title&&!item.idiom)item.idiom=item.title;
+    if(item.content&&!item.explanation)item.explanation=item.content;
+  }
+  return item;
+}
+
 function loadUserPools(){
   var uid=getUID();
   if(!uid)return Promise.resolve();
   return Promise.all(['idioms','vocab','knowledge'].map(function(type){
     return fetch(USER_API+'?type='+type+'&uid='+encodeURIComponent(uid),{signal:AbortSignal.timeout(5000)})
       .then(function(r){return r.json();})
-      .then(function(resp){userPools[type]=resp.data||[];})
+      .then(function(resp){userPools[type]=(resp.data||[]).map(function(it){return normalizeUserItem(type,it);});})
       .catch(function(){/* offline — keep empty */});
   }));
 }
@@ -3711,7 +3862,7 @@ function submitUserItem(){
   .then(function(resp){
     if(resp.ok){
       // Update local pools
-      userPools[type].unshift(resp.data);
+      userPools[type].unshift(normalizeUserItem(type,resp.data));
       mergeUserPoolsIntoItemPools();
       // Clear form
       document.getElementById('uploadTitle').value='';
@@ -3820,6 +3971,272 @@ function updateLandingSRSStats(){
   document.getElementById("landingMastered").textContent=srsState.stats.totalMastered||0;
 }
 
+/* ══════════════════════════════════════════
+   错题本 — 手动积累 + SM-2 智能复习
+   ══════════════════════════════════════════ */
+
+function loadMistakes(){
+  try{
+    var raw=localStorage.getItem(MISTAKE_KEY);
+    if(raw){var s=JSON.parse(raw);if(s&&s.version===MISTAKE_VERSION&&s.entries)return s;}
+  }catch(e){}
+  // updatedAt:0 = 全新空库，同步时远端有数据则远端优先，避免空库覆盖
+  return {version:MISTAKE_VERSION,entries:{},updatedAt:0};
+}
+function saveMistakes(){if(!mistakeStore)return;try{localStorage.setItem(MISTAKE_KEY,JSON.stringify(mistakeStore));}catch(e){}}
+function initMistakes(){mistakeStore=loadMistakes();if(typeof mistakeStore.updatedAt!=='number')mistakeStore.updatedAt=0;}
+function touchMistakes(){mistakeStore.updatedAt=Date.now();saveMistakes();}
+
+function createMistake(cat,word,note){
+  return {id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),cat:cat,word:(word||'').trim(),note:(note||'').trim(),srs:createCardState(),createdAt:toDateStr(new Date())};
+}
+function mistakeDue(e){
+  var today=toDateStr(new Date());
+  return !e.srs||e.srs.nextReview===null||e.srs.nextReview<=today;
+}
+function mistakeMastered(e){return !!(e.srs&&e.srs.status==='mastered');}
+function mistakeList(){var out=[];if(!mistakeStore)return out;for(var id in mistakeStore.entries)out.push(mistakeStore.entries[id]);return out;}
+function mistakeCounts(){
+  var c={idioms:{total:0,due:0,mastered:0},vocab:{total:0,due:0,mastered:0},knowledge:{total:0,due:0,mastered:0},dueTotal:0,total:0};
+  mistakeList().forEach(function(e){
+    if(!c[e.cat])return;
+    c[e.cat].total++;c.total++;
+    if(mistakeMastered(e)){c[e.cat].mastered++;}
+    else if(mistakeDue(e)){c[e.cat].due++;c.dueTotal++;}
+  });
+  return c;
+}
+
+/* ── 视图 ── */
+function showMistakeView(){
+  var v=document.getElementById('mistakeView');
+  if(v&&activeView()!==v)switchView(activeView(),v);
+}
+function openMistakes(){
+  if(!mistakeStore)initMistakes();
+  renderMistakes();
+  showMistakeView();
+}
+function exitMistakes(){
+  mistakeReview=null;
+  switchView(activeView(),document.getElementById('hubView'));
+  updateHubMistakeCard();
+  updateHubDueCounts();
+}
+function mistakeBack(){
+  if(mistakeReview){mistakeReview=null;renderMistakes();return;}
+  exitMistakes();
+}
+function setMistakeTab(cat,btn){
+  mistakeTab=cat;
+  var tabs=document.querySelectorAll('.mistake-tab');
+  for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle('active',tabs[i].getAttribute('data-cat')===cat);
+  renderMistakeList();
+}
+function renderMistakes(){
+  renderMistakeStats();
+  renderMistakeList();
+}
+function renderMistakeStats(){
+  var c=mistakeCounts();
+  var sub=document.getElementById('mistakeReviewSub');
+  if(sub)sub.textContent='待复习 '+c.dueTotal+' 条';
+  MISTAKE_ORDER.forEach(function(cat){
+    var el=document.getElementById('mistTab'+cat.charAt(0).toUpperCase()+cat.slice(1));
+    if(el)el.textContent=c[cat].due;
+  });
+}
+function renderMistakeList(){
+  var el=document.getElementById('mistakeContent');
+  if(!el)return;
+  var entries=mistakeList().filter(function(e){return e.cat===mistakeTab;})
+    .sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
+  if(entries.length===0){
+    el.innerHTML='<div class="mistake-empty"><span class="mistake-empty-icon">🗒️</span>还没有收录'+MISTAKE_LABELS[mistakeTab]+'错题<br><span style="font-size:0.85rem;color:var(--ink-400)">点右上角「＋ 添加」记下学到的重点</span></div>';
+    return;
+  }
+  var html='';
+  entries.forEach(function(e){
+    var st=mistakeMastered(e)?'mastered':(!e.srs||e.srs.nextReview===null)?'new':'learning';
+    var stTxt=st==='mastered'?'已掌握':st==='new'?'新学':'复习中';
+    var stBadge='<span class="mistake-badge '+st+'">'+stTxt+'</span>';
+    var dueBadge=(mistakeDue(e)&&!mistakeMastered(e))?'<span class="mistake-badge due">待复习</span>':'';
+    html+='<div class="mistake-item">';
+    html+='<div class="mistake-item-main">';
+    html+='<div class="mistake-item-word">'+esc(e.word)+stBadge+dueBadge+'</div>';
+    if(e.note)html+='<div class="mistake-item-note">'+esc(e.note)+'</div>';
+    html+='<div style="font-size:0.72rem;color:var(--ink-300);margin-top:6px;">'+esc(e.createdAt||'')+' 收录</div>';
+    html+='</div>';
+    html+='<div class="mistake-item-actions">';
+    if(mistakeMastered(e)){
+      html+='<button class="mistake-act" onclick="unmarkMistakeMastered(\''+e.id+'\')">重新学习</button>';
+    }else{
+      html+='<button class="mistake-act primary" onclick="reviewMistake(\''+e.id+'\')">复习</button>';
+      html+='<button class="mistake-act" onclick="markMistakeMastered(\''+e.id+'\')">掌握</button>';
+    }
+    html+='<button class="mistake-act" onclick="editMistake(\''+e.id+'\')">编辑</button>';
+    html+='<button class="mistake-act danger" onclick="deleteMistake(\''+e.id+'\')">删除</button>';
+    html+='</div>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+function updateHubMistakeCard(){
+  var c=mistakeCounts();
+  var tag=document.getElementById('hubDescMistakes');
+  var cnt=document.getElementById('hubCountMistakes');
+  if(tag)tag.textContent='待复习 '+c.dueTotal;
+  if(cnt)cnt.innerHTML='<span class="done">'+(c.total>0?c.total:'—')+'</span>';
+}
+
+/* ── 添加 / 编辑 / 删除 ── */
+function showMistakeForm(id){
+  mistakeEditId=id||null;
+  var e=mistakeEditId?(mistakeStore.entries[mistakeEditId]||null):null;
+  document.getElementById('mistakeFormTitle').textContent=e?'编辑错题':'添加错题';
+  document.getElementById('mistakeFormCat').value=e?e.cat:mistakeTab;
+  document.getElementById('mistakeFormWord').value=e?e.word:'';
+  document.getElementById('mistakeFormNote').value=e?e.note:'';
+  document.getElementById('mistakeFormMsg').style.display='none';
+  document.getElementById('mistakeFormOverlay').classList.add('open');
+  setTimeout(function(){document.getElementById('mistakeFormWord').focus();},60);
+}
+function editMistake(id){showMistakeForm(id);}
+function closeMistakeForm(){
+  document.getElementById('mistakeFormOverlay').classList.remove('open');
+  mistakeEditId=null;
+}
+function saveMistakeForm(){
+  var word=document.getElementById('mistakeFormWord').value.trim();
+  var note=document.getElementById('mistakeFormNote').value.trim();
+  var cat=document.getElementById('mistakeFormCat').value;
+  var msg=document.getElementById('mistakeFormMsg');
+  if(!word){msg.className='upload-msg error';msg.textContent='请输入词条或标题';msg.style.display='block';return;}
+  if(mistakeEditId){
+    var e=mistakeStore.entries[mistakeEditId];
+    if(e){e.word=word;e.note=note;if(e.cat!==cat)e.cat=cat;}
+  }else{
+    var dup=mistakeList().filter(function(it){return it.cat===cat&&it.word===word;})[0];
+    if(dup&&!confirm('「'+word+'」在'+MISTAKE_LABELS[cat]+'中已存在，确定要重复添加吗？'))return;
+    var entry=createMistake(cat,word,note);
+    mistakeStore.entries[entry.id]=entry;
+  }
+  touchMistakes();
+  closeMistakeForm();
+  renderMistakes();
+  updateHubMistakeCard();
+}
+function deleteMistake(id){
+  if(!mistakeStore||!mistakeStore.entries[id])return;
+  if(!confirm('确定删除这条错题？'))return;
+  delete mistakeStore.entries[id];
+  touchMistakes();
+  renderMistakes();
+  updateHubMistakeCard();
+}
+function markMistakeMastered(id){
+  var e=mistakeStore.entries[id];
+  if(!e)return;
+  e.srs.status='mastered';e.srs.interval=999;e.srs.nextReview=null;
+  touchMistakes();renderMistakes();updateHubMistakeCard();
+}
+function unmarkMistakeMastered(id){
+  var e=mistakeStore.entries[id];
+  if(!e)return;
+  e.srs=createCardState();
+  touchMistakes();renderMistakes();updateHubMistakeCard();
+}
+
+/* ── 复习（SM-2）── */
+function reviewMistake(id){startMistakeReview(null,[id]);}
+function startMistakeReview(cat,ids){
+  if(!mistakeStore)initMistakes();
+  var queue=[];
+  if(ids&&ids.length){
+    queue=ids.slice();
+  }else{
+    var today=toDateStr(new Date());
+    mistakeList().forEach(function(e){
+      if(mistakeMastered(e))return;
+      if(cat&&e.cat!==cat)return;
+      if(!(mistakeDue(e)))return;
+      queue.push(e.id);
+    });
+    queue.sort(function(a,b){
+      var sa=mistakeStore.entries[a],sb=mistakeStore.entries[b];
+      return ((sa&&sa.srs&&sa.srs.nextReview)||'').localeCompare(((sb&&sb.srs&&sb.srs.nextReview)||''));
+    });
+  }
+  if(!queue.length){
+    renderMistakes();
+    return;
+  }
+  mistakeReview={queue:queue,idx:0,done:0};
+  showMistakeView();
+  renderMistakeReviewCard();
+}
+function renderMistakeReviewCard(){
+  if(!mistakeReview||mistakeReview.idx>=mistakeReview.queue.length){renderMistakeReviewDone();return;}
+  var e=mistakeStore.entries[mistakeReview.queue[mistakeReview.idx]];
+  if(!e){mistakeReview.idx++;renderMistakeReviewCard();return;}
+  var html='';
+  html+='<div class="learn-card-wrap">';
+  html+='<div class="learn-card-meta">';
+  html+='<span>错题复习 · '+(mistakeReview.idx+1)+'/'+mistakeReview.queue.length+'</span>';
+  html+='<span class="learn-card-meta-dot"></span>';
+  html+='<span>'+MISTAKE_LABELS[e.cat]+'</span>';
+  html+='</div>';
+  html+='<div class="learn-card" id="learnCard" onclick="revealCard()">';
+  html+='<div class="learn-card-front">';
+  html+='<div class="lc-word">'+esc(e.word)+'</div>';
+  html+='<div class="lc-hint">点击卡片查看笔记</div>';
+  html+='</div>';
+  html+='<div class="learn-card-back" style="display:none;">';
+  html+='<div class="lc-word" style="font-size:1.4rem;">'+esc(e.word)+'</div>';
+  html+='<div class="lc-divider"></div>';
+  html+='<div class="lc-body">'+esc(e.note||'（没有笔记）')+'</div>';
+  html+='</div>';
+  html+='</div>';
+  var cardState=e.srs||createCardState();
+  html+='<div class="rating-bar">';
+  html+='<button class="rating-btn again" onclick="event.stopPropagation();rateMistake(1)"><span class="rating-btn-label">忘记</span><span class="rating-btn-sub">'+intervalHint(cardState,1)+'</span></button>';
+  html+='<button class="rating-btn hard" onclick="event.stopPropagation();rateMistake(3)"><span class="rating-btn-label">模糊</span><span class="rating-btn-sub">'+intervalHint(cardState,3)+'</span></button>';
+  html+='<button class="rating-btn good" onclick="event.stopPropagation();rateMistake(5)"><span class="rating-btn-label">记得</span><span class="rating-btn-sub">'+intervalHint(cardState,5)+'</span></button>';
+  html+='</div>';
+  html+='<div class="rating-shortcut">键盘 1 2 3 快速评分</div>';
+  html+='</div>';
+  document.getElementById('mistakeContent').innerHTML=html;
+  cardRevealed=false;
+}
+function rateMistake(rating){
+  if(!mistakeReview)return;
+  var id=mistakeReview.queue[mistakeReview.idx];
+  var e=mistakeStore.entries[id];
+  if(e){
+    e.srs=sm2(e.srs||createCardState(),rating);
+    mistakeReview.done++;
+  }
+  mistakeReview.idx++;
+  saveMistakes();
+  if(mistakeReview.idx>=mistakeReview.queue.length){
+    renderMistakeReviewDone();
+  }else{
+    renderMistakeReviewCard();
+  }
+}
+function renderMistakeReviewDone(){
+  var done=mistakeReview?mistakeReview.done:0;
+  var html='';
+  html+='<div class="learn-done">';
+  html+='<span class="learn-done-icon">✓</span>';
+  html+='<div class="learn-done-title">今日错题复习完成</div>';
+  html+='<div class="learn-done-stats">复习 '+done+' 条</div>';
+  html+='<button class="learn-done-btn primary" style="background:var(--brand);margin-bottom:10px" onclick="mistakeBack()">返回错题本</button>';
+  html+='<button class="learn-done-btn" onclick="exitMistakes()">返回首页</button>';
+  html+='</div>';
+  document.getElementById('mistakeContent').innerHTML=html;
+}
+
 async function init(){
   try {
     var today=new Date().toISOString().slice(0,10);
@@ -3859,9 +4276,10 @@ async function init(){
 
     // --- SRS Init ---
     initSRSState();
+    initMistakes();
     if(ITEM_POOLS){
       updateLandingSRSStats();
-      syncData().then(function(){updateHubDueCounts();updateLandingSRSStats();});
+      syncData().then(function(){updateHubDueCounts();updateLandingSRSStats();updateHubMistakeCard();});
       // Load user custom data (async, non-blocking)
       loadUserPools().then(function(){mergeUserPoolsIntoItemPools();userPoolsLoaded=true;updateHubDueCounts();});
     }
@@ -3877,6 +4295,7 @@ async function init(){
 
     refreshLandingStats();
     updateHubCounts();
+    updateHubMistakeCard();
     if(ITEM_POOLS)updateLandingSRSStats();
     populateSelect();
     renderCategoryContent();
@@ -3905,6 +4324,16 @@ document.addEventListener('keydown',function(e){
     else if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(!cardRevealed)revealCard();else rateCard(5);}
     return;
   }
+  // 错题本复习: 1=忘记, 2=模糊, 3=记得
+  var mv=document.getElementById('mistakeView');
+  if(mv&&mv.classList.contains('view-visible')&&mistakeReview){
+    if(e.key==='1'){e.preventDefault();rateMistake(1);}
+    else if(e.key==='2'){e.preventDefault();rateMistake(3);}
+    else if(e.key==='3'){e.preventDefault();rateMistake(5);}
+    else if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(!cardRevealed)revealCard();else rateMistake(5);}
+    else if(e.key==='ArrowRight'){e.preventDefault();if(!cardRevealed)revealCard();}
+    return;
+  }
   // Browse mode: page navigation with arrow keys
   var cv=document.getElementById('contentView');
   if(cv&&cv.classList.contains('view-visible')){
@@ -3920,6 +4349,11 @@ document.addEventListener('keydown',function(e){
   var rv=document.getElementById('recordsView');
   if(e.key==='Escape'&&rv&&rv.classList.contains('view-visible')){
     closeRecords();
+  }
+  // 错题本表单: Escape to close
+  var mfo=document.getElementById('mistakeFormOverlay');
+  if(e.key==='Escape'&&mfo&&mfo.classList.contains('open')){
+    closeMistakeForm();
   }
 });
 
