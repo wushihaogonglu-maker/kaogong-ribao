@@ -896,6 +896,17 @@
 .mistake-overlay.open { display: flex; }
 .mistake-overlay .settings-panel { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto; }
 .mistake-form-body { padding: 22px 28px; display: flex; flex-direction: column; gap: 14px; }
+.mistake-paste-body { padding: 22px 28px; display: flex; flex-direction: column; gap: 14px; }
+.paste-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.paste-tip { font-size: 12px; color: var(--ink-500); line-height: 1.6; padding: 8px 12px; background: var(--bg-soft); border-radius: 8px; }
+.paste-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--ink-200); border-radius: 10px; margin-bottom: 8px; background: var(--bg-card); }
+.paste-check { margin-top: 4px; flex-shrink: 0; }
+.paste-cat { flex-shrink: 0; font-size: 0.75rem; padding: 4px 6px; border: 1px solid var(--ink-200); border-radius: 6px; background: var(--bg); color: var(--ink-700); font-family: inherit; }
+.paste-main { flex: 1; min-width: 0; }
+.paste-word { font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 0.95rem; color: var(--ink-900); }
+.paste-word.is-dup { color: var(--ink-300); text-decoration: line-through; }
+.paste-note { font-size: 0.8rem; color: var(--ink-600); line-height: 1.6; margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
+.paste-dup { flex-shrink: 0; font-size: 0.68rem; font-weight: 600; color: #D94A4A; background: #FFF0ED; padding: 2px 8px; border-radius: 6px; }
 
 	/* ===== Quiz Mode (exam-style) ===== */
 	.quiz-wrap { max-width: 600px; margin: 0 auto; padding: 20px 16px 80px; }
@@ -1763,7 +1774,10 @@
     <div class="topbar-inner" style="justify-content:space-between;">
       <button onclick="mistakeBack()" style="background:none;border:none;font-size:0.85rem;color:var(--ink-500);cursor:pointer;padding:8px 0;font-family:inherit;">← 返回</button>
       <span style="font-weight:600;font-size:0.9rem;color:var(--ink-900);">错题本</span>
-      <button onclick="showMistakeForm()" style="background:none;border:none;font-size:0.85rem;color:var(--brand);cursor:pointer;padding:8px 0;font-family:inherit;font-weight:600;">＋ 添加</button>
+      <span style="display:flex;gap:12px;align-items:center;">
+        <button onclick="showMistakePaste()" style="background:none;border:none;font-size:0.85rem;color:var(--ink-500);cursor:pointer;padding:8px 0;font-family:inherit;font-weight:600;">📋 批量粘贴</button>
+        <button onclick="showMistakeForm()" style="background:none;border:none;font-size:0.85rem;color:var(--brand);cursor:pointer;padding:8px 0;font-family:inherit;font-weight:600;">＋ 添加</button>
+      </span>
     </div>
   </div>
   <div class="mistake-wrap">
@@ -1913,6 +1927,35 @@
   </div>
 </div>
 
+<!-- 错题本批量粘贴弹窗 -->
+<div class="mistake-overlay" id="mistakePasteOverlay" role="dialog" aria-label="批量粘贴错题">
+  <div class="settings-panel" style="max-width:640px;">
+    <div class="settings-header">
+      <h3>📋 批量粘贴</h3>
+      <button class="settings-close" onclick="closeMistakePaste()" aria-label="关闭">✕</button>
+    </div>
+    <div class="mistake-paste-body">
+      <div class="upload-field">
+        <label>粘贴内容</label>
+        <textarea id="pasteInput" rows="8" maxlength="20000" placeholder="支持两种格式：
+1. 逐条笔记：词条：释义（可空行分段，或词条单独一行、释义放下一行）
+2. 大段文章/资料：直接整段粘贴，自动切句并识别
+
+例如：
+南辕北辙：行动和目的相反。
+发布 颁布：辨析程度轻重。"></textarea>
+      </div>
+      <div id="pasteMsg" class="upload-msg"></div>
+      <div class="paste-actions">
+        <button class="settings-btn" onclick="parseAndPreviewPaste()">🔍 识别并预览</button>
+        <button class="settings-btn primary" id="pasteConfirmBtn" onclick="confirmPasteAdd()" disabled>确认添加</button>
+      </div>
+      <div class="paste-tip" id="pasteTip" style="display:none;">题库数据未加载，分类结果为启发式判断，请人工核对分类。</div>
+      <div id="pastePreview"></div>
+    </div>
+  </div>
+</div>
+
 <!-- 学习记录 -->
 <div class="records-overlay view" id="recordsView" role="dialog" aria-label="学习记录">
   <div class="records-panel">
@@ -1949,6 +1992,7 @@ var mistakeStore=null;    // {version, entries:{id:entry}, updatedAt}
 var mistakeReview=null;   // {queue:[ids], idx, done}
 var mistakeTab='idioms';  // current list tab
 var mistakeEditId=null;   // id being edited (null = add mode)
+var pasteCandidates=[];   // 批量粘贴预览候选 [{word,note,cat,dup}]
 
 /* ── SRS Globals ── */
 var ITEM_POOLS=null;               // {idioms:[], vocab:[], knowledge:[], politics:[]}
@@ -4052,7 +4096,7 @@ function renderMistakeList(){
   var entries=mistakeList().filter(function(e){return e.cat===mistakeTab;})
     .sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
   if(entries.length===0){
-    el.innerHTML='<div class="mistake-empty"><span class="mistake-empty-icon">🗒️</span>还没有收录'+MISTAKE_LABELS[mistakeTab]+'错题<br><span style="font-size:0.85rem;color:var(--ink-400)">点右上角「＋ 添加」记下学到的重点</span></div>';
+    el.innerHTML='<div class="mistake-empty"><span class="mistake-empty-icon">🗒️</span>还没有收录'+MISTAKE_LABELS[mistakeTab]+'错题<br><span style="font-size:0.85rem;color:var(--ink-400)">点右上角「＋ 添加」或「📋 批量粘贴」记下学到的重点</span></div>';
     return;
   }
   var html='';
@@ -4145,6 +4189,327 @@ function unmarkMistakeMastered(id){
   if(!e)return;
   e.srs=createCardState();
   touchMistakes();renderMistakes();updateHubMistakeCard();
+}
+
+/* ── 错题本批量粘贴 ── */
+function showMistakePaste(){
+  if(!mistakeStore)initMistakes();
+  var m=document.getElementById('pasteMsg');
+  if(m){m.className='upload-msg';m.style.display='none';}
+  var t=document.getElementById('pasteTip');
+  if(t)t.style.display='none';
+  var pv=document.getElementById('pastePreview');
+  if(pv)pv.innerHTML='';
+  var cb=document.getElementById('pasteConfirmBtn');
+  if(cb){cb.disabled=true;cb.textContent='确认添加';}
+  var ov=document.getElementById('mistakePasteOverlay');
+  if(ov)ov.classList.add('open');
+  setTimeout(function(){var pi=document.getElementById('pasteInput');if(pi)pi.focus();},60);
+}
+function closeMistakePaste(){
+  var ov=document.getElementById('mistakePasteOverlay');
+  if(ov)ov.classList.remove('open');
+  pasteCandidates=[];
+  var pi=document.getElementById('pasteInput');
+  if(pi)pi.value='';
+  var pv=document.getElementById('pastePreview');
+  if(pv)pv.innerHTML='';
+  var cb=document.getElementById('pasteConfirmBtn');
+  if(cb){cb.disabled=true;cb.textContent='确认添加';}
+}
+
+// ── 文本归一化 ──
+function normKey(s){
+  return String(s||'').replace(/[\s　]+/g,'')
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-65248);})
+    .toLowerCase();
+}
+
+// ── 解析：拆文本 → [{word,note}] ──
+function pasteTrimLine(s){
+  s=(s||'').trim();
+  s=s.replace(/^\s*[【\[][^】\]]*[】\]]\s*/,'');        // 【标题】
+  s=s.replace(/^\s*[0-9０-９]+[.、．)）]\s*/,'');       // 1. 2. ①
+  s=s.replace(/^\s*[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]\s*/,'');
+  s=s.replace(/^\s*[（(][一二三四五六七八九十0-9０-９]+[)）]\s*/,'');
+  s=s.replace(/^[A-Za-z][.、．)]\s*/,'');               // A. B.
+  return s.trim();
+}
+function pasteNoise(s){
+  if(!s)return true;
+  if(/^(https?:\/\/|www\.)/i.test(s))return true;
+  if(/^[\d\s.,%．、，]+$/.test(s))return true;
+  if(/^[!！?？。；;：:"“”'‘’…~～·—、]+$/.test(s))return true;
+  if(/^(注|备注|来源|参考|参考答案|答案解析|解析|考点|提示|易错点)[：:]/.test(s))return true;
+  if(s.length<2)return true;
+  return false;
+}
+function isWordLine(s){
+  return /^[一-龥][一-龥·、／/ ]{0,19}$/.test(s)&&!/[。！？；!?;]/.test(s);
+}
+function isLikelyWord(s){
+  if(!isWordLine(s))return false;
+  var c=(s||'').replace(/\s/g,'');
+  if(c.length<2||c.length>8)return false;
+  if(/[的是了在有把将要与和而并学记看说]/.test(c))return false;
+  return true;
+}
+function cleanWord(w){return (w||'').replace(/[「」『』“”"'‘’]/g,'').trim();}
+function clipWord(w){return (w||'').trim().slice(0,50);}
+function clipNote(n){return (n||'').trim().replace(/^[，,、：:\s]+/,'').slice(0,500);}
+
+function parseStructured(lines){
+  var out=[],cur=null;
+  for(var i=0;i<lines.length;i++){
+    var s=lines[i];
+    if(pasteNoise(s)){
+      if(s===''&&cur){out.push(cur);cur=null;}   // 空行=硬分隔
+      continue;
+    }
+    var m=s.match(/^(.+?)[：:——]([\s\S]*)$/);     // 词条：释义
+    if(m){
+      if(cur)out.push(cur);
+      var w=cleanWord(m[1]);
+      cur=w?{word:clipWord(w),note:clipNote(m[2])}:null;
+      continue;
+    }
+    if(isWordLine(s)&&(cur===null||(cur.note&&cur.note.length>0))){
+      // 词行开新条目（前一条已有释义才开新，避免把第二行词行误当第一条释义）
+      if(cur)out.push(cur);
+      cur={word:clipWord(s),note:''};
+      continue;
+    }
+    // 长内容行并入当前条目 note
+    if(cur)cur.note=cur.note?(cur.note+' '+s):s;
+  }
+  if(cur)out.push(cur);
+  return out;
+}
+
+function parseContinuous(lines){
+  var parts=[];
+  for(var i=0;i<lines.length;i++){if(!pasteNoise(lines[i]))parts.push(lines[i]);}
+  var block=parts.join(' ');
+  var sents=block.split(/[。！？；!?;]/);
+  var out=[],cur=null;
+  for(var i=0;i<sents.length;i++){
+    var s=sents[i].trim();
+    if(!s)continue;
+    // 1) 「词条：释义」：前缀须为像词的短短语（≤8字、无"的是了"等虚词）
+    var m=s.match(/^(.+?)[：:——]([\s\S]*)$/);
+    if(m&&isLikelyWord(m[1])){
+      if(cur)out.push(cur);
+      cur={word:clipWord(cleanWord(m[1])),note:clipNote(m[2])};
+      continue;
+    }
+    // 2) 引号词条「X」/『X』
+    var qm=s.match(/[「『]([^」』]{2,12})[」』]([\s\S]*)$/);
+    if(qm&&isLikelyWord(qm[1])){
+      if(cur)out.push(cur);
+      cur={word:clipWord(cleanWord(qm[1])),note:clipNote(qm[2])};
+      continue;
+    }
+    // 3) 孤立短短语且后面还有句子 → 视为词条
+    if(isLikelyWord(s)&&s.length<=10&&i+1<sents.length){
+      if(cur)out.push(cur);
+      cur={word:clipWord(s),note:''};
+      continue;
+    }
+    // 4) 并入当前条目标注
+    if(cur&&!cur.note&&s.length<=60){cur.note=s;}
+  }
+  if(cur)out.push(cur);
+  return out;
+}
+
+function parsePasteText(raw){
+  var text=String(raw||'').replace(/\r\n?/g,'\n').replace(/﻿/g,'').replace(/　/g,' ');
+  var lines=text.split('\n');
+  for(var i=0;i<lines.length;i++)lines[i]=pasteTrimLine(lines[i]);
+  var nonEmpty=[];
+  for(var i=0;i<lines.length;i++){if(lines[i]&&!pasteNoise(lines[i]))nonEmpty.push(lines[i]);}
+  if(!nonEmpty.length)return [];
+  // 模式判定
+  var sepCount=0;
+  for(var i=0;i<nonEmpty.length;i++){if(/[：:]/.test(nonEmpty[i]))sepCount++;}
+  var sepRatio=sepCount/nonEmpty.length;
+  var blocks=text.split(/\n\s*\n/);
+  var blockWordFirst=0;
+  for(var i=0;i<blocks.length;i++){
+    var b=blocks[i].split('\n');
+    var first='';
+    for(var j=0;j<b.length;j++){if(b[j].trim()){first=b[j].trim();break;}}
+    if(first&&isWordLine(first))blockWordFirst++;
+  }
+  var pairs=0;
+  for(var i=1;i<lines.length;i++){
+    var a=lines[i-1],b=lines[i];
+    if(a&&b&&!pasteNoise(a)&&!pasteNoise(b)&&isWordLine(a)&&a.replace(/\s/g,'').length<=8&&!isWordLine(b))pairs++;
+  }
+  var cands;
+  if(sepRatio>=0.5||(blocks.length>=2&&blockWordFirst>=2)||pairs>=2||(pairs>=1&&isLikelyWord(nonEmpty[0]))){
+    cands=parseStructured(lines);
+  }else{
+    cands=parseContinuous(lines);
+  }
+  // 组内去重
+  var seen={},out=[];
+  for(var i=0;i<cands.length;i++){
+    var k=normKey(cands[i].word);
+    if(k&&!seen[k]){seen[k]=1;out.push(cands[i]);}
+  }
+  return out;
+}
+
+// ── 分类：词条+笔记 → idioms/vocab/knowledge ──
+function poolHit(cat,titleFn,nw){
+  if(ITEM_POOLS&&ITEM_POOLS[cat]){
+    var pool=ITEM_POOLS[cat];
+    for(var i=0;i<pool.length;i++){if(normKey(titleFn(pool[i]))===nw)return true;}
+  }
+  var up=userPools[cat];
+  if(up){
+    for(var j=0;j<up.length;j++){if(normKey(titleFn(up[j]))===nw)return true;}
+  }
+  return false;
+}
+function classifyEntry(word,note){
+  var w=String(word||'').trim(),n=String(note||'');
+  var nw=normKey(w);
+  // 第一优先级：题库精确比对
+  if(ITEM_POOLS){
+    if(poolHit('idioms',function(it){return it.idiom;},nw))return 'idioms';
+    if(ITEM_POOLS.vocab){
+      var vHit=false,vp=ITEM_POOLS.vocab;
+      for(var i=0;i<vp.length&&!vHit;i++){
+        var rawT=vp[i].title||'';
+        if(normKey(rawT)===nw){vHit=true;break;}
+        if(nw.length>=2){
+          var tokens=String(rawT).split(/[\s、／/]/);
+          for(var k=0;k<tokens.length;k++){
+            var tk=normKey(tokens[k]);
+            if(tk===nw&&tk.length>=2){vHit=true;break;}
+          }
+        }
+      }
+      if(vHit)return 'vocab';
+    }
+    if(poolHit('knowledge',function(it){return it.title;},nw))return 'knowledge';
+  }
+  // 第二优先级：启发式（先看笔记关键词，再看词形）
+  var wLen=w.replace(/\s/g,'').length;
+  var pureCJK=/^[一-龥]+$/.test(w);
+  var multiWord=/[\s、／/]/.test(w)&&w.split(/[\s、／/]/).filter(function(x){return x&&/^[一-龥]/.test(x);}).length>=2;
+  var vocabNote=/辨析|区别|近义|反义|同义|适用|语气|程度|轻重|搭配|侧重点/.test(n);
+  var idiomNote=/比喻|典故|出处|引申|褒义|贬义|形容|指代/.test(n);
+  var knowNote=/朝代|皇帝|战役|条约|政变|会议|位于|别称|简称|年份|面积|人口|发明|被誉为|代表作|维新|变法|起义|革命|遗址|运河/.test(n);
+  if(multiWord)return 'vocab';
+  if(knowNote)return 'knowledge';
+  if(idiomNote)return 'idioms';
+  if(vocabNote)return 'vocab';
+  if(pureCJK&&wLen===4)return 'idioms';
+  if(pureCJK&&wLen>=2&&wLen<=6)return 'vocab';
+  return 'knowledge';
+}
+
+// ── 预览与确认 ──
+function parseAndPreviewPaste(){
+  var raw=document.getElementById('pasteInput').value;
+  var msg=document.getElementById('pasteMsg');
+  if(!raw||!raw.trim()){
+    msg.className='upload-msg error';msg.textContent='请先粘贴内容';msg.style.display='block';
+    return;
+  }
+  var cands=parsePasteText(raw);
+  if(!cands.length){
+    msg.className='upload-msg error';msg.textContent='未能识别出有效条目，请检查格式（支持「词条：释义」或大段文本）';msg.style.display='block';
+    return;
+  }
+  for(var i=0;i<cands.length;i++){cands[i].cat=classifyEntry(cands[i].word,cands[i].note);}
+  var existing={};
+  var all=mistakeList();
+  for(var j=0;j<all.length;j++){existing[all[j].cat+'|'+all[j].word]=1;}
+  for(var i=0;i<cands.length;i++){cands[i].dup=!!existing[cands[i].cat+'|'+cands[i].word];}
+  pasteCandidates=cands;
+  renderPastePreview();
+  msg.style.display='none';
+  var tip=document.getElementById('pasteTip');
+  if(tip)tip.style.display=ITEM_POOLS?'none':'block';
+}
+function renderPastePreview(){
+  var el=document.getElementById('pastePreview');
+  var html='<div style="font-size:12px;color:var(--ink-500);margin-bottom:8px;">识别出 '+pasteCandidates.length+' 条，请核对后勾选要添加的条目</div>';
+  var cats=['idioms','vocab','knowledge'];
+  for(var i=0;i<pasteCandidates.length;i++){
+    var c=pasteCandidates[i];
+    var sel='';
+    for(var j=0;j<cats.length;j++){
+      sel+='<option value="'+cats[j]+'"'+(cats[j]===c.cat?' selected':'')+'>'+MISTAKE_LABELS[cats[j]]+'</option>';
+    }
+    var dupTag=c.dup?'<span class="paste-dup">已存在</span>':'';
+    var checked=c.dup?'':'checked';
+    var sum=(c.note||'').length>80?(c.note||'').slice(0,80)+'…':(c.note||'');
+    html+='<div class="paste-row" data-idx="'+i+'">'
+      +'<input type="checkbox" class="paste-check" '+checked+' onchange="pasteRowChange(this)">'
+      +'<select class="paste-cat" onchange="pasteRowChange(this)">'+sel+'</select>'
+      +'<div class="paste-main">'
+      +'<div class="paste-word'+(c.dup?' is-dup':'')+'">'+esc(c.word)+dupTag+'</div>'
+      +(sum?'<div class="paste-note">'+esc(sum)+'</div>':'')
+      +'</div></div>';
+  }
+  el.innerHTML=html;
+  var cb=document.getElementById('pasteConfirmBtn');
+  if(cb){cb.disabled=false;pasteRowChange(null);}
+}
+function pasteRowChange(el){
+  var rows=document.querySelectorAll('#pastePreview .paste-row');
+  var n=0;
+  for(var i=0;i<rows.length;i++){
+    var cb=rows[i].querySelector('.paste-check');
+    if(cb&&cb.checked)n++;
+  }
+  var btn=document.getElementById('pasteConfirmBtn');
+  if(btn)btn.textContent='确认添加('+n+')';
+}
+function confirmPasteAdd(){
+  var rows=document.querySelectorAll('#pastePreview .paste-row');
+  var msg=document.getElementById('pasteMsg');
+  var add=[],skip=0;
+  var all=mistakeList();
+  for(var i=0;i<rows.length;i++){
+    var cb=rows[i].querySelector('.paste-check');
+    if(!cb||!cb.checked)continue;
+    var idx=+rows[i].getAttribute('data-idx');
+    var c=pasteCandidates[idx];
+    if(!c)continue;
+    var cat=rows[i].querySelector('.paste-cat').value;
+    var word=(c.word||'').trim().slice(0,50);
+    var note=(c.note||'').trim().slice(0,500);
+    if(!word)continue;
+    // 复查去重：已存在则静默跳过
+    var dup=false;
+    for(var j=0;j<all.length;j++){
+      if(all[j].cat===cat&&all[j].word===word){dup=true;break;}
+    }
+    if(dup){skip++;continue;}
+    add.push({cat:cat,word:word,note:note});
+  }
+  if(!add.length){
+    msg.className='upload-msg error';
+    msg.textContent=skip?('所选条目均已存在，跳过 '+skip+' 条'):'请先勾选要添加的条目';
+    msg.style.display='block';return;
+  }
+  for(var i=0;i<add.length;i++){
+    var e=createMistake(add[i].cat,add[i].word,add[i].note);
+    mistakeStore.entries[e.id]=e;
+  }
+  touchMistakes();
+  renderMistakes();
+  updateHubMistakeCard();
+  msg.className='upload-msg success';
+  msg.textContent='已添加 '+add.length+' 条'+(skip?'，跳过重复 '+skip+' 条':'');
+  msg.style.display='block';
+  setTimeout(function(){closeMistakePaste();},1100);
 }
 
 /* ── 复习（SM-2）── */
@@ -4354,6 +4719,11 @@ document.addEventListener('keydown',function(e){
   var mfo=document.getElementById('mistakeFormOverlay');
   if(e.key==='Escape'&&mfo&&mfo.classList.contains('open')){
     closeMistakeForm();
+  }
+  // 错题本批量粘贴: Escape to close
+  var mpo=document.getElementById('mistakePasteOverlay');
+  if(e.key==='Escape'&&mpo&&mpo.classList.contains('open')){
+    closeMistakePaste();
   }
 });
 
