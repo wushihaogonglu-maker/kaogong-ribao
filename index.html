@@ -1492,6 +1492,22 @@
 .module.checked-in .module-check.pending { display: none; }
 .module.checked-in { border-color: var(--brand-light) !important; }
 
+/* ── 登录门禁 (v81) ── */
+.auth-gate{position:fixed;inset:0;z-index:400;background:linear-gradient(160deg,#1B4332 0%,#2D6A4F 55%,#52B788 130%);display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.auth-gate.open{display:flex;}
+.auth-card{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);max-width:400px;width:100%;padding:36px 34px 30px;text-align:center;}
+.auth-brand{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;margin:0 auto 14px;box-shadow:var(--shadow-md);}
+.auth-title{font-size:1.3rem;font-weight:800;color:var(--ink-900);margin:0 0 6px;}
+.auth-sub{font-size:0.85rem;color:var(--ink-500);line-height:1.7;margin:0 0 22px;}
+.auth-input{width:100%;padding:14px 18px;border:1.5px solid var(--ink-300);border-radius:12px;font-size:1.15rem;font-family:'DM Mono',monospace;letter-spacing:2px;text-align:center;text-transform:uppercase;color:var(--ink-900);background:var(--bg-card);outline:none;box-sizing:border-box;}
+.auth-input:focus{border-color:var(--brand-light);box-shadow:0 0 0 3px var(--brand-50);}
+.auth-msg{min-height:20px;font-size:0.82rem;color:var(--accent);margin:12px 0 4px;line-height:1.5;}
+.auth-btn{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm);}
+.auth-btn:hover{filter:brightness(1.05);}
+.auth-btn:disabled{opacity:.55;cursor:default;}
+.auth-foot{font-size:0.75rem;color:var(--ink-300);margin-top:18px;line-height:1.6;}
+.auth-chip{display:inline-flex;align-items:center;gap:8px;background:var(--brand-50);border:1px solid var(--brand-light);color:var(--brand-dark);border-radius:999px;padding:6px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;}
+.auth-chip .auth-chip-logout{color:var(--accent);font-weight:700;}
 </style>
 <!-- Cloudflare Web Analytics -->
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "df6521bbfb70469c8e27819ca063ac29"}'></script>
@@ -1521,10 +1537,27 @@
         <span class="num" id="navStreakNum">—</span>
         <span>天</span>
       </div>
+      <div class="auth-chip" id="authChip" style="display:none;" title="点击退出登录" onclick="authLogout()">
+        <span id="authChipCode">KG-••••</span>
+        <span class="auth-chip-logout">退出</span>
+      </div>
       <button class="sync-btn" onclick="openSettings()">同步进度</button>
     </div>
   </div>
 </nav>
+
+<!-- 登录门禁 (v81) -->
+<div class="auth-gate" id="authGate" role="dialog" aria-label="登录">
+  <div class="auth-card">
+    <div class="auth-brand">补</div>
+    <div class="auth-title">考公补给站</div>
+    <div class="auth-sub">输入激活码即可开始学习<br>学习进度自动同步到你的所有设备</div>
+    <input class="auth-input" id="authCodeInput" placeholder="KG-XXXX-XXXX" maxlength="14" autocomplete="off" spellcheck="false" oninput="onAuthInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();doAuthLogin();}">
+    <div class="auth-msg" id="authMsg"></div>
+    <button class="auth-btn" id="authSubmitBtn" onclick="doAuthLogin()">进入学习</button>
+    <div class="auth-foot">没有激活码？请向卖家购买获取<br>（咸鱼交易 · 平台保障 · 付款后发货）</div>
+  </div>
+</div>
 
 
 <div class="view view-visible" id="landingView" role="region" aria-label="首页" tabindex="-1">
@@ -1874,20 +1907,32 @@
     <!-- Tab 3: 跨设备同步 -->
     <div class="settings-tab-panel" id="tabPanelSync">
       <div class="settings-body">
-        <div class="setting-group">
-          <h4>跨设备同步</h4>
-          <p style="font-size:13px;color:var(--ink-500);line-height:1.6;margin-bottom:8px;">
-            将同步码复制到另一台设备绑定，即可同步学习进度和自定义内容。
-          </p>
+        <!-- 登录账号（v81：登录后按激活码自动同步） -->
+        <div class="setting-group" id="authAccountGroup" style="display:none;">
+          <h4>当前账号</h4>
+          <p id="authAccountLine" style="font-size:13px;color:var(--ink-500);line-height:1.6;margin-bottom:8px;"></p>
           <div class="sync-code-box">
-            <div class="sync-code" id="syncCodeText">— — — —</div>
-            <button class="copy-btn" onclick="copySyncCode()">复制</button>
+            <div class="sync-code" id="authAccountCode">— — — —</div>
+            <button class="copy-btn" onclick="authLogout()">退出登录</button>
           </div>
-          <div class="sync-code-box" style="margin-top:12px;">
-            <input id="bindCodeInput" placeholder="粘贴另一台设备的同步码" style="flex:1;padding:10px 16px;background:var(--bg);border:1px dashed var(--ink-300);border-radius:8px;font-size:13px;color:var(--ink-700);font-family:inherit;">
-            <button class="bind-btn" onclick="bindSyncCode()">绑定</button>
+        </div>
+        <!-- 旧版手动同步码（未登录时兜底显示） -->
+        <div id="legacySyncGroup">
+          <div class="setting-group">
+            <h4>跨设备同步</h4>
+            <p style="font-size:13px;color:var(--ink-500);line-height:1.6;margin-bottom:8px;">
+              将同步码复制到另一台设备绑定，即可同步学习进度和自定义内容。
+            </p>
+            <div class="sync-code-box">
+              <div class="sync-code" id="syncCodeText">— — — —</div>
+              <button class="copy-btn" onclick="copySyncCode()">复制</button>
+            </div>
+            <div class="sync-code-box" style="margin-top:12px;">
+              <input id="bindCodeInput" placeholder="粘贴另一台设备的同步码" style="flex:1;padding:10px 16px;background:var(--bg);border:1px dashed var(--ink-300);border-radius:8px;font-size:13px;color:var(--ink-700);font-family:inherit;">
+              <button class="bind-btn" onclick="bindSyncCode()">绑定</button>
+            </div>
+            <div id="bindMsg" style="font-size:12px;color:var(--ink-500);margin-top:8px;display:none;"></div>
           </div>
-          <div id="bindMsg" style="font-size:12px;color:var(--ink-500);margin-top:8px;display:none;"></div>
         </div>
       </div>
     </div>
@@ -2043,6 +2088,164 @@ function pwInit(){
     if(taps>=5){taps=0;var c=prompt('请输入解锁暗号：');
       if(c!==null){if(pwUnlock(c)){alert('解锁成功，已永久免限制 ✓');location.reload();}else if(c)alert('暗号不正确');}}
   });}
+}
+
+/* ══════════════════════════════════════════
+   Auth: 许可证登录门禁 (v81)
+   用户必须用激活码登录才能使用网站。
+   ══════════════════════════════════════════ */
+var AUTH_API='https://shanganbujizhan.top/api/auth';
+var AUTH_SESSION_KEY='kaogong_license';
+var AUTH_DEVICE_KEY='kaogong_device';
+var authSession=null;   // {token,code,exp,syncUid}
+
+function getDeviceId(){
+  var d=localStorage.getItem(AUTH_DEVICE_KEY);
+  if(!d){
+    d='dev-'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,4);
+    try{localStorage.setItem(AUTH_DEVICE_KEY,d);}catch(e){}
+  }
+  return d;
+}
+
+function loadAuthSession(){
+  try{
+    var s=JSON.parse(localStorage.getItem(AUTH_SESSION_KEY)||'null');
+    if(s&&s.token&&s.exp&&s.syncUid){authSession=s;return true;}
+  }catch(e){}
+  authSession=null;
+  return false;
+}
+function saveAuthSession(s){
+  authSession=s;
+  try{localStorage.setItem(AUTH_SESSION_KEY,JSON.stringify(s));}catch(e){}
+}
+function clearAuthSession(){
+  authSession=null;
+  try{localStorage.removeItem(AUTH_SESSION_KEY);}catch(e){}
+}
+function authSessionValid(){
+  return !!(authSession&&authSession.token&&authSession.exp&&authSession.exp>Date.now());
+}
+
+function showAuthGate(prefill){
+  var g=document.getElementById('authGate');
+  var inp=document.getElementById('authCodeInput');
+  var msg=document.getElementById('authMsg');
+  if(g)g.classList.add('open');
+  if(msg)msg.textContent='';
+  if(prefill&&inp){inp.value=prefill;}
+  if(inp){setTimeout(function(){inp.focus();},80);}
+  updateAuthChip();
+}
+function hideAuthGate(){
+  var g=document.getElementById('authGate');
+  if(g)g.classList.remove('open');
+  updateAuthChip();
+}
+
+function onAuthInput(el){
+  var v=(el.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(v.length>10)v=v.slice(0,10);
+  var out=v;
+  if(v.length>2)out=v.slice(0,2)+'-'+v.slice(2);
+  if(v.length>6)out=out.slice(0,7)+'-'+out.slice(7);
+  el.value=out;
+}
+
+async function doAuthLogin(){
+  var btn=document.getElementById('authSubmitBtn');
+  var msg=document.getElementById('authMsg');
+  var inp=document.getElementById('authCodeInput');
+  var code=(inp?inp.value:'').trim();
+  if(!code){if(msg){msg.textContent='请输入激活码';}return;}
+  if(btn)btn.disabled=true;
+  if(msg)msg.textContent='正在验证...';
+  try{
+    var payload={code:code,deviceId:getDeviceId()};
+    var b64=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    var resp=await fetch(AUTH_API+'/login',{method:'POST',headers:{'Content-Type':'text/plain','X-Base64':'true'},body:b64,signal:AbortSignal.timeout(8000)});
+    var data=await resp.json();
+    if(data&&data.ok){
+      saveAuthSession({token:data.token,code:data.code,exp:data.exp,syncUid:data.syncUid});
+      // 覆盖 uid 为 syncUid：同一激活码的所有设备共享同一份进度
+      try{localStorage.setItem('kaogong_uid',data.syncUid);}catch(e){}
+      hideAuthGate();
+      if(msg)msg.textContent='';
+      if(data.evicted){
+        setTimeout(function(){alert('已登录。该激活码已达设备上限，已自动顶掉最早登录的设备。');},200);
+      }
+      init();
+      return;
+    }
+    if(msg)msg.textContent=(data&&data.error)||'登录失败，请稍后重试';
+    if(inp)inp.focus();
+  }catch(e){
+    if(msg)msg.textContent='无法连接服务器，请检查网络后重试';
+  }
+  if(btn)btn.disabled=false;
+}
+
+function authLogout(){
+  if(!confirm('退出登录？退出后本设备需重新输入激活码。'))return;
+  clearAuthSession();
+  // 不清 kaogong_uid、不注销设备槽位（防"退出占位"钻设备上限空子）
+  updateAuthChip();
+  location.reload();
+}
+
+function updateAuthChip(){
+  var chip=document.getElementById('authChip');
+  if(!chip)return;
+  if(authSessionValid()){
+    chip.style.display='inline-flex';
+    var c=document.getElementById('authChipCode');
+    if(c)c.textContent=authSession.code;
+  }else{
+    chip.style.display='none';
+  }
+}
+
+async function authBootstrap(){
+  var hasValid=loadAuthSession()&&authSessionValid();
+  if(!hasValid){
+    var prev=authSession&&authSession.code?authSession.code:'';
+    showAuthGate(prev);
+    return;
+  }
+  // 本地会话有效 → 先放行，后台 validate 刷新/兜底
+  hideAuthGate();
+  init();
+  try{
+    var b64=btoa(unescape(encodeURIComponent(JSON.stringify({token:authSession.token}))));
+    var resp=await fetch(AUTH_API+'/validate',{method:'POST',headers:{'Content-Type':'text/plain','X-Base64':'true'},body:b64,signal:AbortSignal.timeout(5000)});
+    var data=await resp.json();
+    if(data&&data.ok){
+      if(data.exp){var s=authSession;s.exp=data.exp;saveAuthSession(s);}
+    }else{
+      // 会话已失效（被作废/被顶掉）→ 重新登录
+      var prevCode=authSession&&authSession.code?authSession.code:'';
+      clearAuthSession();
+      showAuthGate(prevCode);
+    }
+  }catch(e){/* 离线：保持本地会话继续可用 */}
+}
+
+function renderAuthAccount(){
+  var acc=document.getElementById('authAccountGroup');
+  var leg=document.getElementById('legacySyncGroup');
+  if(!acc||!leg)return;
+  if(authSessionValid()){
+    acc.style.display='';
+    leg.style.display='none';
+    var c=document.getElementById('authAccountCode');
+    if(c)c.textContent=authSession.code;
+    var l=document.getElementById('authAccountLine');
+    if(l)l.textContent='已通过激活码自动同步学习进度与自定义内容。同一码多设备共享，最多 2 台；新设备登录会自动顶掉最早登录的设备。';
+  }else{
+    acc.style.display='none';
+    leg.style.display='';
+  }
 }
 
 const CATEGORY_CONFIG={
@@ -3522,6 +3725,7 @@ function renderSettingsPanel(){
   document.getElementById('settingsSliders').innerHTML=html;
   document.getElementById('settingsTotal').textContent='今日总计: '+total+' 个';
   document.getElementById('syncCodeText').textContent=getUID();
+  renderAuthAccount();
 }
 
 function updateSettingsPreview(slider,cat){
@@ -4674,6 +4878,12 @@ async function init(){
 
 // Keyboard support: hub cards + flashcard arrows + SRS rating
 document.addEventListener('keydown',function(e){
+  // 登录门禁开启时，屏蔽主站快捷键
+  var ag=document.getElementById('authGate');
+  if(ag&&ag.classList.contains('open')){
+    if(e.key==='Escape')e.preventDefault();
+    return;
+  }
   if(e.key==='Enter'&&e.target.classList.contains('module')){
     e.target.click();
     return;
@@ -4752,7 +4962,7 @@ if('serviceWorker'in navigator){
 }
 
 pwInit();
-init();
+authBootstrap();
 </script>
 </body>
 </html>
