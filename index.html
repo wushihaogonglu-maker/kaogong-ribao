@@ -1464,6 +1464,11 @@
 .auth-btn{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm);}
 .auth-btn:hover{filter:brightness(1.05);}
 .auth-btn:disabled{opacity:.55;cursor:default;}
+.auth-divider{display:flex;align-items:center;gap:10px;color:var(--ink-300);font-size:0.78rem;margin:16px 0 14px;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--ink-200);}
+.auth-btn-trial{background:#fff;color:var(--brand-dark);border:1.5px solid var(--brand-light);box-shadow:none;}
+.auth-btn-trial:hover{background:var(--brand-50);filter:none;}
+.auth-trial-hint{font-size:0.75rem;color:var(--ink-400);margin-top:10px;line-height:1.6;}
 .auth-foot{font-size:0.75rem;color:var(--ink-300);margin-top:18px;line-height:1.6;}
 .auth-chip{display:inline-flex;align-items:center;gap:8px;background:var(--brand-50);border:1px solid var(--brand-light);color:var(--brand-dark);border-radius:999px;padding:6px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;}
 .auth-chip .auth-chip-logout{color:var(--accent);font-weight:700;}
@@ -1514,6 +1519,9 @@
     <input class="auth-input" id="authCodeInput" placeholder="KG-XXXX-XXXX" maxlength="14" autocomplete="off" spellcheck="false" oninput="onAuthInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();doAuthLogin();}">
     <div class="auth-msg" id="authMsg"></div>
     <button class="auth-btn" id="authSubmitBtn" onclick="doAuthLogin()">进入学习</button>
+    <div class="auth-divider"><span>或</span></div>
+    <button class="auth-btn auth-btn-trial" id="trialBtn" onclick="doAuthTrial()">🎁 免费体验 3 天</button>
+    <div class="auth-trial-hint">3 天全功能体验 · 到期后购买激活码继续学习</div>
     <div class="auth-foot">没有激活码？请向卖家购买获取<br>（咸鱼交易 · 平台保障 · 付款后发货）</div>
   </div>
 </div>
@@ -2142,6 +2150,37 @@ async function doAuthLogin(){
   if(btn)btn.disabled=false;
 }
 
+function trialDaysLeft(){
+  if(!authSession||!authSession.trial||!authSession.exp)return 0;
+  return Math.max(0,Math.ceil((authSession.exp-Date.now())/864e5));
+}
+
+// 免费体验 3 天：deviceId 直接领 trial token，不走激活码
+async function doAuthTrial(){
+  var msg=document.getElementById('authMsg');
+  var btn=document.getElementById('trialBtn');
+  if(btn)btn.disabled=true;
+  if(msg)msg.textContent='正在开通免费体验...';
+  try{
+    var payload={deviceId:getDeviceId()};
+    var b64=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    var resp=await fetch(AUTH_API+'/trial',{method:'POST',headers:{'Content-Type':'text/plain','X-Base64':'true'},body:b64,signal:AbortSignal.timeout(8000)});
+    var data=await resp.json();
+    if(data&&data.ok){
+      saveAuthSession({token:data.token,code:data.code,exp:data.exp,syncUid:data.syncUid,trial:true,trialEnds:data.trialEnds});
+      try{localStorage.setItem('kaogong_uid',data.syncUid);}catch(e){}
+      hideAuthGate();
+      if(msg)msg.textContent='';
+      init();
+      return;
+    }
+    if(msg)msg.textContent=(data&&data.error)||'开通失败，请稍后重试';
+  }catch(e){
+    if(msg)msg.textContent='无法连接服务器，请检查网络后重试';
+  }
+  if(btn)btn.disabled=false;
+}
+
 function authLogout(){
   if(!confirm('退出登录？退出后本设备需重新输入激活码。'))return;
   clearAuthSession();
@@ -2156,7 +2195,15 @@ function updateAuthChip(){
   if(authSessionValid()){
     chip.style.display='inline-flex';
     var c=document.getElementById('authChipCode');
-    if(c)c.textContent=authSession.code;
+    if(c){
+      if(authSession.trial){
+        c.textContent='免费体验 · 剩'+trialDaysLeft()+'天';
+        chip.title='免费体验中，点击退出';
+      }else{
+        c.textContent=authSession.code;
+        chip.title='点击退出登录';
+      }
+    }
   }else{
     chip.style.display='none';
   }
@@ -2167,6 +2214,11 @@ async function authBootstrap(){
   if(!hasValid){
     var prev=authSession&&authSession.code?authSession.code:'';
     showAuthGate(prev);
+    // 免费体验到期 → 提示购买，而不是让用户以为是登录失败
+    if(authSession&&authSession.trial&&authSession.exp&&authSession.exp<=Date.now()){
+      var m0=document.getElementById('authMsg');
+      if(m0)m0.textContent='免费体验已结束，购买激活码即可继续学习。';
+    }
     return;
   }
   // 本地会话有效 → 先放行，后台 validate 刷新/兜底
@@ -2179,10 +2231,15 @@ async function authBootstrap(){
     if(data&&data.ok){
       if(data.exp){var s=authSession;s.exp=data.exp;saveAuthSession(s);}
     }else{
-      // 会话已失效（被作废/被顶掉）→ 重新登录
+      // 会话已失效（被作废/被顶掉/体验到期）→ 重新登录
       var prevCode=authSession&&authSession.code?authSession.code:'';
+      var wasTrial=!!(authSession&&authSession.trial);
       clearAuthSession();
       showAuthGate(prevCode);
+      if(wasTrial){
+        var m=document.getElementById('authMsg');
+        if(m)m.textContent='免费体验已结束，购买激活码即可继续学习。';
+      }
     }
   }catch(e){/* 离线：保持本地会话继续可用 */}
 }
@@ -2197,7 +2254,13 @@ function renderAuthAccount(){
     var c=document.getElementById('authAccountCode');
     if(c)c.textContent=authSession.code;
     var l=document.getElementById('authAccountLine');
-    if(l)l.textContent='已通过激活码自动同步学习进度与自定义内容。同一码多设备共享，最多 2 台；新设备登录会自动顶掉最早登录的设备。';
+    if(l){
+      if(authSession.trial){
+        l.textContent='当前为免费体验状态，剩余 '+trialDaysLeft()+' 天。体验到期后需购买激活码继续学习（数据留在本设备，激活后可继续用）。';
+      }else{
+        l.textContent='已通过激活码自动同步学习进度与自定义内容。同一码多设备共享，最多 2 台；新设备登录会自动顶掉最早登录的设备。';
+      }
+    }
   }else{
     acc.style.display='none';
     leg.style.display='';
@@ -4597,6 +4660,17 @@ if('serviceWorker'in navigator){
 
 pwInit();
 authBootstrap();
+
+// 免费体验到期检测：每 30s 检查一次，到期自动弹回门禁（防止挂机白嫖体验）
+setInterval(function(){
+  if(!authSession||!authSession.trial)return;         // 只处理体验会话
+  if(authSession.exp&&authSession.exp<=Date.now()){   // 已到期
+    clearAuthSession();
+    showAuthGate();
+    var m=document.getElementById('authMsg');
+    if(m)m.textContent='免费体验已结束，购买激活码即可继续学习。';
+  }
+},30000);
 </script>
 </body>
 </html>
