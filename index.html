@@ -1469,6 +1469,13 @@
 .auth-btn-trial{background:#fff;color:var(--brand-dark);border:1.5px solid var(--brand-light);box-shadow:none;}
 .auth-btn-trial:hover{background:var(--brand-50);filter:none;}
 .auth-trial-hint{font-size:0.75rem;color:var(--ink-400);margin-top:10px;line-height:1.6;}
+.auth-buy{display:block;width:100%;margin-top:12px;padding:13px;border-radius:12px;background:linear-gradient(135deg,#F59E0B,#F97316);
+  color:#fff;font-size:1rem;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;box-shadow:var(--shadow-sm);}
+.auth-buy:hover{filter:brightness(1.05);}
+.auth-buy[hidden]{display:none;}
+.auth-foot a{color:var(--brand);font-weight:700;}
+.auth-buy-settings{display:inline-block;margin-top:10px;padding:9px 16px;border-radius:10px;
+  background:linear-gradient(135deg,#F59E0B,#F97316);color:#fff !important;font-weight:700;text-decoration:none;}
 .auth-foot{font-size:0.75rem;color:var(--ink-300);margin-top:18px;line-height:1.6;}
 .auth-chip{display:inline-flex;align-items:center;gap:8px;background:var(--brand-50);border:1px solid var(--brand-light);color:var(--brand-dark);border-radius:999px;padding:6px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;}
 .auth-chip .auth-chip-logout{color:var(--accent);font-weight:700;}
@@ -1522,7 +1529,8 @@
     <div class="auth-divider"><span>或</span></div>
     <button class="auth-btn auth-btn-trial" id="trialBtn" onclick="doAuthTrial()">🎁 免费体验 3 天</button>
     <div class="auth-trial-hint">3 天全功能体验 · 到期后购买激活码继续学习</div>
-    <div class="auth-foot">没有激活码？请向卖家购买获取<br>（咸鱼交易 · 平台保障 · 付款后发货）</div>
+    <a class="auth-buy" id="authBuyBtn" href="#" target="_blank" rel="noopener" hidden>🛒 去咸鱼购买激活码</a>
+    <div class="auth-foot">没有激活码？<a id="authBuyLink" href="#" target="_blank" rel="noopener" style="display:none;">去咸鱼购买</a><br>（咸鱼交易 · 平台保障 · 付款后发货）</div>
   </div>
 </div>
 
@@ -1882,6 +1890,7 @@
             <div class="sync-code" id="authAccountCode">— — — —</div>
             <button class="copy-btn" onclick="authLogout()">退出登录</button>
           </div>
+          <a class="auth-buy-settings" id="authBuyBtnSettings" href="#" target="_blank" rel="noopener" style="display:none;">🛒 去咸鱼购买激活码</a>
         </div>
         <!-- 旧版手动同步码（未登录时兜底显示） -->
         <div id="legacySyncGroup">
@@ -2062,6 +2071,22 @@ var AUTH_API='https://shanganbujizhan.top/api/auth';
 var AUTH_SESSION_KEY='kaogong_license';
 var AUTH_DEVICE_KEY='kaogong_device';
 var authSession=null;   // {token,code,exp,syncUid}
+// ⬇️ 咸鱼商品分享链接（站长填写）。在咸鱼 App 里点「分享」→「复制链接」粘贴到这里。
+//    为空时，门禁和设置页的「去咸鱼购买」按钮自动隐藏。
+var BUY_URL='https://m.tb.cn/h.8lI9IBo?tk=Mfo9T43YCCO';
+function updateBuyLinks(){
+  var a=document.getElementById('authBuyBtn');
+  var l=document.getElementById('authBuyLink');
+  var s=document.getElementById('authBuyBtnSettings');
+  if(BUY_URL){
+    if(a){a.href=BUY_URL;a.hidden=false;}
+    if(l){l.href=BUY_URL;l.style.display='inline';}
+    if(s)s.href=BUY_URL;
+  }else{
+    if(a)a.hidden=true;
+    if(l){l.removeAttribute('href');l.style.display='none';}
+  }
+}
 
 function getDeviceId(){
   var d=localStorage.getItem(AUTH_DEVICE_KEY);
@@ -2100,6 +2125,7 @@ function showAuthGate(prefill){
   if(msg)msg.textContent='';
   if(prefill&&inp){inp.value=prefill;}
   if(inp){setTimeout(function(){inp.focus();},80);}
+  updateBuyLinks();
   updateAuthChip();
 }
 function hideAuthGate(){
@@ -2261,6 +2287,8 @@ function renderAuthAccount(){
         l.textContent='已通过激活码自动同步学习进度与自定义内容。同一码多设备共享，最多 2 台；新设备登录会自动顶掉最早登录的设备。';
       }
     }
+    var sb=document.getElementById('authBuyBtnSettings');
+    if(sb)sb.style.display=(authSession.trial&&BUY_URL)?'inline-block':'none';
   }else{
     acc.style.display='none';
     leg.style.display='';
@@ -4659,6 +4687,7 @@ if('serviceWorker'in navigator){
 }
 
 pwInit();
+updateBuyLinks();
 authBootstrap();
 
 // 免费体验到期检测：每 30s 检查一次，到期自动弹回门禁（防止挂机白嫖体验）
