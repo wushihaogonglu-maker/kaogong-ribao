@@ -908,47 +908,6 @@
 .paste-note { font-size: 0.8rem; color: var(--ink-600); line-height: 1.6; margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
 .paste-dup { flex-shrink: 0; font-size: 0.68rem; font-weight: 600; color: #D94A4A; background: #FFF0ED; padding: 2px 8px; border-radius: 6px; }
 
-	/* ===== Quiz Mode (exam-style) ===== */
-	.quiz-wrap { max-width: 600px; margin: 0 auto; padding: 20px 16px 80px; }
-	.quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.82rem; color: var(--ink-500); }
-	.quiz-header .quiz-count { font-weight: 600; color: var(--brand); }
-	.quiz-header .quiz-score { font-size: 0.78rem; }
-	.quiz-score .q-correct { color: #2D6A4F; font-weight: 600; }
-	.quiz-score .q-wrong { color: #E53E3E; font-weight: 600; }
-	.quiz-bar-wrap { height: 4px; background: var(--ink-100); border-radius: 2px; margin-bottom: 24px; overflow: hidden; }
-	.quiz-bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand-light)); border-radius: 2px; transition: width 0.3s; }
-	.quiz-question-card { background: #fff; border: 1px solid var(--ink-100); border-radius: 14px; padding: 28px 24px 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-	.quiz-sentence { font-size: 1.05rem; line-height: 2; color: var(--ink-900); text-align: justify; letter-spacing: 0.02em; }
-	.quiz-blank { display: inline-block; min-width: 70px; border-bottom: 2px solid var(--ink-900); text-align: center; margin: 0 4px; padding: 0 6px; color: transparent; transition: all 0.3s; }
-	.quiz-blank.revealed { color: var(--brand); border-bottom-color: var(--brand); font-weight: 700; }
-	.quiz-blank.revealed.wrong-blank { color: #E53E3E; border-bottom-color: #E53E3E; }
-	.quiz-stem { font-size: 0.88rem; color: var(--ink-500); margin-top: 20px; margin-bottom: 16px; }
-	.quiz-options { display: flex; flex-direction: column; gap: 10px; }
-	.quiz-opt { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1.5px solid var(--ink-100); border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; background: #FAFBFA; user-select: none; }
-	.quiz-opt:hover:not(.q-disabled) { border-color: var(--brand); background: #F0F7F2; }
-	.quiz-opt .q-label { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--ink-100); color: var(--ink-600); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; }
-	.quiz-opt.q-chosen { border-color: var(--brand); background: #EDF7F0; }
-	.quiz-opt.q-chosen .q-label { background: var(--brand); color: #fff; }
-	.quiz-opt.q-correct { border-color: #2D6A4F; background: #EDF7F0; }
-	.quiz-opt.q-correct .q-label { background: #2D6A4F; color: #fff; }
-	.quiz-opt.q-wrong { border-color: #E53E3E; background: #FFF5F5; }
-	.quiz-opt.q-wrong .q-label { background: #E53E3E; color: #fff; }
-	.quiz-opt.q-disabled { pointer-events: none; opacity: 0.55; }
-	.quiz-opt.q-disabled:not(.q-correct):not(.q-wrong) { opacity: 0.4; }
-	.quiz-feedback { margin-top: 16px; padding: 14px 16px; border-radius: 10px; font-size: 0.85rem; line-height: 1.6; }
-	.quiz-feedback.q-fb-correct { background: #EDF7F0; border: 1px solid #C6E6D0; color: #2D6A4F; }
-	.quiz-feedback.q-fb-wrong { background: #FFF5F5; border: 1px solid #FED7D7; color: #C53030; }
-	.quiz-next-btn { display: block; width: 100%; margin-top: 18px; padding: 13px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--brand), var(--brand-light)); color: #fff; font-size: 0.95rem; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 4px 14px rgba(45,106,79,0.25); transition: all 0.2s; }
-	.quiz-next-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,106,79,0.35); }
-	/* Quiz result */
-	.quiz-result { text-align: center; padding: 30px 20px 60px; max-width: 500px; margin: 0 auto; }
-	.quiz-result-icon { font-size: 3.5rem; display: block; margin-bottom: 12px; }
-	.quiz-result-title { font-family: 'Noto Serif SC', serif; font-size: 1.5rem; font-weight: 900; color: var(--ink-900); margin-bottom: 6px; }
-	.quiz-result-score { font-size: 1rem; color: var(--ink-500); margin-bottom: 8px; }
-	.quiz-result-bar-wrap { height: 8px; background: var(--ink-100); border-radius: 4px; overflow: hidden; max-width: 280px; margin: 12px auto; }
-	.quiz-result-bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand-light)); border-radius: 4px; transition: width 0.5s ease; }
-	.quiz-result-pct { font-size: 2rem; font-weight: 900; color: var(--brand); }
-
 	/* ===== Content Browse View (v46 redesign) ===== */
 	.content-wrap { max-width: 780px; margin: 0 auto; padding: 24px 20px 100px; }
 
@@ -2041,11 +2000,8 @@ var pasteCandidates=[];   // 批量粘贴预览候选 [{word,note,cat,dup}]
 
 /* ── SRS Globals ── */
 var ITEM_POOLS=null;               // {idioms:[], vocab:[], knowledge:[], politics:[]}
-var QUIZ_BANK=null;                // [{category, key, sentence, stem, correct, distractors, explain}]
 var srsState=null;                 // full kaogong_srs state object
 var learnSession=null;             // {category, queue:[], idx, reviewCount, newCount}
-var quizSession=null;              // {category, questions:[{q,opts:[{text,correct}],chosen,explain}], idx, correct, wrong}
-var lastLearnQueue=null;           // saved queue from completed learn session for quiz entry
 var lastLearnCategory=null;
 var currentMode='browse';          // 'browse' | 'learn'
 var cardRevealed=false;            // whether current card back is showing
@@ -3128,11 +3084,6 @@ function rateCard(rating){
 }
 
 function renderLearnDone(){
-  // Save queue for quiz entry BEFORE learnSession may be nulled
-  if(learnSession&&learnSession.queue&&learnSession.queue.length>0){
-    lastLearnQueue=learnSession.queue.slice();
-    lastLearnCategory=learnSession.category;
-  }
   var stats={
     review:learnSession?learnSession.reviewCount:0,
     newc:learnSession?learnSession.newCount:0,
@@ -3144,9 +3095,6 @@ function renderLearnDone(){
   html+='<div class="learn-done-title">今日学习完成</div>';
   html+='<div class="learn-done-stats">复习: '+(learnSession?learnSession.reviewCount:0)+' 个 &nbsp; 新学: '+(learnSession?learnSession.newCount:0)+' 个</div>';
   var lc=(lastLearnCategory||'');
-  if(lastLearnQueue&&lastLearnQueue.length>0){
-    html+='<button class="learn-done-btn primary" style="background:var(--brand);margin-bottom:10px" onclick="startQuiz(\x27'+lc+'\x27)">🎯 刷题巩固（'+lastLearnQueue.length+' 题）</button>';
-  }
   html+='<button class="learn-done-btn" onclick="exitSRS(\x27'+lc+'\x27)">返回首页</button>';
   html+='</div>';
   document.getElementById('learnContent').innerHTML=html;
@@ -3259,312 +3207,6 @@ function findItemByKey(cat,key){
   }
   return null;
 }
-
-/* ══════════════════════════════════════════
-   SRS: Quiz Mode — 真题式刷题
-   ══════════════════════════════════════════ */
-
-// Extract an example sentence from body text, replacing the target word with ______
-function extractSentence(body, targetWords){
-  if(!body||!targetWords)return null;
-  // Split target into individual words (for word-pair items like "爱护 爱戴")
-  var words=targetWords.split(/[\s ]+/).filter(function(w){return w.length>0;});
-  // Try to find a quoted sentence that contains one of the target words
-  var m=body.match(/[「“『‘]([^」”』’]+)[」”』’]/g);
-  var candidates=[];
-  if(m){
-    for(var i=0;i<m.length;i++){
-      var s=m[i].replace(/[「“『‘」”』’]/g,'');
-      for(var j=0;j<words.length;j++){
-        if(s.indexOf(words[j])>=0){candidates.push({sentence:s,word:words[j]});break;}
-      }
-    }
-  }
-  // If quoted sentences found, use the longest one with a target word
-  if(candidates.length>0){
-    candidates.sort(function(a,b){return b.sentence.length-a.sentence.length;});
-    var best=candidates[0];
-    return {sentence:best.sentence.replace(best.word,'______'),answer:best.word};
-  }
-  // Fallback: try to find any occurrence of a target word in the body
-  for(var k=0;k<words.length;k++){
-    var idx=body.indexOf(words[k]);
-    if(idx>=0){
-      // Extract a window around the word
-      var start=Math.max(0,idx-15);
-      var end=Math.min(body.length,idx+words[k].length+30);
-      var frag=body.substring(start,end);
-      if(start>0)frag='…'+frag;
-      if(end<body.length)frag=frag+'…';
-      return {sentence:frag.replace(words[k],'______'),answer:words[k]};
-    }
-  }
-  return null;
-}
-
-function buildQuiz(category, itemKeys){
-  var pool=ITEM_POOLS[category]||[];
-  var questions=[];
-  for(var i=0;i<itemKeys.length;i++){
-    var key=itemKeys[i];
-    var item=findItemByKey(category,key);
-    if(!item)continue;
-    var correctText='', sentence='', stemText='', explainText='', distractorField='';
-    var labels=['A','B','C','D'];
-
-    if(category==='idioms'){
-      correctText=item.idiom||'';
-      distractorField='idiom';
-    }else if(category==='vocab'){
-      correctText=item.title||'';
-      distractorField='title';
-    }else{
-      correctText=item.title||'';
-      distractorField='title';
-    }
-
-    // ── Check curated quiz_bank first ──
-    var bankEntry=null;
-    if(QUIZ_BANK){
-      for(var bi=0;bi<QUIZ_BANK.length;bi++){
-        if(QUIZ_BANK[bi].category===category&&QUIZ_BANK[bi].key===correctText){
-          bankEntry=QUIZ_BANK[bi];break;
-        }
-      }
-    }
-
-    if(bankEntry){
-      // Use curated exam question
-      sentence=esc(bankEntry.sentence);
-      stemText=bankEntry.stem||'填入画横线部分最恰当的一项是：';
-      explainText=bankEntry.explain||esc(correctText)+'：'+esc(item.body||'');
-      var allTexts=[bankEntry.correct].concat(bankEntry.distractors||[]);
-      var shuffled=shuffle([0,1,2,3].slice(0,allTexts.length));
-      var opts=[];
-      for(var si=0;si<shuffled.length;si++){
-        var idx2=shuffled[si];
-        opts.push({text:allTexts[idx2],correct:idx2===0,label:labels[si]});
-      }
-    }else{
-      // Auto-generate question from item data
-      if(category==='idioms'){
-        sentence='“'+esc(item.explanation||'')+'”';
-        stemText='下列成语中，最符合上述释义的一项是：';
-        explainText=esc(item.idiom)+'：'+esc(item.explanation||'');
-      }else if(category==='vocab'){
-        var extracted=extractSentence(item.body||'',correctText);
-        if(extracted&&extracted.sentence.indexOf('______')>=0){
-          sentence=esc(extracted.sentence);
-          stemText='填入画横线部分最恰当的一项是：';
-        }else{
-          sentence='语境：'+esc(item.body||'');
-          stemText='填入横线处最恰当的词语是：';
-        }
-        explainText=esc(correctText)+'：'+esc(item.body||'');
-      }else{
-        sentence=esc(item.body||item.title||'');
-        stemText='下列选项中，描述最准确的是：';
-        explainText=esc(correctText)+'：'+esc(item.body||item.exam_point||'');
-      }
-
-      // Build distractors from pool
-      var distractors=[];
-      var seenDistractor={};seenDistractor[correctText]=true;
-      for(var d=0;d<pool.length&&distractors.length<3;d++){
-        var di=pool[d]; var dk=getItemKey(category,di);
-        if(dk===key)continue;
-        var dt=distractorField==='idiom'?(di.idiom||''):(di.title||'');
-        if(!dt||dt===correctText||seenDistractor[dt])continue;
-        seenDistractor[dt]=true;
-        distractors.push(dt);
-      }
-      if(distractors.length<3){
-        for(var dd=0;dd<pool.length&&distractors.length<3;dd++){
-          var di2=pool[dd]; var dk2=getItemKey(category,di2);
-          if(dk2===key)continue;
-          var dt2=distractorField==='idiom'?(di2.idiom||''):(di2.title||'');
-          if(!dt2||seenDistractor[dt2])continue;
-          seenDistractor[dt2]=true;
-          distractors.push(dt2);
-        }
-      }
-
-      var opts=[];
-      var allTexts=[correctText].concat(distractors);
-      var shuffled=shuffle([0,1,2,3].slice(0,allTexts.length));
-      for(var si=0;si<shuffled.length;si++){
-        var idx2=shuffled[si];
-        opts.push({text:allTexts[idx2],correct:idx2===0,label:labels[si]});
-      }
-    }
-
-    // Highlight blank in sentence
-    var sentenceHTML=sentence.replace(/______/g,'<span class="quiz-blank" id="quizBlank">______</span>');
-    // If no blank marker was in the original, wrap sentence in a div
-    if(sentence.indexOf('quiz-blank')<0){
-      sentenceHTML='<div style="margin-bottom:8px;color:var(--ink-700)">'+sentence+'</div>';
-    }
-
-    if(opts.length>=2){
-      questions.push({
-        sentenceHTML:sentenceHTML,
-        stem:stemText,
-        opts:opts,
-        explain:explainText,
-        correctText:correctText,
-        origSentence:sentence
-      });
-    }
-  }
-  return questions;
-}
-
-function startQuiz(category){
-  if(!lastLearnQueue||lastLearnQueue.length===0)return;
-  var qs=buildQuiz(category,lastLearnQueue);
-  if(qs.length===0){alert('暂无可用题目');return;}
-  quizSession={category:category,questions:qs,idx:0,correct:0,wrong:0};
-  document.getElementById('learnTitle').textContent='刷题巩固';
-  document.getElementById('learnProgress').textContent='1/'+qs.length;
-  document.getElementById('learnProgressFill').style.width='0%';
-  renderQuizQuestion();
-}
-
-function renderQuizQuestion(){
-  if(!quizSession||quizSession.idx>=quizSession.questions.length){
-    renderQuizResult();return;
-  }
-  var q=quizSession.questions[quizSession.idx];
-  var total=quizSession.questions.length;
-  var idx=quizSession.idx;
-  var catLabel={idioms:'成语',vocab:'实词',knowledge:'常识',politics:'时政'}[quizSession.category]||quizSession.category;
-  document.getElementById('learnProgress').textContent=(idx+1)+'/'+total;
-  document.getElementById('learnProgressFill').style.width=(idx/total*100)+'%';
-
-  var html='';
-  html+='<div class="quiz-wrap">';
-  // Header
-  html+='<div class="quiz-header">';
-  html+='<span class="quiz-count">'+catLabel+' · 第 '+(idx+1)+'/'+total+' 题</span>';
-  html+='<span class="quiz-score">✓ <span class="q-correct">'+quizSession.correct+'</span> &nbsp; ✗ <span class="q-wrong">'+quizSession.wrong+'</span></span>';
-  html+='</div>';
-  // Progress bar
-  html+='<div class="quiz-bar-wrap"><div class="quiz-bar-fill" style="width:'+(idx/total*100)+'%"></div></div>';
-  // Question card
-  html+='<div class="quiz-question-card">';
-  html+='<div class="quiz-sentence">'+q.sentenceHTML+'</div>';
-  html+='<div class="quiz-stem">'+q.stem+'</div>';
-  // Options
-  html+='<div class="quiz-options">';
-  for(var i=0;i<q.opts.length;i++){
-    var o=q.opts[i];
-    var cls='quiz-opt';
-    if(q.chosen!==undefined){
-      cls+=' q-disabled';
-      if(o.correct)cls+=' q-correct';
-      else if(q.chosen===i)cls+=' q-wrong';
-    }
-    html+='<div class="'+cls+'" onclick="answerQuiz('+i+')">';
-    html+='<span class="q-label">'+o.label+'</span>';
-    html+='<span>'+esc(o.text)+'</span>';
-    html+='</div>';
-  }
-  html+='</div>';
-  // Feedback after choosing
-  if(q.chosen!==undefined){
-    var isCorrect=q.opts[q.chosen].correct;
-    if(isCorrect){
-      html+='<div class="quiz-feedback q-fb-correct">✓ 回答正确！'+q.explain+'</div>';
-    }else{
-      html+='<div class="quiz-feedback q-fb-wrong">✗ 回答错误。'+q.explain+'</div>';
-    }
-    // Reveal blank
-    html=html.replace('id="quizBlank"','id="quizBlank" class="revealed'+(isCorrect?'':' wrong-blank')+'"');
-    html=html.replace('>______<','>'+esc(q.correctText)+'<');
-    html+='<button class="quiz-next-btn" onclick="quizNext()">'+(quizSession.idx+1>=quizSession.questions.length?'查看结果 →':'下一题 →')+'</button>';
-  }
-  html+='</div>'; // quiz-question-card
-  html+='</div>'; // quiz-wrap
-
-  // Scroll to top
-  html+='<script>document.getElementById("learnView").scrollTop=0;<\/script>';
-  document.getElementById('learnContent').innerHTML=html;
-}
-
-function answerQuiz(optIdx){
-  if(!quizSession||quizSession.questions[quizSession.idx].chosen!==undefined)return;
-  var q=quizSession.questions[quizSession.idx];
-  q.chosen=optIdx;
-  if(q.opts[optIdx].correct)quizSession.correct++;
-  else quizSession.wrong++;
-  renderQuizQuestion();
-}
-
-function quizNext(){
-  if(!quizSession)return;
-  quizSession.idx++;
-  if(quizSession.idx>=quizSession.questions.length){
-    renderQuizResult();
-  }else{
-    renderQuizQuestion();
-  }
-}
-
-function renderQuizResult(){
-  if(!quizSession)return;
-  var total=quizSession.questions.length;
-  var correct=quizSession.correct;
-  var pct=total>0?Math.round(correct/total*100):0;
-  document.getElementById('learnProgress').textContent='完成';
-  document.getElementById('learnProgressFill').style.width='100%';
-  var emoji=pct>=90?'🎉':pct>=70?'👍':pct>=50?'📖':'💪';
-  var tag=pct>=90?'太棒了':pct>=70?'不错哦':pct>=50?'继续加油':'多多练习';
-  var html='';
-  html+='<div class="quiz-result">';
-  html+='<span class="quiz-result-icon">'+emoji+'</span>';
-  html+='<div class="quiz-result-title">'+tag+'</div>';
-  html+='<div class="quiz-result-score">正确 <b>'+correct+'</b> / '+total+' 题</div>';
-  html+='<div class="quiz-result-bar-wrap"><div class="quiz-result-bar-fill" style="width:'+pct+'%"></div></div>';
-  html+='<div class="quiz-result-pct">'+pct+'%</div>';
-
-  // Wrong answers review
-  var wrongs=[];
-  for(var i=0;i<quizSession.questions.length;i++){
-    var q=quizSession.questions[i];
-    if(q.chosen!==undefined&&!q.opts[q.chosen].correct)wrongs.push({idx:i,q:q});
-  }
-  if(wrongs.length>0){
-    html+='<div style="margin-top:24px;text-align:left;">';
-    html+='<div style="font-weight:700;color:var(--ink-900);margin-bottom:10px;font-size:0.95rem;">📝 错题回顾（'+wrongs.length+'题）</div>';
-    for(var w=0;w<wrongs.length;w++){
-      var wq=wrongs[w].q;
-      var chosenOpt=wq.opts[wq.chosen];
-      var correctOpt=null;
-      for(var oi=0;oi<wq.opts.length;oi++){if(wq.opts[oi].correct){correctOpt=wq.opts[oi];break;}}
-      html+='<div style="background:#FFF5F5;border-left:3px solid #E53E3E;padding:12px 14px;margin:8px 0;border-radius:8px;font-size:0.84rem;">';
-      html+='<div style="color:var(--ink-900);font-weight:600;margin-bottom:6px;">第'+(wrongs[w].idx+1)+'题</div>';
-      html+='<div style="color:var(--ink-700);margin-bottom:4px;">'+wq.origSentence.replace(/______/g,'<u>______</u>')+'</div>';
-      html+='<div style="color:#E53E3E;">✗ 你选了：'+esc(chosenOpt?chosenOpt.label+'. '+chosenOpt.text:'')+'</div>';
-      html+='<div style="color:#2D6A4F;">✓ 正确答案：'+esc(correctOpt?correctOpt.label+'. '+correctOpt.text:'')+'</div>';
-      html+='<div style="color:var(--ink-muted);margin-top:4px;">'+wq.explain+'</div>';
-      html+='</div>';
-    }
-    html+='</div>';
-  }
-  html+='<button class="learn-done-btn primary" style="margin-top:20px" onclick="exitQuiz()">返回首页</button>';
-  html+='</div>';
-  document.getElementById('learnContent').innerHTML=html;
-  document.getElementById('learnView').scrollTop=0;
-}
-
-function exitQuiz(){
-  var cat=quizSession?quizSession.category:'';
-  quizSession=null;
-  lastLearnQueue=null;
-  lastLearnCategory=null;
-  exitSRS(cat);
-}
-
 
 /* ══════════════════════════════════════════
    SRS: Mode + Settings
@@ -4813,11 +4455,10 @@ async function init(){
     // Version check: detect new deployment
     checkVersion();
 
-    // Fetch data.json + items.json + quiz_bank.json in parallel
+    // Fetch data.json + items.json in parallel
     var results=await Promise.allSettled([
       fetch('data.json?v='+today+'-v15'),
-      fetch('items.json?v='+today+'-v1'),
-      fetch('quiz_bank.json?v='+today+'-v1')
+      fetch('items.json?v='+today+'-v1')
     ]);
 
     // --- data.json (required for daily browse) ---
@@ -4834,13 +4475,6 @@ async function init(){
       ITEM_POOLS=await results[1].value.json();
     }else{
       console.warn('items.json load failed, SRS mode degraded');
-    }
-
-    // --- quiz_bank.json (curated exam-style questions) ---
-    if(results[2]&&results[2].status==='fulfilled'&&results[2].value.ok){
-      QUIZ_BANK=await results[2].value.json();
-    }else{
-      console.warn('quiz_bank.json load failed, using auto-generated questions');
     }
 
     // --- SRS Init ---
