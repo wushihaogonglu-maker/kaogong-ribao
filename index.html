@@ -3025,6 +3025,7 @@ function startSRSLearning(category,cap){
     });
     return;
   }
+  lastLearnCategory=category;
   learnSession=buildQueue(category,cap);
   if(!learnSession||learnSession.queue.length===0){
     renderLearnEmpty(category);
@@ -3175,6 +3176,9 @@ function rateCard(rating){
 }
 
 function renderLearnDone(){
+  // 完成即签到（顶部「←退出」直接离开时也要算完成）
+  var doneCat=(learnSession&&learnSession.category)||lastLearnCategory;
+  if(doneCat)checkIn(doneCat);
   var stats={
     review:learnSession?learnSession.reviewCount:0,
     newc:learnSession?learnSession.newCount:0,
@@ -3185,7 +3189,7 @@ function renderLearnDone(){
   html+='<span class="learn-done-icon">✓</span>';
   html+='<div class="learn-done-title">今日学习完成</div>';
   html+='<div class="learn-done-stats">复习: '+(learnSession?learnSession.reviewCount:0)+' 个 &nbsp; 新学: '+(learnSession?learnSession.newCount:0)+' 个</div>';
-  var lc=(lastLearnCategory||'');
+  var lc=(doneCat||'');
   html+='<button class="learn-done-btn" onclick="exitSRS(\x27'+lc+'\x27)">返回首页</button>';
   html+='</div>';
   document.getElementById('learnContent').innerHTML=html;
